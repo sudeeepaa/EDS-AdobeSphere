@@ -48,8 +48,14 @@ export default function decorate(block) {
 	const rows = [...block.querySelectorAll(':scope > div')];
 	const values = rows.map((row) => [...row.children]);
 
-	const videoUrl = normalizeAssetSrc(getCellText(values[0] && values[0][0]), '');
-	const posterUrl = normalizeAssetSrc(getCellText(values[1] && values[1][0]), '');
+	const videoUrlRaw = getCellText(values[0] && values[0][0]);
+	const posterUrlRaw = getCellText(values[1] && values[1][0]);
+
+	// Validate that these look like paths or URLs, not heading text
+	const isPathLike = (val) => val && (val.includes('/') || val.includes('.') || val.startsWith('http'));
+	
+	const videoUrl = isPathLike(videoUrlRaw) ? normalizeAssetSrc(videoUrlRaw, '') : '';
+	const posterUrl = isPathLike(posterUrlRaw) ? normalizeAssetSrc(posterUrlRaw, '') : '';
 	const heading = getCellText(values[2] && values[2][0]);
 	const subtext = getCellText(values[3] && values[3][0]);
 
