@@ -50,16 +50,27 @@ export default function decorate(block) {
 
 	const videoUrlRaw = getCellText(values[0] && values[0][0]);
 	const posterUrlRaw = getCellText(values[1] && values[1][0]);
-
-	// Validate that these look like paths or URLs, not heading text
-	const isPathLike = (val) => val && (val.includes('/') || val.includes('.') || val.startsWith('http'));
 	
-	const videoUrl = isPathLike(videoUrlRaw) ? normalizeAssetSrc(videoUrlRaw, '') : '';
-	const posterUrl = isPathLike(posterUrlRaw) ? normalizeAssetSrc(posterUrlRaw, '') : '';
-	const heading = getCellText(values[2] && values[2][0]);
-	const subtext = getCellText(values[3] && values[3][0]);
+	// Validate that these look like paths or URLs, not heading text
+	const isPathLike = (val) => val && (val.includes('/') || val.includes('.') || val.startsWith('http')) && !val.includes(' ');
+	
+	let videoUrl = isPathLike(videoUrlRaw) ? normalizeAssetSrc(videoUrlRaw, '') : '';
+	let posterUrl = '';
+	let heading = '';
+	let subtext = '';
+	let actionRow = [];
 
-	const actionRow = values[4] || [];
+	if (isPathLike(posterUrlRaw)) {
+		posterUrl = normalizeAssetSrc(posterUrlRaw, '');
+		heading = getCellText(values[2] && values[2][0]);
+		subtext = getCellText(values[3] && values[3][0]);
+		actionRow = values[4] || [];
+	} else {
+		// Poster is missing, everything shifted up by one row
+		heading = posterUrlRaw;
+		subtext = getCellText(values[2] && values[2][0]);
+		actionRow = values[3] || [];
+	}
 	const firstLink = getLink(actionRow[0]);
 	const secondLink = getLink(actionRow[1]);
 
@@ -116,4 +127,8 @@ export default function decorate(block) {
 
 	hero.append(video, gradient, overlay, content, scrollIndicator);
 	block.append(hero);
+
+	// Ensure the parent section is full-width
+	const section = block.closest('.section');
+	if (section) section.classList.add('full-width');
 }

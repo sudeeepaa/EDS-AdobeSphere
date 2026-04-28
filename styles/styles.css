@@ -18,7 +18,7 @@
   --text-color: #131313;
   --link-color: #3b63fb;
   --link-hover-color: #1d3ecf;
-  --red-primary: #E30220;
+  --red-primary: #FA0F00;
   --red-deep: #BF0000;
   --bg-dark: #242024;
   --neutral-light: #DDDDDD;
@@ -321,6 +321,16 @@ main img {
 /* sections */
 main > .section {
   margin: 40px 0;
+}
+
+main > .section.full-width {
+  margin: 0;
+  max-width: none;
+}
+
+main > .section.full-width > div {
+  max-width: none;
+  padding: 0;
 }
 
 main > .section > div {

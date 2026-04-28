@@ -15,15 +15,27 @@ export default async function decorate(block) {
   block.textContent = '';
   
   // Find all columns (sections) in the fragment
-  const sections = fragment.querySelectorAll('main > div');
+  const sections = [...fragment.querySelectorAll(':scope > .section')];
+  
+  if (sections.length === 0) {
+    // Fallback if sections are not decorated
+    sections.push(...fragment.querySelectorAll(':scope > div'));
+  }
   
   // Create footer-grid to wrap columns
   const footerGrid = document.createElement('div');
   footerGrid.className = 'footer-grid';
   
-  // Move all sections into the grid
-  sections.forEach((section) => {
-    footerGrid.append(section);
+  // Move all sections into the grid, except the last one (copyright)
+  sections.forEach((section, index) => {
+    if (index === sections.length - 1 && sections.length > 1) {
+      const footerBottom = document.createElement('div');
+      footerBottom.className = 'footer-bottom';
+      footerBottom.append(section);
+      block.append(footerBottom);
+    } else {
+      footerGrid.append(section);
+    }
   });
   
   // Wrap grid in container
@@ -31,7 +43,7 @@ export default async function decorate(block) {
   footer.className = 'footer';
   footer.append(footerGrid);
   
-  block.append(footer);
+  block.prepend(footer);
   
   // Replace [YEAR] placeholder with current year in copyright text
   const yearPlaceholders = block.querySelectorAll('*');

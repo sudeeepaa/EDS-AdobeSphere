@@ -223,11 +223,27 @@ export default async function decorate(block) {
   const navMeta = getMetadata('nav');
   const navPath = navMeta ? new URL(navMeta, window.location).pathname : '/nav';
   const fragment = await loadFragment(navPath);
+  if (!fragment) return;
 
+  // The fragment might contain sections (if separated by ---) or just blocks
   const sections = [...fragment.querySelectorAll(':scope > .section')];
-  const brandSection = sections[0] || fragment.firstElementChild;
-  const linksSection = sections[1] || fragment.children[1];
-  const actionsSection = sections[2] || fragment.children[2];
+  
+  // Try to find the 'nav' block first, as it's common in EDS
+  const navBlock = fragment.querySelector('.nav');
+  let brandSection, linksSection, actionsSection;
+
+  if (navBlock) {
+    // If there's a nav block, extract its rows
+    const rows = [...navBlock.querySelectorAll(':scope > div')];
+    brandSection = rows[0];
+    linksSection = rows[1];
+    actionsSection = rows[2];
+  } else {
+    // Fallback to sections or direct children
+    brandSection = sections[0] || fragment.firstElementChild;
+    linksSection = sections[1] || (sections[0] ? null : fragment.children[1]);
+    actionsSection = sections[2] || (sections[0] ? null : fragment.children[2]);
+  }
 
   block.textContent = '';
 
@@ -281,6 +297,14 @@ export default async function decorate(block) {
   bindAccessibility(nav, avatarButton, dropdown);
   setActiveLinks(nav);
   syncAuthUI(auth, userMenu, avatar);
+
+  // Scroll listener for transparent -> white header transition
+  const handleScroll = () => {
+    const scrolled = window.scrollY > 50;
+    block.classList.toggle('is-scrolled', scrolled);
+  };
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  handleScroll(); // Initial check
 
   document.addEventListener('auth:changed', (event) => {
     const detail = event?.detail || {};

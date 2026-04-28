@@ -7,8 +7,14 @@ header .nav-wrapper {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 900;
+  z-index: 1000;
   width: 100%;
+  background: transparent;
+  transition: background var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+  border-bottom: 1px solid transparent;
+}
+
+header .header.is-scrolled .nav-wrapper {
   background: var(--white);
   border-bottom: 1px solid var(--neutral-light);
   box-shadow: var(--shadow-sm);
@@ -40,9 +46,14 @@ header .nav-hamburger {
   height: 28px;
   border: 0;
   background: transparent;
-  color: var(--text-primary);
+  color: var(--white);
   position: relative;
   cursor: pointer;
+  transition: color var(--transition-base);
+}
+
+header .header.is-scrolled .nav-hamburger {
+  color: var(--text-primary);
 }
 
 header .nav-hamburger span,
@@ -108,6 +119,12 @@ header .nav-brand-text {
   font-size: 1.45rem;
   letter-spacing: 0.02em;
   white-space: nowrap;
+  color: var(--white);
+  transition: color var(--transition-base);
+}
+
+header .header.is-scrolled .nav-brand-text {
+  color: var(--text-primary);
 }
 
 header .nav-brand-text .adobe {
@@ -138,11 +155,15 @@ header .nav-links-list a {
   justify-content: flex-start;
   padding: 8px 12px;
   border-radius: var(--radius-sm);
-  color: var(--text-secondary);
+  color: var(--white);
   font-size: 0.9rem;
   font-weight: 500;
   text-decoration: none;
   transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+header .header.is-scrolled .nav-links-list a {
+  color: var(--text-secondary);
 }
 
 header .nav-links-list a:hover {
@@ -186,6 +207,17 @@ header .nav-auth {
 
 header .nav-auth .btn {
   padding: 8px 18px;
+  font-size: 0.85rem;
+}
+
+header .nav-auth .btn-ghost {
+  color: var(--white);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+header .header.is-scrolled .nav-auth .btn-ghost {
+  color: var(--text-primary);
+  border-color: var(--neutral-light);
 }
 
 header .nav-user {
