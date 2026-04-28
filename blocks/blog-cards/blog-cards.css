@@ -1,1 +1,129 @@
-/* TODO */
+.blog-cards {
+  width: 100%;
+  margin: 40px 0;
+}
+
+.blog-cards__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+.blog-cards .card {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.blog-cards .card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.blog-cards .card__full-link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.blog-cards .card__image {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.blog-cards .card__body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.blog-cards .badge {
+  display: inline-flex;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  width: fit-content;
+}
+
+.blog-cards .badge--outline {
+  border: 1.5px solid var(--red-primary);
+  color: var(--red-primary);
+}
+
+.blog-cards .card__title {
+  margin: 0;
+  font-size: 1.4rem;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+.blog-cards .card__meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+
+.blog-cards .blog-author-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  font-weight: 600;
+  z-index: 2; /* Ensure author link is clickable over full-link */
+  position: relative;
+}
+
+.blog-cards .blog-author-inline img {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 1px solid var(--neutral-light);
+}
+
+.blog-cards .card__excerpt {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.blog-cards__empty {
+  padding: 40px;
+  text-align: center;
+  background: var(--light-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+}
+
+@media (width >= 700px) {
+  .blog-cards__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (width >= 1000px) {
+  .blog-cards__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
