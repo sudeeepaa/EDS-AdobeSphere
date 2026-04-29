@@ -419,6 +419,31 @@
   font-size: 1rem;
 }
 
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--neutral-light);
+}
+
+.pagination__info {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.pagination .btn {
+  min-width: 80px;
+}
+
+.pagination .btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* Responsive */
 @media (width < 900px) {
   .results-grid {

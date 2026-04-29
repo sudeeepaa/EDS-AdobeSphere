@@ -320,9 +320,12 @@ export default async function decorate(block) {
   // Clear block content
   block.textContent = '';
 
+  const PAGE_SIZE = 12;
+
   // Initialize state
   const state = {
     activeTab: 'events',
+    currentPage: 1,
     searchTerm: '',
     data: {
       events: [],
@@ -416,6 +419,7 @@ export default async function decorate(block) {
   eventCategorySelect.id = 'events-category';
   eventCategorySelect.addEventListener('change', (e) => {
     state.filters.eventCategory = e.target.value;
+    state.currentPage = 1;
     renderResults();
   });
 
@@ -461,6 +465,7 @@ export default async function decorate(block) {
     if (value === 'all') dateInput.checked = true;
     dateInput.addEventListener('change', (e) => {
       state.filters.eventDate = e.target.value;
+      state.currentPage = 1;
       renderResults();
     });
     dateLabel.appendChild(dateInput);
@@ -498,6 +503,7 @@ export default async function decorate(block) {
         state.filters.eventLocations = Array.from(
           locationCheckboxes.querySelectorAll('input:checked')
         ).map((inp) => inp.value);
+        state.currentPage = 1;
         renderResults();
       });
       locLabel.appendChild(locInput);
@@ -518,6 +524,7 @@ export default async function decorate(block) {
   blogCategorySelect.id = 'blogs-category';
   blogCategorySelect.addEventListener('change', (e) => {
     state.filters.blogCategory = e.target.value;
+    state.currentPage = 1;
     renderResults();
   });
 
@@ -548,6 +555,7 @@ export default async function decorate(block) {
   authorSearchInput.placeholder = 'Search by author';
   authorSearchInput.addEventListener('change', (e) => {
     state.filters.blogAuthor = e.target.value;
+    state.currentPage = 1;
     renderResults();
   });
   blogsFilters.appendChild(authorSearchInput);
@@ -557,6 +565,7 @@ export default async function decorate(block) {
   blogSortSelect.id = 'blogs-sort';
   blogSortSelect.addEventListener('change', (e) => {
     state.filters.blogSort = e.target.value;
+    state.currentPage = 1;
     renderResults();
   });
 
@@ -583,6 +592,7 @@ export default async function decorate(block) {
   creatorSortSelect.id = 'creators-sort';
   creatorSortSelect.addEventListener('change', (e) => {
     state.filters.creatorSort = e.target.value;
+    state.currentPage = 1;
     renderResults();
   });
 
@@ -606,6 +616,38 @@ export default async function decorate(block) {
   resultsGrid.className = 'results-grid';
   wrapper.appendChild(resultsGrid);
 
+  // Pagination
+  const pagination = document.createElement('div');
+  pagination.className = 'pagination';
+
+  const prevButton = document.createElement('button');
+  prevButton.type = 'button';
+  prevButton.className = 'btn btn-ghost';
+  prevButton.id = 'tab-prev';
+  prevButton.textContent = 'Prev';
+  prevButton.addEventListener('click', () => {
+    if (state.currentPage > 1) {
+      state.currentPage -= 1;
+      renderResults();
+    }
+  });
+
+  const paginationInfo = document.createElement('span');
+  paginationInfo.className = 'pagination__info';
+
+  const nextButton = document.createElement('button');
+  nextButton.type = 'button';
+  nextButton.className = 'btn btn-ghost';
+  nextButton.id = 'tab-next';
+  nextButton.textContent = 'Next';
+  nextButton.addEventListener('click', () => {
+    state.currentPage += 1;
+    renderResults();
+  });
+
+  pagination.append(prevButton, paginationInfo, nextButton);
+  wrapper.appendChild(pagination);
+
   // Append wrapper to block
   block.appendChild(wrapper);
 
@@ -614,6 +656,7 @@ export default async function decorate(block) {
    */
   function switchTab(tabId) {
     state.activeTab = tabId;
+    state.currentPage = 1;
 
     // Update button states
     Object.entries(tabButtonElements).forEach(([id, btn]) => {
@@ -654,6 +697,7 @@ export default async function decorate(block) {
     }
 
     if (results.length === 0) {
+      pagination.hidden = true;
       const emptyState = document.createElement('div');
       emptyState.className = 'empty-state';
       emptyState.textContent = `No ${state.activeTab} found matching your search.`;
@@ -661,7 +705,19 @@ export default async function decorate(block) {
       return;
     }
 
-    results.forEach((item) => {
+    const totalPages = Math.ceil(results.length / PAGE_SIZE);
+    if (state.currentPage > totalPages) {
+      state.currentPage = totalPages;
+    }
+
+    const pageItems = results.slice((state.currentPage - 1) * PAGE_SIZE, state.currentPage * PAGE_SIZE);
+
+    pagination.hidden = totalPages <= 1;
+    prevButton.disabled = state.currentPage === 1;
+    nextButton.disabled = state.currentPage === totalPages;
+    paginationInfo.textContent = `Page ${state.currentPage} of ${totalPages} (${results.length} results)`;
+
+    pageItems.forEach((item) => {
       let card;
       if (state.activeTab === 'events') {
         card = buildEventCard(item);
@@ -677,6 +733,7 @@ export default async function decorate(block) {
   // Debounced search handler
   const handleSearch = debounce((value) => {
     state.searchTerm = value;
+    state.currentPage = 1;
     renderResults();
   }, 300);
 
