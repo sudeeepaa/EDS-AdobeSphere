@@ -1,3 +1,4 @@
+import { authInit, isLoggedIn } from '../../scripts/auth.js';
 import { appPath, normalizeAssetSrc } from '../../scripts/utils.js';
 
 function getCellText(cell) {
@@ -45,6 +46,8 @@ function createChevronIcon() {
 }
 
 export default function decorate(block) {
+	authInit();
+
 	const rows = [...block.querySelectorAll(':scope > div')];
 	const values = rows.map((row) => [...row.children]);
 
@@ -116,6 +119,19 @@ export default function decorate(block) {
 	const secondaryButton = createButton(secondLink, 'btn-secondary');
 	if (primaryButton) actions.append(primaryButton);
 	if (secondaryButton) actions.append(secondaryButton);
+
+	if (secondaryButton) {
+		const href = secondaryButton.getAttribute('href') || '';
+		if (href.includes('/signup') || href.includes('signup')) {
+			if (isLoggedIn()) {
+				secondaryButton.style.display = 'none';
+			}
+			document.addEventListener('auth:changed', (event) => {
+				const loggedIn = event?.detail?.loggedIn;
+				secondaryButton.style.display = loggedIn ? 'none' : '';
+			});
+		}
+	}
 
 	content.append(title, description, actions);
 
