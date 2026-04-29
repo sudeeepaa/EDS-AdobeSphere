@@ -1,7 +1,5 @@
 function getRows(block) {
-	const table = block.querySelector('table');
-	if (!table) return [];
-	return Array.from(table.querySelectorAll('tr'));
+	return Array.from(block.querySelectorAll(':scope > div'));
 }
 
 function getCellContent(cell) {
@@ -19,7 +17,7 @@ function extractLines(cell) {
 }
 
 function buildTimelineItem(row) {
-	const cells = Array.from(row.querySelectorAll('th, td'));
+	const cells = Array.from(row.querySelectorAll(':scope > div'));
 	if (cells.length < 2) return null;
 
 	let title = '';
