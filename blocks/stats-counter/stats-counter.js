@@ -5,8 +5,8 @@ function easeOutQuad(t) {
 }
 
 function parseStats(block) {
-	return [...block.querySelectorAll('tr')]
-		.map((row) => [...row.querySelectorAll('td, th')].map((cell) => cell.textContent.trim()))
+	return [...block.querySelectorAll(':scope > div')]
+		.map((row) => [...row.querySelectorAll(':scope > div')].map((cell) => cell.textContent.trim()))
 		.filter((cells) => cells.length >= 4)
 		.map(([targetText, label, linkText, linkHref]) => ({
 			target: Number.parseInt(targetText, 10) || 0,
