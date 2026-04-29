@@ -44,6 +44,22 @@ export default async function decorate(block) {
   footer.append(footerGrid);
   
   block.prepend(footer);
+
+  const brandSection = footer.querySelector('.footer-grid > div:first-child');
+  if (brandSection) {
+    const brandElements = [...brandSection.querySelectorAll('p, h1, h2, h3, h4, h5, h6')];
+    const brandEl = brandElements.find((el) => /adobe/i.test(el.textContent || ''));
+
+    if (brandEl) {
+      brandEl.classList.add('footer-logo');
+      brandEl.innerHTML = '<span class="adobe">Adobe</span>sphere';
+    }
+
+    const taglineEl = brandElements.find((el) => el !== brandEl && (el.textContent || '').trim());
+    if (taglineEl) {
+      taglineEl.classList.add('footer-tagline');
+    }
+  }
   
   // Replace [YEAR] placeholder with current year in copyright text
   const yearPlaceholders = block.querySelectorAll('*');
