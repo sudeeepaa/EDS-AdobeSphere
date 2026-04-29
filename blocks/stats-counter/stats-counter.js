@@ -37,6 +37,40 @@ function buildStatBox(stat) {
 	return statBox;
 }
 
+// Dynamic override for about page: load real counts from JSON.
+async function loadDynamicStats(statBoxes) {
+	try {
+		const [eventsRes, blogsRes, creatorsRes] = await Promise.all([
+			fetch('/data/events.json'),
+			fetch('/data/blogs.json'),
+			fetch('/data/creators.json'),
+		]);
+		const events = await eventsRes.json();
+		const blogs = await blogsRes.json();
+		const creators = await creatorsRes.json();
+
+		const eventsArr = Array.isArray(events) ? events : (events.data || []);
+		const blogsArr = Array.isArray(blogs) ? blogs : (blogs.data || []);
+		const creatorsArr = Array.isArray(creators) ? creators : (creators.data || []);
+
+		const dynamicValues = [creatorsArr.length, eventsArr.length, blogsArr.length, 0];
+		try {
+			const stored = JSON.parse(localStorage.getItem('ae_registered_users') || '0');
+			dynamicValues[3] = Number(stored) + creatorsArr.length || creatorsArr.length;
+		} catch {
+			// Ignore localStorage parsing issues and keep the fallback value.
+		}
+
+		statBoxes.forEach((box, i) => {
+			if (dynamicValues[i] != null) {
+				box.dataset.target = String(dynamicValues[i]);
+			}
+		});
+	} catch (err) {
+		// Fall through to static values if fetch fails.
+	}
+}
+
 function animateCounter(box, duration) {
 	const numberEl = box.querySelector('.stat-number');
 	const target = Number.parseInt(box.dataset.target, 10) || 0;
@@ -55,7 +89,7 @@ function animateCounter(box, duration) {
 	requestAnimationFrame(tick);
 }
 
-export default function decorate(block) {
+export default async function decorate(block) {
 	const stats = parseStats(block);
 	block.innerHTML = '';
 
@@ -69,6 +103,8 @@ export default function decorate(block) {
 	if (!statBoxes.length) {
 		return;
 	}
+
+	await loadDynamicStats(statBoxes);
 
 	let animated = false;
 	const runAnimation = () => {
