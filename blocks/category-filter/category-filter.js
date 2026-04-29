@@ -10,9 +10,7 @@ const CATEGORY_URLS = {
 };
 
 function getTableRows(block) {
-	const table = block.querySelector('table');
-	if (!table) return [];
-	return Array.from(table.querySelectorAll('tr'));
+	return Array.from(block.querySelectorAll(':scope > div'));
 }
 
 function extractLabelAndHref(cell) {
@@ -26,7 +24,7 @@ function extractLabelAndHref(cell) {
 }
 
 function extractPillsFromRow(row, rowIndex, rowCount) {
-	const cells = Array.from(row.querySelectorAll('th, td'));
+	const cells = Array.from(row.querySelectorAll(':scope > div'));
 	if (!cells.length) return [];
 
 	if (rowIndex === 0 && rowCount > 1 && cells.length === 1 && !cells[0].querySelector('a[href]')) {
