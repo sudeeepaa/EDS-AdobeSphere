@@ -1,4 +1,5 @@
 import { readBlockConfig } from '../../scripts/aem.js';
+import { initRevealObserver } from '../../scripts/utils.js';
 import { buildBlogCard } from '../../scripts/utils.js';
 
 function getBlogs(payload) {
@@ -44,6 +45,7 @@ export default async function decorate(block) {
     grid.className = 'blog-cards__grid';
     items.forEach((blog) => grid.append(buildBlogCard(blog)));
     block.append(grid);
+    initRevealObserver();
   } catch (error) {
     showEmptyState(block, 'Unable to load articles right now.');
     // eslint-disable-next-line no-console
