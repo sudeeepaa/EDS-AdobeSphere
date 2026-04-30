@@ -505,6 +505,47 @@ main > .section {
   margin: 40px 0;
 }
 
+/* --- Enforce unified card image and avatar styles across all blocks --- */
+/* Standard card image crop used on home page */
+.card__image,
+.blog-card__image,
+.event-card__image,
+.blog-cards .card__image {
+  height: 220px !important;
+  overflow: hidden !important;
+}
+
+.card__image img,
+.blog-card__image img,
+.event-card__image img,
+.blog-cards .card__image img,
+.blog-cards .blog-card img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center 25% !important;
+  display: block !important;
+}
+
+/* Standard small author avatar for blog cards */
+.blog-card__avatar,
+.blog-author-inline img,
+.blog-card__meta img,
+.card__meta img {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: var(--radius-full) !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+/* Keep creator-card avatars larger and scoped */
+.creator-card__avatar img,
+.creator-cards .creator-card__avatar img {
+  width: 80px !important;
+  height: 80px !important;
+}
+
 main > .section.full-width {
   margin: 0;
   max-width: none;
