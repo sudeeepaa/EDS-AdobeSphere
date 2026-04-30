@@ -298,14 +298,6 @@ export default async function decorate(block) {
   setActiveLinks(nav);
   syncAuthUI(auth, userMenu, avatar);
 
-  // Scroll listener for transparent -> white header transition
-  const handleScroll = () => {
-    const scrolled = window.scrollY > 50;
-    block.classList.toggle('is-scrolled', scrolled);
-  };
-  window.addEventListener('scroll', handleScroll, { passive: true });
-  handleScroll(); // Initial check
-
   document.addEventListener('auth:changed', (event) => {
     const detail = event?.detail || {};
     auth.classList.toggle('nav-auth-hidden', !!detail.loggedIn);
