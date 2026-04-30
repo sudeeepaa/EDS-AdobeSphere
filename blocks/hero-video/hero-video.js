@@ -1,5 +1,4 @@
 import authInit, { isLoggedIn } from '../../scripts/auth.js';
-import decorateSearchBar from '../search-bar/search-bar.js';
 import { appPath, normalizeAssetSrc } from '../../scripts/utils.js';
 
 function getCellText(cell) {
@@ -120,13 +119,6 @@ export default function decorate(block) {
 	const secondaryButton = createButton(secondLink, 'btn-secondary');
 	if (primaryButton) actions.append(primaryButton);
 	if (secondaryButton) actions.append(secondaryButton);
-
-	if (primaryButton && secondaryButton) {
-		const searchBarBlock = document.createElement('div');
-		searchBarBlock.className = 'hero-video__search-bar';
-		decorateSearchBar(searchBarBlock);
-		content.append(searchBarBlock);
-	}
 
 	if (secondaryButton) {
 		const href = secondaryButton.getAttribute('href') || '';
