@@ -1,3 +1,5 @@
+import { initRevealObserver } from '../../scripts/utils.js';
+
 function getRows(block) {
 	return Array.from(block.querySelectorAll(':scope > div'));
 }
@@ -154,5 +156,6 @@ export default function decorate(block) {
 		.forEach((item) => track.append(item));
 
 	block.append(track);
+	initRevealObserver();
 	startAutoScroll(track);
 }
