@@ -45,6 +45,15 @@ export default async function decorate(block) {
   
   block.prepend(footer);
 
+  const footerContent = document.querySelector('.footer.block .footer');
+  const data = {
+    footerContentStyles: {
+      visibility: window.getComputedStyle(footerContent).visibility,
+      opacity: window.getComputedStyle(footerContent).opacity,
+      display: window.getComputedStyle(footerContent).display
+    }
+  };
+
   const brandSection = footer.querySelector('.footer-grid > div:first-child');
   if (brandSection) {
     const brandElements = [...brandSection.querySelectorAll('p, h1, h2, h3, h4, h5, h6')];
