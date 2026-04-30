@@ -135,7 +135,7 @@ export default async function decorate(block) {
   // Clear block content
   block.textContent = '';
 
-  const PAGE_SIZE = 12;
+  const PAGE_SIZE = 6;
 
   // Initialize state
   const state = {
