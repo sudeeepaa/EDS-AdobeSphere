@@ -176,15 +176,15 @@ button {
   font: inherit;
 }
 
-/* links */
+/* links: keep link text white to match UI design */
 a:any-link {
-  color: var(--link-color);
+  color: var(--white);
   text-decoration: none;
   overflow-wrap: break-word;
 }
 
 a:hover {
-  color: var(--link-hover-color);
+  color: var(--white);
   text-decoration: underline;
 }
 
