@@ -40,7 +40,7 @@ header .nav-hamburger {
   height: 28px;
   border: 0;
   background: transparent;
-  color: var(--white);
+  color: var(--text-primary);
   position: relative;
   cursor: pointer;
 }
@@ -107,7 +107,7 @@ header .nav-brand-text {
   font-size: 1.45rem;
   letter-spacing: 0.02em;
   white-space: nowrap;
-  color: var(--white);
+  color: var(--text-primary);
 }
 
 header .nav-brand-text .adobe {
@@ -138,7 +138,7 @@ header .nav-links-list a {
   justify-content: flex-start;
   padding: 8px 12px;
   border-radius: var(--radius-sm);
-  color: var(--white);
+  color: var(--text-primary);
   font-size: 0.9rem;
   font-weight: 500;
   text-decoration: none;
@@ -189,11 +189,6 @@ header .nav-auth .btn {
 }
 
 header .nav-auth .btn-ghost {
-  color: var(--white);
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
-header .header.is-scrolled .nav-auth .btn-ghost {
   color: var(--text-primary);
   border-color: var(--neutral-light);
 }
