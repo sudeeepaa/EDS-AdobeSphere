@@ -26,11 +26,18 @@
   box-shadow: var(--shadow-md);
 }
 
+.blog-cards .card__image {
+  height: 220px;
+  overflow: hidden;
+}
+
 .blog-cards .card__image img,
 .blog-cards .blog-card img {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  height: 100%;
   object-fit: cover;
+  object-position: center 25%;
+  display: block;
 }
 
 .blog-cards .card__body,
