@@ -1,4 +1,4 @@
-import { buildBlogCard, buildCreatorCard, buildEventCard } from '../../scripts/utils.js';
+import { buildBlogCard, buildCreatorCard, buildEventCard, initRevealObserver } from '../../scripts/utils.js';
 
 /**
  * Debounce utility
@@ -543,6 +543,8 @@ export default async function decorate(block) {
       }
       if (card) resultsGrid.appendChild(card);
     });
+
+    initRevealObserver();
   }
 
   // Debounced search handler
