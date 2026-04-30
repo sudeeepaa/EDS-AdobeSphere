@@ -68,4 +68,7 @@ export default async function decorate(block) {
       el.textContent = el.textContent.replace('[YEAR]', new Date().getFullYear());
     }
   });
+
+  // Mark the footer block as loaded to show it
+  block.dataset.blockStatus = 'loaded';
 }
