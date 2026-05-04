@@ -1,5 +1,5 @@
 .search-bar {
-	margin: 0 auto;
+	margin: 0;
 	width: 100%;
 	max-width: 100%;
 	padding: 0;
@@ -13,46 +13,96 @@
 	background: transparent;
 	box-shadow: none;
 	backdrop-filter: none;
+	width: 100%;
+}
+
+.search-bar__form {
+	display: flex;
+	align-items: stretch;
+	gap: 0;
+	width: 100%;
 	max-width: 1200px;
 	margin: 0 auto;
 	padding: 0 24px;
+	position: relative;
 }
 
-.search-bar__input-container {
+.search-bar__input-wrapper {
 	display: flex;
-	flex-direction: column;
-	gap: 20px;
-	align-items: stretch;
-	width: 100%;
+	align-items: center;
+	flex: 1;
+	gap: 0;
+	background: var(--white);
+	border-radius: 12px;
+	padding: 0;
+	overflow: hidden;
+	box-shadow: 0 4px 16px rgba(26, 26, 26, 0.12);
 }
 
 .search-bar__input {
+	flex: 1;
 	width: 100%;
 	padding: 18px 24px;
 	border: none;
-	border-radius: 12px;
-	background: var(--white);
+	border-radius: 0;
+	background: transparent;
 	color: var(--text-primary);
 	font: inherit;
 	font-size: 1.05rem;
-	transition: box-shadow 0.3s ease, border-color 0.3s ease;
-	box-shadow: 0 4px 16px rgba(26, 26, 26, 0.1);
+	transition: none;
+	box-shadow: none;
 }
 
 .search-bar__input:focus {
 	outline: none;
-	box-shadow: 0 8px 24px rgba(227, 2, 32, 0.2);
+	background: transparent;
+	box-shadow: none;
 }
 
 .search-bar__input::placeholder {
-	color: rgba(26, 26, 26, 0.5);
+	color: rgba(26, 26, 26, 0.4);
 }
 
-.search-bar__chips-wrapper {
+.search-bar__button {
+	appearance: none;
+	border: none;
+	background: var(--red-primary);
+	color: var(--white);
+	width: 56px;
+	height: 56px;
+	min-width: 56px;
+	min-height: 56px;
+	border-radius: 50%;
+	padding: 0;
+	margin: 8px;
+	cursor: pointer;
 	display: flex;
-	flex-wrap: wrap;
-	gap: 12px;
 	align-items: center;
+	justify-content: center;
+	font-size: 0;
+	transition: all 0.3s ease;
+	flex-shrink: 0;
+}
+
+.search-bar__button:hover {
+	background: #cc0028;
+	transform: scale(1.05);
+}
+
+.search-bar__button:active {
+	transform: scale(0.98);
+}
+
+.search-bar__button svg {
+	width: 20px;
+	height: 20px;
+	stroke: currentColor;
+	stroke-width: 2.5;
+}
+
+/* Filter Chips - Hidden in hero, visible on explore page */
+.search-bar__chips-container {
+	display: none;
 }
 
 .search-bar__chips {
@@ -180,25 +230,27 @@
 	background: rgba(26, 26, 26, 0.3);
 }
 
+/* Responsive Design */
 @media (max-width: 900px) {
-	.search-bar__shell {
+	.search-bar__form {
 		padding: 0 16px;
 	}
 
 	.search-bar__input {
 		padding: 16px 18px;
 		font-size: 1rem;
+	}
+
+	.search-bar__input-wrapper {
 		border-radius: 10px;
 	}
 
-	.search-bar__chips {
-		gap: 10px;
-	}
-
-	.search-bar__chip {
-		padding: 8px 14px;
-		font-size: 0.85rem;
-		border-radius: 6px;
+	.search-bar__button {
+		width: 52px;
+		height: 52px;
+		min-width: 52px;
+		min-height: 52px;
+		margin: 6px;
 	}
 
 	.search-bar__results {
@@ -217,23 +269,31 @@
 		padding: 0;
 	}
 
-	.search-bar__shell {
+	.search-bar__form {
 		padding: 0 12px;
+		gap: 0;
 	}
 
 	.search-bar__input {
 		padding: 14px 16px;
 		font-size: 16px;
+	}
+
+	.search-bar__input-wrapper {
 		border-radius: 8px;
 	}
 
-	.search-bar__chips {
-		gap: 8px;
+	.search-bar__button {
+		width: 48px;
+		height: 48px;
+		min-width: 48px;
+		min-height: 48px;
+		margin: 4px;
 	}
 
-	.search-bar__chip {
-		padding: 6px 12px;
-		font-size: 0.75rem;
+	.search-bar__button svg {
+		width: 18px;
+		height: 18px;
 	}
 
 	.search-bar__results {

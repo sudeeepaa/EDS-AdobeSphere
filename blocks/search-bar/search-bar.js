@@ -65,17 +65,6 @@ function searchResults(query, type = 'all') {
 	return results;
 }
 
-function buildChipButton(value, label, activeValue) {
-	const button = document.createElement('button');
-	button.type = 'button';
-	button.className = 'search-bar__chip';
-	button.dataset.value = value;
-	button.textContent = label;
-	button.setAttribute('aria-pressed', value === activeValue ? 'true' : 'false');
-	if (value === activeValue) button.classList.add('is-active');
-	return button;
-}
-
 function renderResultsPanel(resultsContainer, query, activeType) {
 	resultsContainer.innerHTML = '';
 
@@ -166,8 +155,12 @@ export default async function decorate(block) {
 	const shell = document.createElement('div');
 	shell.className = 'search-bar__shell';
 
-	const inputContainer = document.createElement('div');
-	inputContainer.className = 'search-bar__input-container';
+	const form = document.createElement('form');
+	form.className = 'search-bar__form';
+	form.setAttribute('role', 'search');
+
+	const inputWrapper = document.createElement('div');
+	inputWrapper.className = 'search-bar__input-wrapper';
 
 	const input = document.createElement('input');
 	input.type = 'search';
@@ -175,23 +168,38 @@ export default async function decorate(block) {
 	input.placeholder = 'Search events, blogs, creators...';
 	input.setAttribute('aria-label', 'Search Adobesphere');
 
-	const chipsWrapper = document.createElement('div');
-	chipsWrapper.className = 'search-bar__chips-wrapper';
+	const button = document.createElement('button');
+	button.type = 'submit';
+	button.className = 'search-bar__button';
+	button.setAttribute('aria-label', 'Search');
+	button.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>';
+
+	let activeType = 'all';
+
+	const chipsContainer = document.createElement('div');
+	chipsContainer.className = 'search-bar__chips-container';
 
 	const chips = document.createElement('div');
 	chips.className = 'search-bar__chips';
 	chips.setAttribute('role', 'group');
 	chips.setAttribute('aria-label', 'Search type filters');
 
-	let activeType = 'all';
 	DEFAULT_TYPES.forEach(({ value, label }) => {
-		const chip = buildChipButton(value, label, activeType);
-		chip.addEventListener('click', () => {
+		const chip = document.createElement('button');
+		chip.type = 'button';
+		chip.className = 'search-bar__chip';
+		chip.dataset.value = value;
+		chip.textContent = label;
+		chip.setAttribute('aria-pressed', value === activeType ? 'true' : 'false');
+		if (value === activeType) chip.classList.add('is-active');
+
+		chip.addEventListener('click', (e) => {
+			e.preventDefault();
 			activeType = value;
-			chips.querySelectorAll('.search-bar__chip').forEach((button) => {
-				const isActive = button.dataset.value === value;
-				button.classList.toggle('is-active', isActive);
-				button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+			chips.querySelectorAll('.search-bar__chip').forEach((btn) => {
+				const isActive = btn.dataset.value === value;
+				btn.classList.toggle('is-active', isActive);
+				btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
 			});
 			renderResultsPanel(resultsContainer, input.value, activeType);
 		});
@@ -206,9 +214,15 @@ export default async function decorate(block) {
 		renderResultsPanel(resultsContainer, e.target.value, activeType);
 	});
 
+	// Handle form submit
+	form.addEventListener('submit', (e) => {
+		e.preventDefault();
+		renderResultsPanel(resultsContainer, input.value, activeType);
+	});
+
 	// Close results when clicking outside
 	document.addEventListener('click', (e) => {
-		if (!shell.contains(e.target) && !resultsContainer.contains(e.target)) {
+		if (!shell.contains(e.target)) {
 			resultsContainer.classList.add('is-hidden');
 		}
 	});
@@ -220,8 +234,9 @@ export default async function decorate(block) {
 		}
 	});
 
-	chipsWrapper.append(chips);
-	inputContainer.append(input, chipsWrapper);
-	shell.append(inputContainer, resultsContainer);
+	inputWrapper.append(input, button);
+	form.append(inputWrapper);
+	chipsContainer.append(chips);
+	shell.append(form, chipsContainer, resultsContainer);
 	block.append(shell);
 }
