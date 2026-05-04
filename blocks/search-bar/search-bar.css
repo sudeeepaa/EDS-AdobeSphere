@@ -211,6 +211,79 @@
 	box-shadow: 0 12px 32px rgba(26, 26, 26, 0.12);
 }
 
+/* Link colors in results panel */
+.search-bar__results a {
+	color: var(--red-primary);
+	text-decoration: none;
+	transition: color 0.2s ease;
+}
+
+.search-bar__results a:hover {
+	color: #cc0028;
+	text-decoration: underline;
+}
+
+.search-bar__results a:visited {
+	color: #8b0021;
+}
+
+/* Links within cards in results */
+.search-bar__results-list a {
+	color: var(--red-primary);
+	text-decoration: none;
+	font-weight: 500;
+}
+
+.search-bar__results-list a:hover {
+	color: #cc0028;
+	text-decoration: underline;
+}
+
+/* Links within event cards */
+.search-bar__results-list .event-card a,
+.search-bar__results-list .event-card button {
+	color: var(--white);
+}
+
+.search-bar__results-list .event-card a:hover {
+	color: rgba(255, 255, 255, 0.9);
+	text-decoration: underline;
+}
+
+.search-bar__results-list .event-card button {
+	background: var(--red-primary);
+	border: none;
+	cursor: pointer;
+	padding: 10px 16px;
+	border-radius: 6px;
+	font-weight: 600;
+	transition: all 0.2s ease;
+}
+
+.search-bar__results-list .event-card button:hover {
+	background: #cc0028;
+}
+
+/* Links within blog cards */
+.search-bar__results-list .blog-card a {
+	color: var(--red-primary);
+}
+
+.search-bar__results-list .blog-card a:hover {
+	color: #cc0028;
+	text-decoration: underline;
+}
+
+/* Links within creator cards */
+.search-bar__results-list .creator-card a {
+	color: var(--red-primary);
+}
+
+.search-bar__results-list .creator-card a:hover {
+	color: #cc0028;
+	text-decoration: underline;
+}
+
 /* Scrollbar styling */
 .search-bar__results::-webkit-scrollbar {
 	width: 8px;
