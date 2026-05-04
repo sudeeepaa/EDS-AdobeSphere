@@ -65,7 +65,8 @@ export default async function decorate(block) {
 		},
 	};
 
-	// Clear block
+	// Clear block and add class
+	block.classList.add('explore-tabs');
 	block.textContent = '';
 
 	// Build Tab Navigation
@@ -349,7 +350,13 @@ function attachEventListeners(state, block) {
 			creatorSort: 'name-asc',
 			creatorDesignations: [],
 		};
-		block.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach((i) => (i.checked = i.value === 'all'));
+		// Reset inputs - for radios, check the 'all' option, for checkboxes and other radios uncheck
+		block.querySelectorAll('input[type="radio"]').forEach((i) => {
+			i.checked = i.value === 'all';
+		});
+		block.querySelectorAll('input[type="checkbox"]').forEach((i) => {
+			i.checked = false;
+		});
 		block.querySelectorAll('select').forEach((s) => (s.value = ''));
 		block.querySelectorAll('input[type="text"]').forEach((i) => (i.value = ''));
 		state[`${state.activeTab}Page`] = 1;
