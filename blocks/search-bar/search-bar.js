@@ -1,4 +1,4 @@
-import { appPath } from '../../scripts/utils.js';
+import { appPath, buildBlogCard, buildEventCard, buildCreatorCard } from '../../scripts/utils.js';
 
 const DEFAULT_TYPES = [
 	{ value: 'all', label: 'All' },
@@ -7,64 +7,65 @@ const DEFAULT_TYPES = [
 	{ value: 'creators', label: 'Creators' },
 ];
 
-const DEFAULT_CATEGORIES = [
-	'',
-	'AI & Emerging Technology',
-	'Creative Tools & Product Updates',
-	'Industry Trends & Thought Leadership',
-	'Community / Events / Creator Programs',
-];
+// Fetch and cache data
+let cachedData = { events: [], blogs: [], creators: [] };
+let dataLoaded = false;
 
-function getRows(block) {
-	return Array.from(block.querySelectorAll(':scope > div'));
+async function loadData() {
+	if (dataLoaded) return cachedData;
+
+	try {
+		const [eventsRes, blogsRes, creatorsRes] = await Promise.all([
+			fetch(appPath('/data/events.json')),
+			fetch(appPath('/data/blogs.json')),
+			fetch(appPath('/data/creators.json')),
+		]);
+
+		const eventsData = await eventsRes.json();
+		const blogsData = await blogsRes.json();
+		const creatorsData = await creatorsRes.json();
+
+		cachedData.events = Array.isArray(eventsData) ? eventsData : eventsData.data || [];
+		cachedData.blogs = Array.isArray(blogsData) ? blogsData : blogsData.data || [];
+		cachedData.creators = Array.isArray(creatorsData) ? creatorsData : creatorsData.data || [];
+
+		dataLoaded = true;
+		return cachedData;
+	} catch (error) {
+		// eslint-disable-next-line no-console
+		console.error('Failed to load search data:', error);
+		return { events: [], blogs: [], creators: [] };
+	}
 }
 
-function getCellText(cell) {
-	return String(cell?.textContent || '').trim();
+function matchesQuery(item, query) {
+	if (!query || query.trim() === '') return true;
+	const searchStr = JSON.stringify(item).toLowerCase();
+	const queryStr = query.toLowerCase();
+	return searchStr.includes(queryStr);
 }
 
-function parseConfig(block) {
-	const rows = getRows(block);
-	const config = {
-		placeholder: 'Search events, blogs, creators...',
-		buttonLabel: 'Search',
-		types: DEFAULT_TYPES,
-		categories: DEFAULT_CATEGORIES,
-	};
+function searchResults(query, type = 'all') {
+	const results = { events: [], blogs: [], creators: [] };
 
-	if (rows[0] && rows[0].children[0]) {
-		const value = getCellText(rows[0].children[0]);
-		if (value) config.placeholder = value;
+	if (!query || query.trim().length < 1) return results;
+
+	if (type === 'all' || type === 'events') {
+		results.events = cachedData.events.filter((item) => matchesQuery(item, query)).slice(0, 5);
 	}
 
-	if (rows[1]) {
-		const types = Array.from(rows[1].children)
-			.map((cell) => getCellText(cell))
-			.filter(Boolean)
-			.map((label) => ({ value: label.toLowerCase().replace(/[^a-z0-9]+/g, '-'), label }));
-		if (types.length) {
-			config.types = [{ value: 'all', label: 'All' }, ...types];
-		}
+	if (type === 'all' || type === 'blogs') {
+		results.blogs = cachedData.blogs.filter((item) => matchesQuery(item, query)).slice(0, 5);
 	}
 
-	if (rows[2]) {
-		const categories = Array.from(rows[2].children)
-			.map((cell) => getCellText(cell))
-			.filter(Boolean);
-		if (categories.length) {
-			config.categories = ['', ...categories];
-		}
+	if (type === 'all' || type === 'creators') {
+		results.creators = cachedData.creators.filter((item) => matchesQuery(item, query)).slice(0, 5);
 	}
 
-	if (rows[3] && rows[3].children[0]) {
-		const value = getCellText(rows[3].children[0]);
-		if (value) config.buttonLabel = value;
-	}
-
-	return config;
+	return results;
 }
 
-function buildChipButton(group, value, label, activeValue) {
+function buildChipButton(value, label, activeValue) {
 	const button = document.createElement('button');
 	button.type = 'button';
 	button.className = 'search-bar__chip';
@@ -75,34 +76,103 @@ function buildChipButton(group, value, label, activeValue) {
 	return button;
 }
 
-function buildDestinationUrl({ query, type, category }) {
-	const url = new URL(appPath('/explore'), window.location.origin);
-	const normalizedQuery = String(query || '').trim();
-	const normalizedType = String(type || 'all').trim();
-	const normalizedCategory = String(category || '').trim();
+function renderResultsPanel(resultsContainer, query, activeType) {
+	resultsContainer.innerHTML = '';
 
-	if (normalizedQuery) url.searchParams.set('q', normalizedQuery);
-	if (normalizedType && normalizedType !== 'all') url.searchParams.set('type', normalizedType);
-	if (normalizedCategory) url.searchParams.set('category', normalizedCategory);
-	return `${url.pathname}${url.search}`;
+	if (!query || query.trim().length < 1) {
+		resultsContainer.classList.add('is-hidden');
+		return;
+	}
+
+	const results = searchResults(query, activeType);
+	const hasResults = results.events.length > 0 || results.blogs.length > 0 || results.creators.length > 0;
+
+	if (!hasResults) {
+		const noResults = document.createElement('div');
+		noResults.className = 'search-bar__no-results';
+		noResults.textContent = 'No results found';
+		resultsContainer.append(noResults);
+		resultsContainer.classList.remove('is-hidden');
+		return;
+	}
+
+	resultsContainer.classList.remove('is-hidden');
+
+	// Events Results
+	if ((activeType === 'all' || activeType === 'events') && results.events.length > 0) {
+		const eventSection = document.createElement('div');
+		eventSection.className = 'search-bar__results-section';
+
+		const sectionTitle = document.createElement('div');
+		sectionTitle.className = 'search-bar__results-title';
+		sectionTitle.textContent = 'Events';
+		eventSection.append(sectionTitle);
+
+		const eventList = document.createElement('div');
+		eventList.className = 'search-bar__results-list';
+		results.events.forEach((item) => {
+			eventList.append(buildEventCard(item));
+		});
+		eventSection.append(eventList);
+		resultsContainer.append(eventSection);
+	}
+
+	// Blogs Results
+	if ((activeType === 'all' || activeType === 'blogs') && results.blogs.length > 0) {
+		const blogSection = document.createElement('div');
+		blogSection.className = 'search-bar__results-section';
+
+		const sectionTitle = document.createElement('div');
+		sectionTitle.className = 'search-bar__results-title';
+		sectionTitle.textContent = 'Blogs';
+		blogSection.append(sectionTitle);
+
+		const blogList = document.createElement('div');
+		blogList.className = 'search-bar__results-list';
+		results.blogs.forEach((item) => {
+			blogList.append(buildBlogCard(item));
+		});
+		blogSection.append(blogList);
+		resultsContainer.append(blogSection);
+	}
+
+	// Creators Results
+	if ((activeType === 'all' || activeType === 'creators') && results.creators.length > 0) {
+		const creatorSection = document.createElement('div');
+		creatorSection.className = 'search-bar__results-section';
+
+		const sectionTitle = document.createElement('div');
+		sectionTitle.className = 'search-bar__results-title';
+		sectionTitle.textContent = 'Creators';
+		creatorSection.append(sectionTitle);
+
+		const creatorList = document.createElement('div');
+		creatorList.className = 'search-bar__results-list';
+		results.creators.forEach((item) => {
+			creatorList.append(buildCreatorCard(item));
+		});
+		creatorSection.append(creatorList);
+		resultsContainer.append(creatorSection);
+	}
 }
 
-export default function decorate(block) {
-	const config = parseConfig(block);
+export default async function decorate(block) {
+	// Load data immediately
+	await loadData();
+
 	block.classList.add('search-bar');
 	block.textContent = '';
 
 	const shell = document.createElement('div');
 	shell.className = 'search-bar__shell';
 
-	const form = document.createElement('form');
-	form.className = 'search-bar__form';
-	form.setAttribute('role', 'search');
+	const inputContainer = document.createElement('div');
+	inputContainer.className = 'search-bar__input-container';
 
 	const input = document.createElement('input');
 	input.type = 'search';
 	input.className = 'search-bar__input';
-	input.placeholder = config.placeholder;
+	input.placeholder = 'Search events, blogs, creators...';
 	input.setAttribute('aria-label', 'Search Adobesphere');
 
 	const chips = document.createElement('div');
@@ -111,8 +181,8 @@ export default function decorate(block) {
 	chips.setAttribute('aria-label', 'Search type filters');
 
 	let activeType = 'all';
-	config.types.forEach(({ value, label }) => {
-		const chip = buildChipButton(chips, value, label, activeType);
+	DEFAULT_TYPES.forEach(({ value, label }) => {
+		const chip = buildChipButton(value, label, activeType);
 		chip.addEventListener('click', () => {
 			activeType = value;
 			chips.querySelectorAll('.search-bar__chip').forEach((button) => {
@@ -120,34 +190,34 @@ export default function decorate(block) {
 				button.classList.toggle('is-active', isActive);
 				button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
 			});
+			renderResultsPanel(resultsContainer, input.value, activeType);
 		});
 		chips.append(chip);
 	});
 
-	const select = document.createElement('select');
-	select.className = 'search-bar__select';
-	config.categories.forEach((category) => {
-		const option = document.createElement('option');
-		option.value = category;
-		option.textContent = category || 'All Categories';
-		select.append(option);
+	const resultsContainer = document.createElement('div');
+	resultsContainer.className = 'search-bar__results is-hidden';
+
+	// Real-time search
+	input.addEventListener('input', (e) => {
+		renderResultsPanel(resultsContainer, e.target.value, activeType);
 	});
 
-	const submit = document.createElement('button');
-	submit.type = 'submit';
-	submit.className = 'btn btn-primary search-bar__button';
-	submit.textContent = config.buttonLabel;
+	// Close results when clicking outside
+	document.addEventListener('click', (e) => {
+		if (!shell.contains(e.target) && !resultsContainer.contains(e.target)) {
+			resultsContainer.classList.add('is-hidden');
+		}
+	});
 
-	form.append(input, chips, select, submit);
-	shell.append(form);
+	// Open results when focusing input
+	input.addEventListener('focus', () => {
+		if (input.value.trim().length > 0) {
+			resultsContainer.classList.remove('is-hidden');
+		}
+	});
+
+	inputContainer.append(input, chips);
+	shell.append(inputContainer, resultsContainer);
 	block.append(shell);
-
-	form.addEventListener('submit', (event) => {
-		event.preventDefault();
-		window.location.href = buildDestinationUrl({
-			query: input.value,
-			type: activeType,
-			category: select.value,
-		});
-	});
 }
