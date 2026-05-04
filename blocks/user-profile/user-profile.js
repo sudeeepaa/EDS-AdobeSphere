@@ -1,488 +1,290 @@
-import authInit, { getUser, isLoggedIn } from '../../scripts/auth.js';
-import { appPath, buildBlogCard, buildEventCard, escapeHtml, fileToBase64, normalizeAssetSrc, showToast } from '../../scripts/utils.js';
+import { isLoggedIn, getUser } from '../../scripts/auth.js';
+import Storage from '../../scripts/storage.js';
+import {
+	buildEventCard,
+	buildBlogCard,
+	showToast,
+	fileToBase64,
+} from '../../scripts/utils.js';
 
-const USERS_KEY = 'ae_users';
-const USER_KEY = 'ae_user';
-const SESSION_KEY = 'ae_session';
-
-function readJson(key, fallback) {
-	try {
-		const raw = localStorage.getItem(key);
-		return raw ? JSON.parse(raw) : fallback;
-	} catch (error) {
-		return fallback;
-	}
-}
-
-function writeJson(key, value) {
-	try {
-		localStorage.setItem(key, JSON.stringify(value));
-		return true;
-	} catch (error) {
-		return false;
-	}
-}
-
-function ensureArray(value) {
-	return Array.isArray(value) ? value : [];
-}
-
-function ensureUser(user) {
-	if (!user || typeof user !== 'object') return null;
-	return {
-		...user,
-		savedBlogs: ensureArray(user.savedBlogs),
-		savedEvents: ensureArray(user.savedEvents),
-		registeredEvents: ensureArray(user.registeredEvents),
-		myBlogs: ensureArray(user.myBlogs),
-		socials: user.socials && typeof user.socials === 'object' ? user.socials : {},
-		avatarSrc: user.avatarSrc || '',
-	};
-}
-
-function persistUser(user) {
-	const normalized = ensureUser(user);
-	if (!normalized || !normalized.email) return normalized;
-
-	const users = ensureArray(readJson(USERS_KEY, []));
-	const nextUsers = users
-		.filter((entry) => entry && typeof entry === 'object')
-		.map((entry) => ensureUser(entry) || entry);
-	const index = nextUsers.findIndex((entry) => String(entry.email || '').toLowerCase() === String(normalized.email).toLowerCase());
-	if (index >= 0) {
-		nextUsers[index] = normalized;
-	} else {
-		nextUsers.unshift(normalized);
-	}
-
-	writeJson(USERS_KEY, nextUsers);
-	writeJson(USER_KEY, normalized);
-	localStorage.setItem(SESSION_KEY, normalized.email);
-	document.dispatchEvent(new CustomEvent('auth:changed', { detail: { loggedIn: true, user: normalized } }));
-	return normalized;
-}
-
-function getUserById(id) {
-	const user = ensureUser(getUser());
-	if (user && String(user.email || '').toLowerCase() === String(id || '').toLowerCase()) return user;
-	const users = ensureArray(readJson(USERS_KEY, [])).map((entry) => ensureUser(entry) || entry);
-	return users.find((entry) => String(entry.email || '').toLowerCase() === String(id || '').toLowerCase()) || null;
-}
-
-function getResolvedItem(items, ref) {
-	const list = ensureArray(items);
-	const target = String(ref || '').trim().toLowerCase();
-	if (!target) return null;
-	return list.find((item) => {
-		if (!item) return false;
-		if (String(item.id || '').toLowerCase() === target) return true;
-		const titleSlug = String(item.title || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
-		if (titleSlug === target) return true;
-		return false;
-	}) || null;
-}
-
-async function loadCollections() {
-	const [eventsRes, blogsRes, creatorsRes] = await Promise.all([
-		fetch(appPath('/data/events.json')),
-		fetch(appPath('/data/blogs.json')),
-		fetch(appPath('/data/creators.json')),
-	]);
-
-	const eventsData = await eventsRes.json();
-	const blogsData = await blogsRes.json();
-	const creatorsData = await creatorsRes.json();
-
-	return {
-		events: Array.isArray(eventsData) ? eventsData : (eventsData.data || []),
-		blogs: Array.isArray(blogsData) ? blogsData : (blogsData.data || []),
-		creators: Array.isArray(creatorsData) ? creatorsData : (creatorsData.data || []),
-	};
-}
-
-function createSectionHeading(title, description) {
-	const header = document.createElement('div');
-	header.className = 'user-profile__section-heading';
-	const h2 = document.createElement('h2');
-	h2.textContent = title;
-	header.append(h2);
-	if (description) {
-		const p = document.createElement('p');
-		p.textContent = description;
-		header.append(p);
-	}
-	return header;
-}
-
-function createTabButton(label, value, active) {
-	const button = document.createElement('button');
-	button.type = 'button';
-	button.className = 'user-profile__tab';
-	button.textContent = label;
-	button.dataset.tab = value;
-	button.setAttribute('aria-selected', active ? 'true' : 'false');
-	if (active) button.classList.add('is-active');
-	return button;
-}
-
-function resolveItemArray(items, collections) {
-	return ensureArray(items)
-		.map((entry) => {
-			if (entry && typeof entry === 'object') return entry;
-			const ref = String(entry || '').trim();
-			const fromEvents = getResolvedItem(collections.events, ref);
-			if (fromEvents) return { ...fromEvents, _source: 'event' };
-			const fromBlogs = getResolvedItem(collections.blogs, ref);
-			if (fromBlogs) return { ...fromBlogs, _source: 'blog' };
-			return null;
-		})
-		.filter(Boolean);
-}
-
-function buildProfileHeader(user) {
-	const card = document.createElement('section');
-	card.className = 'user-profile__card user-profile__card--hero';
-
-	const avatarWrap = document.createElement('div');
-	avatarWrap.className = 'user-profile__avatar-wrap';
-	const avatar = document.createElement('img');
-	avatar.className = 'user-profile__avatar';
-	avatar.src = normalizeAssetSrc(user.avatarSrc || user.avatar || '/media/profiles/project-owner-made-by.jpg.jpg', '');
-	avatar.alt = user.name || 'User avatar';
-	avatarWrap.append(avatar);
-
-	const body = document.createElement('div');
-	body.className = 'user-profile__hero-copy';
-
-	const eyebrow = document.createElement('p');
-	eyebrow.className = 'user-profile__eyebrow';
-	eyebrow.textContent = 'My Profile';
-
-	const name = document.createElement('h1');
-	name.className = 'user-profile__name';
-	name.textContent = user.name || 'Your profile';
-
-	const role = document.createElement('p');
-	role.className = 'user-profile__role';
-	role.textContent = user.designation || user.email || '';
-
-	const bio = document.createElement('p');
-	bio.className = 'user-profile__bio';
-	bio.textContent = user.bio || 'Add a short bio so your profile reflects your work and interests.';
-
-	const actions = document.createElement('div');
-	actions.className = 'user-profile__hero-actions';
-
-	const editButton = document.createElement('button');
-	editButton.type = 'button';
-	editButton.className = 'btn btn-primary';
-	editButton.textContent = 'Edit profile';
-	editButton.dataset.action = 'edit-profile';
-
-	const signOutButton = document.createElement('a');
-	signOutButton.className = 'btn btn-ghost';
-	signOutButton.href = appPath('/login');
-	signOutButton.textContent = 'Switch account';
-
-	actions.append(editButton, signOutButton);
-	body.append(eyebrow, name, role, bio, actions);
-	card.append(avatarWrap, body);
-	return card;
-}
-
-function buildFormField(label, input) {
-	const field = document.createElement('label');
-	field.className = 'user-profile__field';
-	const span = document.createElement('span');
-	span.textContent = label;
-	field.append(span, input);
-	return field;
-}
-
-function buildEditForm(user) {
-	const form = document.createElement('form');
-	form.className = 'user-profile__form';
-
-	const avatarInput = document.createElement('input');
-	avatarInput.type = 'text';
-	avatarInput.className = 'user-profile__input';
-	avatarInput.placeholder = 'Avatar URL or /media path';
-	avatarInput.value = user.avatarSrc || '';
-
-	const avatarUpload = document.createElement('input');
-	avatarUpload.type = 'file';
-	avatarUpload.accept = 'image/*';
-	avatarUpload.hidden = true;
-
-	const avatarButton = document.createElement('button');
-	avatarButton.type = 'button';
-	avatarButton.className = 'btn btn-secondary';
-	avatarButton.textContent = 'Upload avatar';
-
-	const avatarRow = document.createElement('div');
-	avatarRow.className = 'user-profile__upload-row';
-	avatarRow.append(avatarButton, avatarUpload);
-
-	const nameInput = document.createElement('input');
-	nameInput.type = 'text';
-	nameInput.className = 'user-profile__input';
-	nameInput.value = user.name || '';
-
-	const designationInput = document.createElement('input');
-	designationInput.type = 'text';
-	designationInput.className = 'user-profile__input';
-	designationInput.value = user.designation || '';
-
-	const bioInput = document.createElement('textarea');
-	bioInput.className = 'user-profile__textarea';
-	bioInput.rows = 5;
-	bioInput.value = user.bio || '';
-
-	const linkedinInput = document.createElement('input');
-	linkedinInput.type = 'url';
-	linkedinInput.className = 'user-profile__input';
-	linkedinInput.placeholder = 'https://www.linkedin.com/in/...';
-	linkedinInput.value = user.socials?.linkedin || '';
-
-	const websiteInput = document.createElement('input');
-	websiteInput.type = 'url';
-	websiteInput.className = 'user-profile__input';
-	websiteInput.placeholder = 'https://yourportfolio.com';
-	websiteInput.value = user.socials?.website || '';
-
-	const saveButton = document.createElement('button');
-	saveButton.type = 'submit';
-	saveButton.className = 'btn btn-primary';
-	saveButton.textContent = 'Save changes';
-
-	const cancelButton = document.createElement('button');
-	cancelButton.type = 'button';
-	cancelButton.className = 'btn btn-ghost';
-	cancelButton.textContent = 'Cancel';
-	cancelButton.dataset.action = 'cancel-edit';
-
-	const actions = document.createElement('div');
-	actions.className = 'user-profile__form-actions';
-	actions.append(saveButton, cancelButton);
-
-	form.append(
-		buildFormField('Avatar', avatarInput),
-		avatarRow,
-		buildFormField('Name', nameInput),
-		buildFormField('Designation', designationInput),
-		buildFormField('Bio', bioInput),
-		buildFormField('LinkedIn', linkedinInput),
-		buildFormField('Website', websiteInput),
-		actions,
-	);
-
-	avatarButton.addEventListener('click', () => avatarUpload.click());
-	avatarUpload.addEventListener('change', async () => {
-		const file = avatarUpload.files && avatarUpload.files[0];
-		if (!file) return;
-		try {
-			avatarInput.value = await fileToBase64(file);
-			showToast('Avatar added to the draft.', 'success');
-		} catch (error) {
-			showToast('Could not read the selected file.', 'error');
+/**
+ * Helper to create elements with attributes and children.
+ */
+function el(tag, attrs = {}, ...children) {
+	const element = document.createElement(tag);
+	Object.entries(attrs).forEach(([key, value]) => {
+		if (key === 'className') element.className = value;
+		else if (key.startsWith('on') && typeof value === 'function') {
+			element.addEventListener(key.substring(2).toLowerCase(), value);
+		} else element.setAttribute(key, value);
+	});
+	children.forEach((child) => {
+		if (child instanceof Node) element.appendChild(child);
+		else if (child !== null && child !== undefined) {
+			element.appendChild(document.createTextNode(String(child)));
 		}
 	});
-
-	return {
-		form,
-		fields: {
-			avatarInput,
-			nameInput,
-			designationInput,
-			bioInput,
-			linkedinInput,
-			websiteInput,
-		},
-	};
+	return element;
 }
 
-function createItemGrid(title, description, items, builder, emptyMessage) {
-	const section = document.createElement('section');
-	section.className = 'user-profile__card';
-	section.append(createSectionHeading(title, description));
-
-	const grid = document.createElement('div');
-	grid.className = 'user-profile__grid';
-
-	if (!items.length) {
-		const empty = document.createElement('div');
-		empty.className = 'empty-state';
-		empty.textContent = emptyMessage;
-		grid.append(empty);
-	} else {
-		items.forEach((item) => grid.append(builder(item)));
-	}
-
-	section.append(grid);
-	return section;
-}
-
+/**
+ * Decorates the user profile block.
+ * @param {HTMLElement} block
+ */
 export default async function decorate(block) {
-	authInit();
 	if (!isLoggedIn()) {
-		window.location.href = appPath('/login?redirect=/user-profile');
+		window.location.href = '/login';
 		return;
 	}
 
-	const currentUser = ensureUser(getUser());
-	if (!currentUser) {
-		window.location.href = appPath('/login?redirect=/user-profile');
-		return;
-	}
-
-	const collections = await loadCollections();
-	const savedBlogs = resolveItemArray(currentUser.savedBlogs, collections).map((item) => ({ ...item, _source: 'blog' }));
-	const savedEvents = resolveItemArray(currentUser.savedEvents, collections).map((item) => ({ ...item, _source: 'event' }));
-	const publishedBlogs = ensureArray(currentUser.myBlogs).map((item) => {
-		if (item && typeof item === 'object') return item;
-		return collections.blogs.find((blog) => String(blog.id || '') === String(item || '')) || null;
-	}).filter(Boolean);
-
-	block.classList.add('user-profile');
+	const user = getUser();
 	block.textContent = '';
 
-	const shell = document.createElement('div');
-	shell.className = 'user-profile__shell';
+	// Fetch required data
+	const [eventsRes, blogsRes] = await Promise.all([
+		fetch('/data/events.json').then((r) => r.json()),
+		fetch('/data/blogs.json').then((r) => r.json()),
+	]);
+	const allEvents = Array.isArray(eventsRes) ? eventsRes : eventsRes.data || [];
+	const allBlogs = Array.isArray(blogsRes) ? blogsRes : blogsRes.data || [];
+	const userBlogs = Storage.getUserBlogs();
 
-	const header = buildProfileHeader(currentUser);
-	const editPanel = document.createElement('section');
-	editPanel.className = 'user-profile__card user-profile__card--edit is-hidden';
-	editPanel.append(createSectionHeading('Edit profile', 'Update your public identity and links.'));
+	// 1. Profile Header
+	const avatarInput = el('input', { id: 'avatar-input', type: 'file', accept: 'image/*', hidden: 'true' });
+	const avatarImg = el('img', { id: 'profile-avatar', src: user.avatarSrc || '/icons/user-avatar.svg', alt: 'Avatar' });
 
-	const { form, fields } = buildEditForm(currentUser);
-	editPanel.append(form);
+	const header = el(
+		'section',
+		{ className: 'profile-header container' },
+		el(
+			'div',
+			{ className: 'avatar-upload-wrap' },
+			avatarImg,
+			el('div', { className: 'avatar-overlay' }, el('span', {}, 'Change Photo')),
+			avatarInput
+		),
+		el(
+			'div',
+			{ className: 'profile-info-wrap' },
+			el(
+				'div',
+				{ className: 'profile-edit-head' },
+				el('h1', { id: 'profile-name-display' }, user.name || 'Anonymous'),
+				el('input', { id: 'profile-name-input', className: 'form-input is-hidden', value: user.name || '' }),
+				el('button', { id: 'edit-profile-btn', className: 'btn btn-ghost' }, 'Edit Profile'),
+				el('button', { id: 'save-profile-btn', className: 'btn btn-primary is-hidden' }, 'Save Changes')
+			),
+			el('p', { id: 'profile-designation-display', className: 'profile-designation' }, user.designation || 'Creator'),
+			el('input', { id: 'profile-designation-input', className: 'form-input is-hidden', value: user.designation || '' }),
+			el('p', { id: 'profile-bio-display', className: 'profile-bio' }, user.bio || 'Tell us about yourself...'),
+			el('textarea', { id: 'profile-bio-input', className: 'form-input is-hidden', rows: '3' }, user.bio || ''),
+			el(
+				'div',
+				{ className: 'profile-social' },
+				el('span', {}, 'LinkedIn: '),
+				el('a', { id: 'social-linkedin', href: user.socials?.linkedin || '#', target: '_blank' }, user.socials?.linkedin || 'Not linked'),
+				el('input', { id: 'social-linkedin-input', className: 'form-input is-hidden', value: user.socials?.linkedin || '' })
+			)
+		)
+	);
 
-	const tabs = document.createElement('div');
-	tabs.className = 'user-profile__tabs';
-	const tabButtons = [
-		createTabButton('Overview', 'overview', true),
-		createTabButton(`Saved Items (${savedBlogs.length + savedEvents.length})`, 'saved', false),
-		createTabButton(`Published Blogs (${publishedBlogs.length})`, 'blogs', false),
+	// 2. Saved Content
+	const savedEventsGrid = el('div', { id: 'saved-events-grid', className: 'grid-3' });
+	const savedBlogsGrid = el('div', { id: 'saved-blogs-grid', className: 'grid-3 is-hidden' });
+
+	const savedContent = el(
+		'section',
+		{ className: 'saved-content container' },
+		el('h2', {}, 'Saved Content'),
+		el(
+			'div',
+			{ className: 'tabs-nav', id: 'saved-tabs' },
+			el('button', { className: 'tab-btn active', 'data-saved-tab': 'events' }, 'Saved Events'),
+			el('button', { className: 'tab-btn', 'data-saved-tab': 'blogs' }, 'Saved Blogs')
+		),
+		savedEventsGrid,
+		savedBlogsGrid
+	);
+
+	// 3. My Registrations
+	const registeredGrid = el('div', { id: 'registered-events-grid', className: 'grid-3' });
+	const registrations = el('section', { className: 'my-registrations container' }, el('h2', {}, 'My Registrations'), registeredGrid);
+
+	// 4. My Blogs
+	const myBlogsGrid = el('div', { id: 'my-blogs-grid', className: 'grid-3' });
+	const myBlogs = el(
+		'section',
+		{ className: 'my-blogs container' },
+		el(
+			'div',
+			{ className: 'my-blogs-head' },
+			el('h2', {}, 'My Blogs'),
+			el('a', { href: '/blog-editor', className: 'btn btn-primary my-blogs-cta' }, 'Write a New Blog')
+		),
+		myBlogsGrid
+	);
+
+	// 5. Modals
+	const deleteBlogModal = el(
+		'div',
+		{ id: 'delete-blog-modal', className: 'modal-overlay is-hidden' },
+		el(
+			'div',
+			{ className: 'modal-box' },
+			el('h3', {}, 'Delete Blog?'),
+			el('p', {}, 'This action cannot be undone.'),
+			el('div', { className: 'modal-actions' }, el('button', { className: 'btn btn-ghost cancel' }, 'Cancel'), el('button', { className: 'btn btn-danger confirm' }, 'Delete'))
+		)
+	);
+
+	const cancelRegModal = el(
+		'div',
+		{ id: 'cancel-reg-profile-modal', className: 'modal-overlay is-hidden' },
+		el(
+			'div',
+			{ className: 'modal-box' },
+			el('h3', {}, 'Cancel Registration?'),
+			el('p', {}, 'Are you sure you want to cancel your registration for this event?'),
+			el('div', { className: 'modal-actions' }, el('button', { className: 'btn btn-ghost cancel' }, 'No, Keep it'), el('button', { className: 'btn btn-danger confirm' }, 'Yes, Cancel'))
+		)
+	);
+
+	block.append(header, savedContent, registrations, myBlogs, deleteBlogModal, cancelRegModal);
+
+	// --- Handlers & Logic ---
+
+	// Profile Edit Toggle
+	const editBtn = block.querySelector('#edit-profile-btn');
+	const saveBtn = block.querySelector('#save-profile-btn');
+	const editFields = [
+		'#profile-name',
+		'#profile-designation',
+		'#profile-bio',
+		'#social-linkedin',
 	];
-	tabButtons.forEach((button) => tabs.append(button));
 
-	const panels = document.createElement('div');
-	panels.className = 'user-profile__panels';
-
-	const overviewPanel = document.createElement('div');
-	overviewPanel.className = 'user-profile__panel';
-	overviewPanel.append(createItemGrid('Profile snapshot', 'A quick view of your public info.', [currentUser].map((user) => {
-		const item = document.createElement('div');
-		item.className = 'user-profile__snapshot';
-		item.innerHTML = `
-			<p><strong>Email</strong><span>${escapeHtml(user.email || '')}</span></p>
-			<p><strong>Designation</strong><span>${escapeHtml(user.designation || '')}</span></p>
-			<p><strong>Bio</strong><span>${escapeHtml(user.bio || 'Not set yet')}</span></p>
-		`;
-		return item;
-	}), 'No profile data available.'));
-
-	const savedPanel = document.createElement('div');
-	savedPanel.className = 'user-profile__panel is-hidden';
-	const savedSection = document.createElement('section');
-	savedSection.className = 'user-profile__saved-group';
-	savedSection.append(createItemGrid('Saved blogs', 'Articles you bookmarked for later.', savedBlogs, (blog) => buildBlogCard(blog), 'No saved blogs yet.'));
-	savedSection.append(createItemGrid('Saved events', 'Events you want to revisit.', savedEvents, (event) => buildEventCard(event), 'No saved events yet.'));
-	savedPanel.append(savedSection);
-
-	const blogsPanel = document.createElement('div');
-	blogsPanel.className = 'user-profile__panel is-hidden';
-	const blogGrid = document.createElement('div');
-	blogGrid.className = 'user-profile__grid';
-
-	if (!publishedBlogs.length) {
-		const empty = document.createElement('div');
-		empty.className = 'empty-state';
-		empty.textContent = 'You have not published any blogs yet.';
-		blogGrid.append(empty);
-	} else {
-		publishedBlogs.forEach((blog) => {
-			const wrapper = document.createElement('div');
-			wrapper.className = 'user-profile__published-item';
-			const card = buildBlogCard(blog);
-			const remove = document.createElement('button');
-			remove.type = 'button';
-			remove.className = 'user-profile__remove-button';
-			remove.textContent = 'Delete';
-			remove.addEventListener('click', () => {
-				const nextUser = ensureUser({
-					...currentUser,
-					myBlogs: ensureArray(currentUser.myBlogs).filter((entry) => {
-						if (entry && typeof entry === 'object') return entry.id !== blog.id;
-						return String(entry || '') !== String(blog.id || '');
-					}),
-				});
-				persistUser(nextUser);
-				showToast('Blog removed from your profile.', 'info');
-				window.location.reload();
-			});
-			wrapper.append(card, remove);
-			blogGrid.append(wrapper);
+	editBtn.addEventListener('click', () => {
+		editBtn.classList.add('is-hidden');
+		saveBtn.classList.remove('is-hidden');
+		editFields.forEach((id) => {
+			block.querySelector(`${id}-display`).classList.add('is-hidden');
+			block.querySelector(`${id}-input`).classList.remove('is-hidden');
 		});
-	}
-	blogsPanel.append(createSectionHeading('Published blogs', 'Posts you have published from the editor.'), blogGrid);
-
-	panels.append(overviewPanel, savedPanel, blogsPanel);
-	shell.append(header, editPanel, tabs, panels);
-	block.append(shell);
-
-	const editButton = shell.querySelector('[data-action="edit-profile"]');
-	const cancelButton = shell.querySelector('[data-action="cancel-edit"]');
-	const tabPanelMap = {
-		overview: overviewPanel,
-		saved: savedPanel,
-		blogs: blogsPanel,
-	};
-
-	function setActiveTab(tab) {
-		Object.entries(tabPanelMap).forEach(([key, panel]) => {
-			panel.classList.toggle('is-hidden', key !== tab);
-		});
-		tabButtons.forEach((button) => {
-			const active = button.dataset.tab === tab;
-			button.classList.toggle('is-active', active);
-			button.setAttribute('aria-selected', active ? 'true' : 'false');
-		});
-	}
-
-	editButton.addEventListener('click', () => {
-		editPanel.classList.toggle('is-hidden');
 	});
 
-	cancelButton.addEventListener('click', () => {
-		editPanel.classList.add('is-hidden');
-	});
-
-	tabButtons.forEach((button) => {
-		button.addEventListener('click', () => setActiveTab(button.dataset.tab));
-	});
-
-	form.addEventListener('submit', (event) => {
-		event.preventDefault();
-		const nextUser = ensureUser({
-			...currentUser,
-			avatarSrc: fields.avatarInput.value.trim(),
-			name: fields.nameInput.value.trim(),
-			designation: fields.designationInput.value.trim(),
-			bio: fields.bioInput.value.trim(),
-			socials: {
-				...(currentUser.socials || {}),
-				linkedin: fields.linkedinInput.value.trim(),
-				website: fields.websiteInput.value.trim(),
-			},
-		});
-		persistUser(nextUser);
-		showToast('Profile updated.', 'success');
+	saveBtn.addEventListener('click', () => {
+		const patch = {
+			name: block.querySelector('#profile-name-input').value,
+			designation: block.querySelector('#profile-designation-input').value,
+			bio: block.querySelector('#profile-bio-input').value,
+			socials: { ...user.socials, linkedin: block.querySelector('#social-linkedin-input').value },
+		};
+		Storage.updateProfile(patch);
 		window.location.reload();
 	});
 
-	const hash = String(window.location.hash || '').replace('#', '').trim();
-	if (hash === 'saved') setActiveTab('saved');
-	else if (hash === 'blogs') setActiveTab('blogs');
-	else setActiveTab('overview');
+	// Avatar Upload
+	block.querySelector('.avatar-upload-wrap').addEventListener('click', () => avatarInput.click());
+	avatarInput.addEventListener('change', async () => {
+		const file = avatarInput.files[0];
+		if (file) {
+			const base64 = await fileToBase64(file);
+			Storage.updateProfile({ avatarSrc: base64 });
+			avatarImg.src = base64;
+			showToast('Avatar updated!', 'success');
+		}
+	});
+
+	// Tab Switching
+	block.querySelector('#saved-tabs').addEventListener('click', (e) => {
+		const btn = e.target.closest('.tab-btn');
+		if (btn) {
+			const tab = btn.dataset.savedTab;
+			block.querySelectorAll('.tab-btn').forEach((b) => b.classList.toggle('active', b === btn));
+			savedEventsGrid.classList.toggle('is-hidden', tab !== 'events');
+			savedBlogsGrid.classList.toggle('is-hidden', tab !== 'blogs');
+		}
+	});
+
+	// --- Renders ---
+
+	const renderSavedEvents = () => {
+		savedEventsGrid.textContent = '';
+		const savedIds = user.savedEvents || [];
+		const savedData = allEvents.filter((e) => savedIds.includes(String(e.id)));
+		if (!savedData.length) savedEventsGrid.textContent = 'No saved events.';
+		savedData.forEach((item) => {
+			const card = buildEventCard(item);
+			const unsave = el('button', { className: 'btn btn-ghost unsave-btn', onclick: () => {
+				Storage.unsaveEvent(String(item.id));
+				window.location.reload();
+			} }, 'Unsave');
+			card.querySelector('.card__body').append(unsave);
+			savedEventsGrid.append(card);
+		});
+	};
+
+	const renderSavedBlogs = () => {
+		savedBlogsGrid.textContent = '';
+		const savedIds = user.savedBlogs || [];
+		const savedData = [...allBlogs, ...userBlogs].filter((b) => savedIds.includes(String(b.id)));
+		if (!savedData.length) savedBlogsGrid.textContent = 'No saved blogs.';
+		savedData.forEach((item) => {
+			const card = buildBlogCard(item);
+			const unsave = el('button', { className: 'btn btn-ghost unsave-btn', onclick: () => {
+				Storage.unsaveBlog(String(item.id));
+				window.location.reload();
+			} }, 'Unsave');
+			card.querySelector('.card__body').append(unsave);
+			savedBlogsGrid.append(card);
+		});
+	};
+
+	const renderRegistrations = () => {
+		registeredGrid.textContent = '';
+		const regIds = user.registeredEvents || [];
+		const regData = allEvents.filter((e) => regIds.includes(String(e.id)));
+		if (!regData.length) registeredGrid.textContent = 'No active registrations.';
+		regData.forEach((item) => {
+			const card = buildEventCard(item);
+			const cancel = el('button', { className: 'btn btn-ghost cancel-btn' }, 'Cancel Registration');
+			cancel.addEventListener('click', () => {
+				cancelRegModal.classList.remove('is-hidden');
+				cancelRegModal.querySelector('.confirm').onclick = () => {
+					Storage.cancelRegistration(String(item.id));
+					window.location.reload();
+				};
+			});
+			card.querySelector('.card__body').append(cancel);
+			registeredGrid.append(card);
+		});
+	};
+
+	const renderMyBlogs = () => {
+		myBlogsGrid.textContent = '';
+		if (!userBlogs.length) myBlogsGrid.textContent = 'You haven\'t written any blogs yet.';
+		userBlogs.forEach((item) => {
+			const card = buildBlogCard(item);
+			const delBtn = el('button', { className: 'btn btn-ghost delete-btn' }, 'Delete');
+			delBtn.addEventListener('click', () => {
+				deleteBlogModal.classList.remove('is-hidden');
+				deleteBlogModal.querySelector('.confirm').onclick = () => {
+					Storage.deleteUserBlog(item.id);
+					window.location.reload();
+				};
+			});
+			card.querySelector('.card__body').append(delBtn);
+			myBlogsGrid.append(card);
+		});
+	};
+
+	// Close modals
+	block.querySelectorAll('.modal-overlay').forEach((modal) => {
+		modal.querySelector('.cancel').addEventListener('click', () => modal.classList.add('is-hidden'));
+	});
+
+	renderSavedEvents();
+	renderSavedBlogs();
+	renderRegistrations();
+	renderMyBlogs();
 }

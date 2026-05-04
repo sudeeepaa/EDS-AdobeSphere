@@ -1,6 +1,13 @@
 import authInit, { isLoggedIn } from '../../scripts/auth.js';
 import { appPath, normalizeAssetSrc } from '../../scripts/utils.js';
 
+function isPathLike(value) {
+	const val = String(value || '').trim();
+	return Boolean(val)
+		&& (val.includes('/') || val.includes('.') || val.startsWith('http'))
+		&& !val.includes(' ');
+}
+
 function getCellText(cell) {
 	return String(cell?.textContent || '').trim();
 }
@@ -15,7 +22,7 @@ function getLink(cell) {
 	}
 
 	const text = getCellText(cell);
-	if (!text) return null;
+	if (!text || !isPathLike(text)) return null;
 
 	return {
 		href: appPath(text),
@@ -49,33 +56,45 @@ export default function decorate(block) {
 	authInit();
 
 	const rows = [...block.querySelectorAll(':scope > div')];
-	const values = rows.map((row) => [...row.children]);
+	const values = rows
+		.map((row) => [...row.children])
+		.filter((cells) => cells.some((cell) => getCellText(cell)));
 
 	const videoUrlRaw = getCellText(values[0] && values[0][0]);
-	const posterUrlRaw = getCellText(values[1] && values[1][0]);
-	
-	// Validate that these look like paths or URLs, not heading text
-	const isPathLike = (val) => val && (val.includes('/') || val.includes('.') || val.startsWith('http')) && !val.includes(' ');
-	
+	let cursor = 1;
+
 	let videoUrl = isPathLike(videoUrlRaw) ? normalizeAssetSrc(videoUrlRaw, '') : '';
 	let posterUrl = '';
 	let heading = '';
 	let subtext = '';
-	let actionRow = [];
+	let actionRow = null;
 
+	const posterUrlRaw = getCellText(values[cursor] && values[cursor][0]);
 	if (isPathLike(posterUrlRaw)) {
 		posterUrl = normalizeAssetSrc(posterUrlRaw, '');
-		heading = getCellText(values[2] && values[2][0]);
-		subtext = getCellText(values[3] && values[3][0]);
-		actionRow = values[4] || [];
-	} else {
-		// Poster is missing, everything shifted up by one row
-		heading = posterUrlRaw;
-		subtext = getCellText(values[2] && values[2][0]);
-		actionRow = values[3] || [];
+		cursor += 1;
 	}
-	const firstLink = getLink(actionRow[0]);
-	const secondLink = getLink(actionRow[1]);
+
+	heading = getCellText(values[cursor] && values[cursor][0]);
+	cursor += 1;
+
+	const bodyLines = [];
+	for (; cursor < values.length; cursor += 1) {
+		const row = values[cursor] || [];
+		const links = row.map((cell) => getLink(cell)).filter(Boolean);
+		if (links.length) {
+			actionRow = row;
+			break;
+		}
+
+		const line = getCellText(row[0]);
+		if (line) bodyLines.push(line);
+	}
+	subtext = bodyLines.join(' ');
+
+	const safeActionRow = actionRow || [];
+	const firstLink = getLink(safeActionRow[0]);
+	const secondLink = getLink(safeActionRow[1]);
 
 	block.textContent = '';
 

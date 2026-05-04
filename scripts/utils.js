@@ -377,6 +377,23 @@ function onReady(fn) {
 	}
 }
 
+function waitForCurrentEvent() {
+	return new Promise((resolve) => {
+		if (window.__currentEvent) {
+			resolve(window.__currentEvent);
+			return;
+		}
+		const poll = () => {
+			if (window.__currentEvent) {
+				resolve(window.__currentEvent);
+			} else {
+				requestAnimationFrame(poll);
+			}
+		};
+		requestAnimationFrame(poll);
+	});
+}
+
 export {
 	appPath,
 	buildBlogCard,
@@ -398,4 +415,5 @@ export {
 	truncate,
 	validateEmail,
 	validateUrl,
+	waitForCurrentEvent,
 };

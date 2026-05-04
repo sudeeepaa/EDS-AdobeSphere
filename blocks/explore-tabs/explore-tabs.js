@@ -1,570 +1,394 @@
-import { buildBlogCard, buildCreatorCard, buildEventCard, initRevealObserver } from '../../scripts/utils.js';
+import { readBlockConfig } from '../../scripts/aem.js';
+import {
+	buildBlogCard,
+	buildCreatorCard,
+	buildEventCard,
+	initRevealObserver,
+} from '../../scripts/utils.js';
 
 /**
- * Debounce utility
+ * Helper to create DOM elements.
+ * @param {string} tag
+ * @param {Object} attrs
+ * @param {...any} children
+ * @returns {HTMLElement}
  */
-function debounce(fn, delay) {
-  let timeoutId;
-  return function debounced(...args) {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => fn(...args), delay);
-  };
+function el(tag, attrs = {}, ...children) {
+	const element = document.createElement(tag);
+	Object.entries(attrs).forEach(([key, value]) => {
+		if (key === 'className') {
+			element.className = value;
+		} else if (key.startsWith('on') && typeof value === 'function') {
+			element.addEventListener(key.substring(2).toLowerCase(), value);
+		} else {
+			element.setAttribute(key, value);
+		}
+	});
+	children.forEach((child) => {
+		if (child instanceof Node) {
+			element.appendChild(child);
+		} else if (child !== null && child !== undefined) {
+			element.appendChild(document.createTextNode(String(child)));
+		}
+	});
+	return element;
 }
 
 /**
- * Get event location label from event object
- */
-function getEventLocationLabel(event) {
-  if (!event) return '';
-  const location = event.location || {};
-  const city = String(location.city || '').trim();
-  const state = String(location.state || '').trim();
-  const country = String(location.country || '').trim();
-
-  if (city && state) return `${city}, ${state}`;
-  if (city) return city;
-  if (state && country) return `${state}, ${country}`;
-  return country;
-}
-
-/**
- * Filter and render events
- */
-function filterEvents(allEvents, searchTerm, filters) {
-  const category = (filters.eventCategory || '').toLowerCase();
-  const locations = filters.eventLocations || [];
-  const dateFilter = filters.eventDate || 'all';
-  const search = searchTerm.toLowerCase();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const locationMap = {};
-  locations.forEach((loc) => {
-    locationMap[loc.toLowerCase()] = true;
-  });
-
-  return allEvents.filter((item) => {
-    const itemDate = new Date(item.date);
-    const itemCategory = String(item.category || '').toLowerCase();
-    const itemLocationLabel = getEventLocationLabel(item);
-    const itemLocation = [
-      item.location && item.location.city,
-      item.location && item.location.state,
-      item.location && item.location.country
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase();
-
-    const textBlob = [item.title, item.shortDescription, itemCategory, itemLocation]
-      .join(' ')
-      .toLowerCase();
-
-    const categoryOk = !category || itemCategory === category;
-    const locationOk = !locations.length || !!locationMap[String(itemLocationLabel || '').toLowerCase()];
-    const searchOk = !search || textBlob.includes(search);
-
-    let dateOk = true;
-    if (dateFilter === 'upcoming') {
-      dateOk = !Number.isNaN(itemDate.getTime()) && itemDate >= today;
-    } else if (dateFilter === 'past') {
-      dateOk = !Number.isNaN(itemDate.getTime()) && itemDate < today;
-    }
-
-    return categoryOk && locationOk && searchOk && dateOk;
-  });
-}
-
-/**
- * Filter and render blogs
- */
-function filterBlogs(allBlogs, searchTerm, filters) {
-  const category = (filters.blogCategory || '').toLowerCase();
-  const authorQuery = (filters.blogAuthor || '').toLowerCase();
-  const sortBy = filters.blogSort || 'newest';
-  const search = searchTerm.toLowerCase();
-
-  let filtered = allBlogs.filter((item) => {
-    const itemCategory = String(item.category || '').toLowerCase();
-    const authorName = String((item.author && item.author.name) || '').toLowerCase();
-    const textBlob = [item.title, item.excerpt, itemCategory, authorName].join(' ').toLowerCase();
-
-    const categoryOk = !category || itemCategory === category;
-    const authorOk = !authorQuery || authorName.includes(authorQuery);
-    const searchOk = !search || textBlob.includes(search);
-
-    return categoryOk && authorOk && searchOk;
-  });
-
-  filtered.sort((a, b) => {
-    const da = new Date(a.publishedDate).getTime() || 0;
-    const db = new Date(b.publishedDate).getTime() || 0;
-    return sortBy === 'oldest' ? da - db : db - da;
-  });
-
-  return filtered;
-}
-
-/**
- * Filter and render creators
- */
-function filterCreators(allCreators, searchTerm, filters) {
-  const sortBy = filters.creatorSort || 'name-asc';
-  const search = searchTerm.toLowerCase();
-
-  let filtered = allCreators.filter((item) => {
-    const textBlob = [item.name, item.bio, item.designation].join(' ').toLowerCase();
-    const searchOk = !search || textBlob.includes(search);
-    return searchOk;
-  });
-
-  filtered.sort((a, b) => {
-    if (sortBy === 'name-desc') {
-      return String(b.name || '').localeCompare(String(a.name || ''));
-    }
-    return String(a.name || '').localeCompare(String(b.name || ''));
-  });
-
-  return filtered;
-}
-
-/**
- * Main block decorate function
+ * Decorates the explore tabs block.
+ * @param {HTMLElement} block
  */
 export default async function decorate(block) {
-  // Clear block content
-  block.textContent = '';
-
-  const PAGE_SIZE = 6;
-
-  // Initialize state
-  const state = {
-    activeTab: 'events',
-    currentPage: 1,
-    searchTerm: '',
-    data: {
-      events: [],
-      blogs: [],
-      creators: []
-    },
-    filters: {
-      eventCategory: '',
-      eventLocations: [],
-      eventDate: 'all',
-      blogCategory: '',
-      blogAuthor: '',
-      blogSort: 'newest',
-      creatorSort: 'name-asc'
-    }
-  };
-
-  // Load all data in parallel
-  try {
-    const [eventsRes, blogsRes, creatorsRes] = await Promise.all([
-      fetch('/data/events.json'),
-      fetch('/data/blogs.json'),
-      fetch('/data/creators.json')
-    ]);
-
-    const eventsData = await eventsRes.json();
-    const blogsData = await blogsRes.json();
-    const creatorsData = await creatorsRes.json();
-
-    // Handle both array and object formats
-    state.data.events = Array.isArray(eventsData) ? eventsData : (eventsData.data || []);
-    state.data.blogs = Array.isArray(blogsData) ? blogsData : (blogsData.data || []);
-    state.data.creators = Array.isArray(creatorsData) ? creatorsData : (creatorsData.data || []);
-  } catch (error) {
-    console.error('Error loading explore data:', error);
-  }
-
-  // Build DOM structure
-  const wrapper = document.createElement('div');
-  wrapper.className = 'explore-wrapper';
-
-  // Search input
-  const searchDiv = document.createElement('div');
-  searchDiv.className = 'explore-search';
-  const searchInput = document.createElement('input');
-  searchInput.type = 'text';
-  searchInput.placeholder = 'Search events, blogs, creators...';
-  searchInput.setAttribute('aria-label', 'Search explore content');
-  searchDiv.appendChild(searchInput);
-  wrapper.appendChild(searchDiv);
-
-  // Tab navigation
-  const tabsNav = document.createElement('div');
-  tabsNav.className = 'tabs-nav';
-  tabsNav.setAttribute('role', 'tablist');
-  tabsNav.setAttribute('aria-label', 'Explore content tabs');
-
-  const tabButtons = [
-    { id: 'events', label: 'Events & Campaigns' },
-    { id: 'blogs', label: 'Blogs & Articles' },
-    { id: 'creators', label: 'Creators' }
-  ];
-
-  const tabButtonElements = {};
-  tabButtons.forEach(({ id, label }) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'tab-button';
-    if (id === state.activeTab) btn.classList.add('active');
-    btn.setAttribute('data-tab', id);
-    btn.setAttribute('role', 'tab');
-    btn.setAttribute('aria-selected', id === state.activeTab ? 'true' : 'false');
-    btn.textContent = label;
-    btn.addEventListener('click', () => switchTab(id));
-    tabsNav.appendChild(btn);
-    tabButtonElements[id] = btn;
-  });
-  wrapper.appendChild(tabsNav);
-
-  // Filter bar
-  const filterBar = document.createElement('div');
-  filterBar.className = 'filter-bar';
-
-  // Events filters
-  const eventsFilters = document.createElement('div');
-  eventsFilters.className = 'filter-group';
-  eventsFilters.setAttribute('data-tab', 'events');
-
-  const eventCategorySelect = document.createElement('select');
-  eventCategorySelect.className = 'filter-select';
-  eventCategorySelect.id = 'events-category';
-  eventCategorySelect.addEventListener('change', (e) => {
-    state.filters.eventCategory = e.target.value;
-    state.currentPage = 1;
-    renderResults();
-  });
-
-  const eventCategoryOption = document.createElement('option');
-  eventCategoryOption.value = '';
-  eventCategoryOption.textContent = 'All Categories';
-  eventCategorySelect.appendChild(eventCategoryOption);
-
-  // Populate event categories
-  const eventCategories = new Set();
-  state.data.events.forEach((e) => {
-    if (e.category) eventCategories.add(e.category);
-  });
-  Array.from(eventCategories)
-    .sort()
-    .forEach((cat) => {
-      const opt = document.createElement('option');
-      opt.value = cat;
-      opt.textContent = cat;
-      eventCategorySelect.appendChild(opt);
-    });
-
-  eventsFilters.appendChild(eventCategorySelect);
-
-  // Event date radio buttons
-  const dateRadioGroup = document.createElement('div');
-  dateRadioGroup.className = 'date-radios';
-  dateRadioGroup.setAttribute('role', 'group');
-  dateRadioGroup.setAttribute('aria-label', 'Event date filter');
-
-  const dateOptions = [
-    { value: 'all', label: 'All' },
-    { value: 'upcoming', label: 'Upcoming' },
-    { value: 'past', label: 'Past' }
-  ];
-
-  dateOptions.forEach(({ value, label }) => {
-    const dateLabel = document.createElement('label');
-    const dateInput = document.createElement('input');
-    dateInput.type = 'radio';
-    dateInput.name = 'event-date';
-    dateInput.value = value;
-    if (value === 'all') dateInput.checked = true;
-    dateInput.addEventListener('change', (e) => {
-      state.filters.eventDate = e.target.value;
-      state.currentPage = 1;
-      renderResults();
-    });
-    dateLabel.appendChild(dateInput);
-    dateLabel.appendChild(document.createTextNode(label));
-    dateRadioGroup.appendChild(dateLabel);
-  });
-
-  eventsFilters.appendChild(dateRadioGroup);
-
-  // Event location checkboxes
-  const locationLabel = document.createElement('div');
-  locationLabel.className = 'filter-label';
-  locationLabel.textContent = 'Filter by location';
-  eventsFilters.appendChild(locationLabel);
-
-  const locationCheckboxes = document.createElement('div');
-  locationCheckboxes.className = 'location-checkboxes';
-  locationCheckboxes.setAttribute('role', 'group');
-  locationCheckboxes.setAttribute('aria-label', 'Event location filter');
-
-  const locations = new Set();
-  state.data.events.forEach((e) => {
-    const loc = getEventLocationLabel(e);
-    if (loc) locations.add(loc);
-  });
-
-  Array.from(locations)
-    .sort()
-    .forEach((loc) => {
-      const locLabel = document.createElement('label');
-      const locInput = document.createElement('input');
-      locInput.type = 'checkbox';
-      locInput.value = loc;
-      locInput.addEventListener('change', () => {
-        state.filters.eventLocations = Array.from(
-          locationCheckboxes.querySelectorAll('input:checked')
-        ).map((inp) => inp.value);
-        state.currentPage = 1;
-        renderResults();
-      });
-      locLabel.appendChild(locInput);
-      locLabel.appendChild(document.createTextNode(loc));
-      locationCheckboxes.appendChild(locLabel);
-    });
-
-  eventsFilters.appendChild(locationCheckboxes);
-  filterBar.appendChild(eventsFilters);
-
-  // Blogs filters
-  const blogsFilters = document.createElement('div');
-  blogsFilters.className = 'filter-group hidden';
-  blogsFilters.setAttribute('data-tab', 'blogs');
-
-  const blogCategorySelect = document.createElement('select');
-  blogCategorySelect.className = 'filter-select';
-  blogCategorySelect.id = 'blogs-category';
-  blogCategorySelect.addEventListener('change', (e) => {
-    state.filters.blogCategory = e.target.value;
-    state.currentPage = 1;
-    renderResults();
-  });
-
-  const blogCategoryOption = document.createElement('option');
-  blogCategoryOption.value = '';
-  blogCategoryOption.textContent = 'All Categories';
-  blogCategorySelect.appendChild(blogCategoryOption);
-
-  // Populate blog categories
-  const blogCategories = new Set();
-  state.data.blogs.forEach((b) => {
-    if (b.category) blogCategories.add(b.category);
-  });
-  Array.from(blogCategories)
-    .sort()
-    .forEach((cat) => {
-      const opt = document.createElement('option');
-      opt.value = cat;
-      opt.textContent = cat;
-      blogCategorySelect.appendChild(opt);
-    });
-
-  blogsFilters.appendChild(blogCategorySelect);
-
-  const authorSearchInput = document.createElement('input');
-  authorSearchInput.type = 'text';
-  authorSearchInput.className = 'filter-input';
-  authorSearchInput.placeholder = 'Search by author';
-  authorSearchInput.addEventListener('change', (e) => {
-    state.filters.blogAuthor = e.target.value;
-    state.currentPage = 1;
-    renderResults();
-  });
-  blogsFilters.appendChild(authorSearchInput);
-
-  const blogSortSelect = document.createElement('select');
-  blogSortSelect.className = 'filter-select';
-  blogSortSelect.id = 'blogs-sort';
-  blogSortSelect.addEventListener('change', (e) => {
-    state.filters.blogSort = e.target.value;
-    state.currentPage = 1;
-    renderResults();
-  });
-
-  const newestOpt = document.createElement('option');
-  newestOpt.value = 'newest';
-  newestOpt.textContent = 'Newest';
-  blogSortSelect.appendChild(newestOpt);
-
-  const oldestOpt = document.createElement('option');
-  oldestOpt.value = 'oldest';
-  oldestOpt.textContent = 'Oldest';
-  blogSortSelect.appendChild(oldestOpt);
-
-  blogsFilters.appendChild(blogSortSelect);
-  filterBar.appendChild(blogsFilters);
-
-  // Creators filters
-  const creatorsFilters = document.createElement('div');
-  creatorsFilters.className = 'filter-group hidden';
-  creatorsFilters.setAttribute('data-tab', 'creators');
-
-  const creatorSortSelect = document.createElement('select');
-  creatorSortSelect.className = 'filter-select';
-  creatorSortSelect.id = 'creators-sort';
-  creatorSortSelect.addEventListener('change', (e) => {
-    state.filters.creatorSort = e.target.value;
-    state.currentPage = 1;
-    renderResults();
-  });
-
-  const nameAscOpt = document.createElement('option');
-  nameAscOpt.value = 'name-asc';
-  nameAscOpt.textContent = 'Name A-Z';
-  creatorSortSelect.appendChild(nameAscOpt);
-
-  const nameDescOpt = document.createElement('option');
-  nameDescOpt.value = 'name-desc';
-  nameDescOpt.textContent = 'Name Z-A';
-  creatorSortSelect.appendChild(nameDescOpt);
-
-  creatorsFilters.appendChild(creatorSortSelect);
-  filterBar.appendChild(creatorsFilters);
-
-  wrapper.appendChild(filterBar);
-
-  // Results grid
-  const resultsGrid = document.createElement('div');
-  resultsGrid.className = 'results-grid';
-  wrapper.appendChild(resultsGrid);
-
-  // Pagination
-  const pagination = document.createElement('div');
-  pagination.className = 'pagination';
-
-  const prevButton = document.createElement('button');
-  prevButton.type = 'button';
-  prevButton.className = 'btn btn-ghost';
-  prevButton.id = 'tab-prev';
-  prevButton.textContent = 'Prev';
-  prevButton.addEventListener('click', () => {
-    if (state.currentPage > 1) {
-      state.currentPage -= 1;
-      renderResults();
-    }
-  });
-
-  const paginationInfo = document.createElement('span');
-  paginationInfo.className = 'pagination__info';
-
-  const nextButton = document.createElement('button');
-  nextButton.type = 'button';
-  nextButton.className = 'btn btn-ghost';
-  nextButton.id = 'tab-next';
-  nextButton.textContent = 'Next';
-  nextButton.addEventListener('click', () => {
-    state.currentPage += 1;
-    renderResults();
-  });
-
-  pagination.append(prevButton, paginationInfo, nextButton);
-  wrapper.appendChild(pagination);
-
-  // Append wrapper to block
-  block.appendChild(wrapper);
-
-  /**
-   * Switch to a different tab
-   */
-  function switchTab(tabId) {
-    state.activeTab = tabId;
-    state.currentPage = 1;
-
-    // Update button states
-    Object.entries(tabButtonElements).forEach(([id, btn]) => {
-      const isActive = id === tabId;
-      btn.classList.toggle('active', isActive);
-      btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
-    });
-
-    // Toggle filter visibility
-    filterBar.querySelectorAll('.filter-group').forEach((group) => {
-      const groupTab = group.getAttribute('data-tab');
-      group.classList.toggle('hidden', groupTab !== tabId);
-    });
-
-    // Update URL
-    const url = new URL(window.location);
-    url.searchParams.set('tab', tabId);
-    window.history.replaceState({}, '', url);
-
-    renderResults();
-  }
-
-  /**
-   * Render results based on active tab and filters
-   */
-  function renderResults() {
-    const searchTerm = state.searchTerm;
-    resultsGrid.textContent = '';
-
-    let results = [];
-
-    if (state.activeTab === 'events') {
-      results = filterEvents(state.data.events, searchTerm, state.filters);
-    } else if (state.activeTab === 'blogs') {
-      results = filterBlogs(state.data.blogs, searchTerm, state.filters);
-    } else if (state.activeTab === 'creators') {
-      results = filterCreators(state.data.creators, searchTerm, state.filters);
-    }
-
-    if (results.length === 0) {
-      pagination.hidden = true;
-      const emptyState = document.createElement('div');
-      emptyState.className = 'empty-state';
-      emptyState.textContent = `No ${state.activeTab} found matching your search.`;
-      resultsGrid.appendChild(emptyState);
-      return;
-    }
-
-    const totalPages = Math.ceil(results.length / PAGE_SIZE);
-    if (state.currentPage > totalPages) {
-      state.currentPage = totalPages;
-    }
-
-    const pageItems = results.slice((state.currentPage - 1) * PAGE_SIZE, state.currentPage * PAGE_SIZE);
-
-    pagination.hidden = totalPages <= 1;
-    prevButton.disabled = state.currentPage === 1;
-    nextButton.disabled = state.currentPage === totalPages;
-    paginationInfo.textContent = `Page ${state.currentPage} of ${totalPages} (${results.length} results)`;
-
-    pageItems.forEach((item) => {
-      let card;
-      if (state.activeTab === 'events') {
-        card = buildEventCard(item);
-      } else if (state.activeTab === 'blogs') {
-        card = buildBlogCard(item);
-      } else if (state.activeTab === 'creators') {
-        card = buildCreatorCard(item);
-      }
-      if (card) resultsGrid.appendChild(card);
-    });
-
-    initRevealObserver();
-  }
-
-  // Debounced search handler
-  const handleSearch = debounce((value) => {
-    state.searchTerm = value;
-    state.currentPage = 1;
-    renderResults();
-  }, 300);
-
-  // Search input event listener
-  searchInput.addEventListener('input', (e) => {
-    handleSearch(e.target.value);
-  });
-
-  // Read initial tab from URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const tabParam = urlParams.get('tab');
-  if (tabParam && ['events', 'blogs', 'creators'].includes(tabParam)) {
-    switchTab(tabParam);
-  } else {
-    renderResults();
-  }
+	const config = readBlockConfig(block);
+	const eventsSource = config['events-source'] || '/data/events.json';
+	const blogsSource = config['blogs-source'] || '/data/blogs.json';
+	const creatorsSource = config['creators-source'] || '/data/creators.json';
+	const pageSize = parseInt(config['page-size'], 10) || 9;
+
+	const state = {
+		activeTab: 'events',
+		searchQuery: '',
+		eventsPage: 1,
+		blogsPage: 1,
+		creatorsPage: 1,
+		pageSize,
+		data: { events: [], blogs: [], creators: [] },
+		filters: {
+			eventCategory: '',
+			eventDate: 'all',
+			eventLocations: [],
+			blogCategory: '',
+			blogAuthor: '',
+			blogSort: 'newest',
+			creatorSort: 'name-asc',
+			creatorDesignations: [],
+		},
+	};
+
+	// Clear block
+	block.textContent = '';
+
+	// Build Tab Navigation
+	const tabsNav = el(
+		'div',
+		{ className: 'tabs-nav', role: 'tablist' },
+		el('button', { className: 'tab-button active', 'data-tab': 'events', role: 'tab' }, 'Events & Campaigns'),
+		el('button', { className: 'tab-button', 'data-tab': 'blogs', role: 'tab' }, 'Blogs & Articles'),
+		el('button', { className: 'tab-button', 'data-tab': 'creators', role: 'tab' }, 'Creators')
+	);
+
+	// Build Filter Bar
+	const filterBar = el(
+		'div',
+		{ id: 'filter-bar', className: 'filter-bar' },
+		// Events Filter Group
+		el(
+			'div',
+			{ className: 'filter-group', 'data-filter-group': 'events' },
+			el('select', { id: 'events-category', className: 'filter-select' }, el('option', { value: '' }, 'All Categories')),
+			el(
+				'div',
+				{ className: 'date-radios' },
+				el('label', {}, el('input', { type: 'radio', name: 'event-date', value: 'all', checked: 'true' }), ' All'),
+				el('label', {}, el('input', { type: 'radio', name: 'event-date', value: 'upcoming' }), ' Upcoming'),
+				el('label', {}, el('input', { type: 'radio', name: 'event-date', value: 'past' }), ' Past')
+			),
+			el('div', { className: 'location-checkboxes' })
+		),
+		// Blogs Filter Group
+		el(
+			'div',
+			{ className: 'filter-group is-hidden', 'data-filter-group': 'blogs' },
+			el('select', { id: 'blogs-category', className: 'filter-select' }, el('option', { value: '' }, 'All Categories')),
+			el('input', {
+				id: 'blogs-author',
+				className: 'filter-input',
+				type: 'text',
+				placeholder: 'Search by author',
+			}),
+			el(
+				'select',
+				{ id: 'blogs-sort', className: 'filter-select' },
+				el('option', { value: 'newest' }, 'Newest First'),
+				el('option', { value: 'oldest' }, 'Oldest First')
+			)
+		),
+		// Creators Filter Group
+		el(
+			'div',
+			{ className: 'filter-group is-hidden', 'data-filter-group': 'creators' },
+			el(
+				'select',
+				{ id: 'creators-sort', className: 'filter-select' },
+				el('option', { value: 'name-asc' }, 'Name A-Z'),
+				el('option', { value: 'name-desc' }, 'Name Z-A')
+			),
+			el('div', { className: 'designation-checkboxes' })
+		),
+		el('button', { id: 'clear-filters', className: 'btn btn-ghost' }, 'Clear Filters')
+	);
+
+	// Build Grids and Pagination
+	const gridsContainer = el('div', { className: 'grids-container' });
+	const paginationContainer = el('div', { className: 'pagination-container' });
+
+	['events', 'blogs', 'creators'].forEach((tab) => {
+		const grid = el('div', { id: `${tab}-grid`, className: `grid-3 explore-grid ${tab !== 'events' ? 'is-hidden' : ''}` });
+		const pagination = el(
+			'div',
+			{ id: `${tab}-pagination`, className: `explore-pagination ${tab !== 'events' ? 'is-hidden' : ''}` },
+			el('button', { className: 'btn btn-ghost prev' }, 'Prev'),
+			el('span', { className: 'page-info' }, 'Page 1 of 1'),
+			el('button', { className: 'btn btn-ghost next' }, 'Next')
+		);
+		gridsContainer.append(grid);
+		paginationContainer.append(pagination);
+	});
+
+	block.append(tabsNav, filterBar, gridsContainer, paginationContainer);
+
+	// Fetch Data
+	try {
+		const [eventsData, blogsData, creatorsData] = await Promise.all([
+			fetch(eventsSource).then((r) => r.json()),
+			fetch(blogsSource).then((r) => r.json()),
+			fetch(creatorsSource).then((r) => r.json()),
+		]);
+
+		state.data.events = Array.isArray(eventsData) ? eventsData : eventsData.data || [];
+		state.data.blogs = Array.isArray(blogsData) ? blogsData : blogsData.data || [];
+		state.data.creators = Array.isArray(creatorsData) ? creatorsData : creatorsData.data || [];
+
+		populateFilters(state, block);
+		readUrlParams(state);
+		renderActiveTab(state, block);
+	} catch (error) {
+		// eslint-disable-next-line no-console
+		console.error('Failed to fetch explore data:', error);
+	}
+
+	// Event Listeners
+	attachEventListeners(state, block);
+}
+
+function populateFilters(state, block) {
+	// Event Categories
+	const eventCats = [...new Set(state.data.events.map((e) => e.category).filter(Boolean))].sort();
+	const eventCatSelect = block.querySelector('#events-category');
+	eventCats.forEach((cat) => eventCatSelect.append(el('option', { value: cat }, cat)));
+
+	// Event Locations
+	const eventLocs = [
+		...new Set(
+			state.data.events
+				.map((e) => {
+					const city = e.location && e.location.city;
+					const stateName = e.location && e.location.state;
+					return [city, stateName].filter(Boolean).join(', ');
+				})
+				.filter(Boolean)
+		),
+	].sort();
+	const eventLocContainer = block.querySelector('.location-checkboxes');
+	eventLocs.forEach((loc) => {
+		const label = el('label', {}, el('input', { type: 'checkbox', value: loc }), ` ${loc}`);
+		eventLocContainer.append(label);
+	});
+
+	// Blog Categories
+	const blogCats = [...new Set(state.data.blogs.map((b) => b.category).filter(Boolean))].sort();
+	const blogCatSelect = block.querySelector('#blogs-category');
+	blogCats.forEach((cat) => blogCatSelect.append(el('option', { value: cat }, cat)));
+
+	// Creator Designations
+	const designations = [...new Set(state.data.creators.map((c) => c.designation).filter(Boolean))].sort();
+	const designationContainer = block.querySelector('.designation-checkboxes');
+	designations.forEach((des) => {
+		const label = el('label', {}, el('input', { type: 'checkbox', value: des }), ` ${des}`);
+		designationContainer.append(label);
+	});
+}
+
+function readUrlParams(state) {
+	const params = new URLSearchParams(window.location.search);
+	if (params.has('tab')) state.activeTab = params.get('tab');
+	if (params.has('q')) state.searchQuery = params.get('q');
+	if (params.has('category')) {
+		const cat = params.get('category');
+		if (state.activeTab === 'events') state.filters.eventCategory = cat;
+		if (state.activeTab === 'blogs') state.filters.blogCategory = cat;
+	}
+}
+
+function renderActiveTab(state, block) {
+	const { activeTab, searchQuery, pageSize, filters } = state;
+
+	// Show/Hide Groups and Grids
+	block.querySelectorAll('.filter-group').forEach((g) => {
+		g.classList.toggle('is-hidden', g.dataset.filterGroup !== activeTab);
+	});
+	block.querySelectorAll('.explore-grid').forEach((g) => {
+		g.classList.toggle('is-hidden', g.id !== `${activeTab}-grid`);
+	});
+	block.querySelectorAll('.explore-pagination').forEach((p) => {
+		p.classList.toggle('is-hidden', p.id !== `${activeTab}-pagination`);
+	});
+	block.querySelectorAll('.tab-button').forEach((b) => {
+		b.classList.toggle('active', b.dataset.tab === activeTab);
+	});
+
+	// Filter Data
+	let filtered = [];
+	if (activeTab === 'events') {
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+		filtered = state.data.events.filter((item) => {
+			const catMatch = !filters.eventCategory || item.category === filters.eventCategory;
+			const searchMatch = !searchQuery || JSON.stringify(item).toLowerCase().includes(searchQuery.toLowerCase());
+			const locMatch = !filters.eventLocations.length || filters.eventLocations.includes([item.location?.city, item.location?.state].filter(Boolean).join(', '));
+			let dateMatch = true;
+			const itemDate = new Date(item.date);
+			if (filters.eventDate === 'upcoming') dateMatch = itemDate >= today;
+			if (filters.eventDate === 'past') dateMatch = itemDate < today;
+			return catMatch && searchMatch && locMatch && dateMatch;
+		});
+	} else if (activeTab === 'blogs') {
+		filtered = state.data.blogs.filter((item) => {
+			const catMatch = !filters.blogCategory || item.category === filters.blogCategory;
+			const authorMatch = !filters.blogAuthor || (item.author?.name || '').toLowerCase().includes(filters.blogAuthor.toLowerCase());
+			const searchMatch = !searchQuery || JSON.stringify(item).toLowerCase().includes(searchQuery.toLowerCase());
+			return catMatch && authorMatch && searchMatch;
+		});
+		filtered.sort((a, b) => {
+			const dateA = new Date(a.publishedDate);
+			const dateB = new Date(b.publishedDate);
+			return filters.blogSort === 'newest' ? dateB - dateA : dateA - dateB;
+		});
+	} else if (activeTab === 'creators') {
+		filtered = state.data.creators.filter((item) => {
+			const searchMatch = !searchQuery || JSON.stringify(item).toLowerCase().includes(searchQuery.toLowerCase());
+			const desMatch = !filters.creatorDesignations.length || filters.creatorDesignations.includes(item.designation);
+			return searchMatch && desMatch;
+		});
+		filtered.sort((a, b) => {
+			return filters.creatorSort === 'name-asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+		});
+	}
+
+	// Pagination
+	const currentPage = state[`${activeTab}Page`];
+	const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+	const start = (currentPage - 1) * pageSize;
+	const itemsToShow = filtered.slice(start, start + pageSize);
+
+	const grid = block.querySelector(`#${activeTab}-grid`);
+	grid.textContent = '';
+	if (itemsToShow.length === 0) {
+		grid.append(el('p', { className: 'no-results' }, 'No results found.'));
+	} else {
+		itemsToShow.forEach((item) => {
+			if (activeTab === 'events') grid.append(buildEventCard(item));
+			else if (activeTab === 'blogs') grid.append(buildBlogCard(item));
+			else if (activeTab === 'creators') grid.append(buildCreatorCard(item));
+		});
+	}
+
+	// Update Pagination UI
+	const pagEl = block.querySelector(`#${activeTab}-pagination`);
+	pagEl.querySelector('.page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+	pagEl.querySelector('.prev').disabled = currentPage <= 1;
+	pagEl.querySelector('.next').disabled = currentPage >= totalPages;
+
+	initRevealObserver();
+}
+
+function attachEventListeners(state, block) {
+	// Tab Clicks
+	block.querySelector('.tabs-nav').addEventListener('click', (e) => {
+		const btn = e.target.closest('.tab-button');
+		if (btn) {
+			state.activeTab = btn.dataset.tab;
+			renderActiveTab(state, block);
+			updateUrl(state);
+		}
+	});
+
+	// Filter Changes
+	block.addEventListener('change', (e) => {
+		const target = e.target;
+		if (target.id === 'events-category') state.filters.eventCategory = target.value;
+		if (target.name === 'event-date') state.filters.eventDate = target.value;
+		if (target.closest('.location-checkboxes')) {
+			state.filters.eventLocations = Array.from(block.querySelectorAll('.location-checkboxes input:checked')).map((i) => i.value);
+		}
+		if (target.id === 'blogs-category') state.filters.blogCategory = target.value;
+		if (target.id === 'blogs-sort') state.filters.blogSort = target.value;
+		if (target.id === 'creators-sort') state.filters.creatorSort = target.value;
+		if (target.closest('.designation-checkboxes')) {
+			state.filters.creatorDesignations = Array.from(block.querySelectorAll('.designation-checkboxes input:checked')).map((i) => i.value);
+		}
+		state[`${state.activeTab}Page`] = 1;
+		renderActiveTab(state, block);
+	});
+
+	block.querySelector('#blogs-author').addEventListener('input', (e) => {
+		state.filters.blogAuthor = e.target.value;
+		state.blogsPage = 1;
+		renderActiveTab(state, block);
+	});
+
+	// Clear Filters
+	block.querySelector('#clear-filters').addEventListener('click', () => {
+		state.filters = {
+			eventCategory: '',
+			eventDate: 'all',
+			eventLocations: [],
+			blogCategory: '',
+			blogAuthor: '',
+			blogSort: 'newest',
+			creatorSort: 'name-asc',
+			creatorDesignations: [],
+		};
+		block.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach((i) => (i.checked = i.value === 'all'));
+		block.querySelectorAll('select').forEach((s) => (s.value = ''));
+		block.querySelectorAll('input[type="text"]').forEach((i) => (i.value = ''));
+		state[`${state.activeTab}Page`] = 1;
+		renderActiveTab(state, block);
+	});
+
+	// Pagination Clicks
+	block.querySelectorAll('.explore-pagination').forEach((pag) => {
+		pag.addEventListener('click', (e) => {
+			const tab = pag.id.split('-')[0];
+			if (e.target.classList.contains('prev') && state[`${tab}Page`] > 1) {
+				state[`${tab}Page`]--;
+				renderActiveTab(state, block);
+			}
+			if (e.target.classList.contains('next')) {
+				const grid = block.querySelector(`#${tab}-grid`);
+				// We need the total count to disable "next", but renderActiveTab already does it.
+				// Just increment and render.
+				state[`${tab}Page`]++;
+				renderActiveTab(state, block);
+			}
+		});
+	});
+
+	// Custom Search Event
+	document.addEventListener('explore:search', (e) => {
+		state.searchQuery = e.detail?.query || '';
+		state.eventsPage = 1;
+		state.blogsPage = 1;
+		state.creatorsPage = 1;
+		renderActiveTab(state, block);
+		updateUrl(state);
+	});
+}
+
+function updateUrl(state) {
+	const url = new URL(window.location);
+	url.searchParams.set('tab', state.activeTab);
+	if (state.searchQuery) url.searchParams.set('q', state.searchQuery);
+	else url.searchParams.delete('q');
+	window.history.replaceState({}, '', url);
 }

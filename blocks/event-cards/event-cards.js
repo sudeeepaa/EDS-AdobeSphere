@@ -1,110 +1,114 @@
 import { readBlockConfig } from '../../scripts/aem.js';
-import { formatShortDate, normalizeAssetSrc, truncate } from '../../scripts/utils.js';
+import { formatShortDate, normalizeAssetSrc, truncate, initRevealObserver } from '../../scripts/utils.js';
 
-function slugFromId(id) {
-	return String(id || '')
-		.trim()
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-+|-+$/g, '');
-}
-
-function getEvents(payload) {
-	if (Array.isArray(payload)) return payload;
-	if (payload && Array.isArray(payload.data)) return payload.data;
-	return [];
-}
-
+/**
+ * Builds an event card element.
+ * @param {Object} event The event data.
+ * @returns {HTMLElement} The card element.
+ */
 function buildCard(event) {
 	const item = event || {};
 	const article = document.createElement('article');
-	article.className = 'event-card';
+	article.className = 'card reveal';
 
 	const link = document.createElement('a');
-	const slug = slugFromId(item.id);
-	link.href = `/events/${slug}`;
-
-	const imageWrap = document.createElement('div');
-	imageWrap.className = 'event-card__image';
+	link.className = 'card__full-link';
+	link.href = `/events/template?id=${encodeURIComponent(item.id || '')}`;
+	article.append(link);
 
 	const image = document.createElement('img');
+	image.className = 'card__image';
 	image.src = normalizeAssetSrc(item.thumbnail, '');
 	image.alt = item.title || 'Event';
 	image.loading = 'lazy';
 	image.width = 400;
 	image.height = 250;
-	imageWrap.append(image);
-
-	const category = document.createElement('span');
-	category.className = 'event-card__category';
-	category.textContent = item.category || 'Event';
-	imageWrap.append(category);
+	article.append(image);
 
 	const body = document.createElement('div');
-	body.className = 'event-card__body';
+	body.className = 'card__body';
+
+	const category = document.createElement('span');
+	category.className = 'badge';
+	category.textContent = item.category || 'Event';
+	body.append(category);
 
 	const title = document.createElement('h3');
+	title.className = 'card__title';
 	title.textContent = item.title || 'Untitled Event';
+	body.append(title);
 
-	const date = document.createElement('p');
-	date.className = 'event-card__date';
-	date.textContent = formatShortDate(item.date || '');
+	const meta = document.createElement('div');
+	meta.className = 'card__meta';
 
-	const location = document.createElement('p');
-	location.className = 'event-card__location';
+	const dateSpan = document.createElement('span');
+	dateSpan.textContent = formatShortDate(item.date || '');
+	meta.append(dateSpan);
+
+	const locationSpan = document.createElement('span');
 	const city = item.location && item.location.city;
 	const state = item.location && item.location.state;
-	location.textContent = [city, state].filter(Boolean).join(', ') || 'TBD';
+	locationSpan.textContent = [city, state].filter(Boolean).join(', ') || 'TBD';
+	meta.append(locationSpan);
+	body.append(meta);
 
 	const excerpt = document.createElement('p');
-	excerpt.className = 'event-card__excerpt';
+	excerpt.className = 'card__excerpt';
 	excerpt.textContent = truncate(item.shortDescription || '', 120);
+	body.append(excerpt);
 
-	body.append(title, date, location, excerpt);
-	link.append(imageWrap, body);
-	article.append(link);
+	article.append(body);
 
 	return article;
 }
 
-function showEmptyState(block, message) {
-	const empty = document.createElement('p');
-	empty.className = 'event-cards__empty';
-	empty.textContent = message;
-	block.replaceChildren(empty);
-}
-
+/**
+ * Decorates the event cards block.
+ * @param {Element} block The block element.
+ */
 export default async function decorate(block) {
 	const config = readBlockConfig(block);
 	const featuredOnly = String(config.featuredOnly || '').toLowerCase() === 'true';
 	const limitValue = Number.parseInt(config.limit, 10);
 	const limit = Number.isFinite(limitValue) && limitValue > 0 ? limitValue : 6;
+	const source = config.source || '/data/events.json';
 
 	block.classList.add('event-cards');
 	block.textContent = '';
 
+	const grid = document.createElement('div');
+	grid.className = 'events-grid grid-3';
+
 	try {
-		const response = await fetch('/data/events.json');
+		const response = await fetch(source);
 		if (!response.ok) {
 			throw new Error(`Failed to load events (${response.status})`);
 		}
 
 		const payload = await response.json();
-		const items = getEvents(payload)
+		const data = Array.isArray(payload) ? payload : (payload.data || []);
+		const items = data
 			.filter((event) => event && (!featuredOnly || event.featured === true))
 			.slice(0, limit);
 
 		if (!items.length) {
-			showEmptyState(block, 'No featured events available right now.');
+			const empty = document.createElement('p');
+			empty.className = 'event-cards__empty';
+			empty.textContent = 'No featured events available right now.';
+			block.append(empty);
 			return;
 		}
 
-		const grid = document.createElement('div');
-		grid.className = 'event-cards__grid';
 		items.forEach((event) => grid.append(buildCard(event)));
 		block.append(grid);
+
+		// Initialize reveal observer for smooth entrance animations
+		initRevealObserver();
 	} catch (error) {
-		showEmptyState(block, 'Unable to load events right now.');
+		const errorMsg = document.createElement('p');
+		errorMsg.className = 'event-cards__error';
+		errorMsg.textContent = 'Unable to load events right now.';
+		block.append(errorMsg);
 		// eslint-disable-next-line no-console
 		console.error('Failed to render event cards:', error);
 	}
