@@ -51,15 +51,15 @@ function searchResults(query, type = 'all') {
 	if (!query || query.trim().length < 1) return results;
 
 	if (type === 'all' || type === 'events') {
-		results.events = cachedData.events.filter((item) => matchesQuery(item, query)).slice(0, 5);
+		results.events = cachedData.events.filter((item) => matchesQuery(item, query)).slice(0, 6);
 	}
 
 	if (type === 'all' || type === 'blogs') {
-		results.blogs = cachedData.blogs.filter((item) => matchesQuery(item, query)).slice(0, 5);
+		results.blogs = cachedData.blogs.filter((item) => matchesQuery(item, query)).slice(0, 6);
 	}
 
 	if (type === 'all' || type === 'creators') {
-		results.creators = cachedData.creators.filter((item) => matchesQuery(item, query)).slice(0, 5);
+		results.creators = cachedData.creators.filter((item) => matchesQuery(item, query)).slice(0, 6);
 	}
 
 	return results;
@@ -175,6 +175,9 @@ export default async function decorate(block) {
 	input.placeholder = 'Search events, blogs, creators...';
 	input.setAttribute('aria-label', 'Search Adobesphere');
 
+	const chipsWrapper = document.createElement('div');
+	chipsWrapper.className = 'search-bar__chips-wrapper';
+
 	const chips = document.createElement('div');
 	chips.className = 'search-bar__chips';
 	chips.setAttribute('role', 'group');
@@ -217,7 +220,8 @@ export default async function decorate(block) {
 		}
 	});
 
-	inputContainer.append(input, chips);
+	chipsWrapper.append(chips);
+	inputContainer.append(input, chipsWrapper);
 	shell.append(inputContainer, resultsContainer);
 	block.append(shell);
 }
