@@ -93,3 +93,52 @@
     display: block;
   }
 }
+
+header.header-wrapper {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: white;
+  z-index: 999;
+  border-bottom: 1px solid #ddd;
+}
+
+#nav {
+  max-width: 1280px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 64px;
+}
+
+/* LINKS */
+.nav-sections ul {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-sections a {
+  text-decoration: none;
+  color: #555;
+}
+
+.nav-sections a:hover {
+  color: var(--red-primary);
+}
+
+/* MOBILE */
+.nav-hamburger {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .nav-sections {
+    display: none;
+  }
+
+  .nav-hamburger {
+    display: block;
+  }
+}

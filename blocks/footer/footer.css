@@ -42,3 +42,27 @@
     grid-template-columns: 1fr;
   }
 }
+
+.footer {
+  background: #242024;
+  color: white;
+  padding: 60px 24px;
+}
+
+.footer .default-content-wrapper {
+  max-width: 1280px;
+  margin: auto;
+}
+
+.footer ul {
+  padding: 0;
+  list-style: none;
+}
+
+.footer a {
+  color: rgba(255,255,255,0.7);
+}
+
+.footer a:hover {
+  color: white;
+}
