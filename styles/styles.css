@@ -1,5 +1,4 @@
-/* ===== GLOBAL DESIGN SYSTEM (FROM YOUR global.css) ===== */
-
+/* ===== DESIGN SYSTEM ===== */
 :root {
   --red-primary: #E30220;
   --red-deep: #BF0000;
@@ -13,14 +12,10 @@
 
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
   --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.18);
 
   --radius-sm: 4px;
   --radius-md: 8px;
-  --radius-lg: 16px;
   --radius-full: 9999px;
-
-  --transition-base: 200ms ease;
 
   --max-width: 1280px;
   --section-padding: 60px 24px;
@@ -29,7 +24,7 @@
   --font-display: Impact, Haettenschweiler, "Arial Narrow Bold";
 }
 
-/* RESET */
+/* ===== RESET ===== */
 * { margin:0; padding:0; box-sizing:border-box; }
 
 body {
@@ -38,27 +33,38 @@ body {
   color: var(--text-primary);
 }
 
-/* TYPOGRAPHY */
 h1,h2,h3 {
   font-family: var(--font-display);
 }
 
-.container {
-  max-width: var(--max-width);
-  margin:auto;
-  padding:0 24px;
+/* ===== EDS NORMALIZATION ===== */
+main {
+  margin-top: 64px;
 }
 
-.section {
+main .section {
   padding: var(--section-padding);
 }
 
-/* BUTTONS */
+.default-content-wrapper {
+  max-width: var(--max-width);
+  margin: auto;
+  padding: 0 24px;
+}
+
+.default-content-wrapper ul {
+  list-style: none;
+}
+
+.section > div {
+  width: 100%;
+}
+
+/* ===== BUTTON ===== */
 .btn {
   padding: 12px 28px;
   border-radius: var(--radius-sm);
   font-weight:600;
-  cursor:pointer;
 }
 
 .btn-primary {
@@ -70,102 +76,7 @@ h1,h2,h3 {
   background: var(--red-deep);
 }
 
-/* CARD BASE (USED BY ALL BLOCKS) */
-.card {
-  background: white;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  transition: 0.2s;
-}
-
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-}
-
-.card__body {
-  padding: 20px;
-}
-
-.card__title {
-  font-size: 1.2rem;
-  margin-bottom: 8px;
-}
-
-.card__meta {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-/* FIX EDS DEFAULT CONTENT WRAPPER */
-.default-content-wrapper {
-  max-width: var(--max-width);
-  margin: auto;
-  padding: 0 24px;
-}
-
-/* REMOVE UGLY DEFAULT LIST STYLES */
-.default-content-wrapper ul {
-  list-style: none;
-  padding: 0;
-}
-
-.default-content-wrapper li {
-  margin: 6px 0;
-}
-
-/* SECTION SPACING */
-.section {
-  padding: 40px 0;
-}
-
-/* ===== EDS RESET FIX ===== */
-main .section {
-  padding: 60px 24px;
-}
-
-main .default-content-wrapper {
-  max-width: 1280px;
-  margin: 0 auto;
-}
-
-/* REMOVE EXTRA WRAPPER WIDTH ISSUES */
-.section > div {
-  width: 100%;
-}
-
-/* ===== HERO FULL SCREEN FIX ===== */
-.hero-container,
-.hero-wrapper {
-  padding: 0 !important;
-}
-
-.hero.block {
-  position: relative;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.hero.block video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.hero.block .hero-content {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  color: white;
-}
-
-/* ===== GRID FIXES ===== */
+/* ===== CARDS BASE ===== */
 .cards.block ul,
 .event-cards.block ul,
 .blog-cards.block ul,
@@ -176,7 +87,9 @@ main .default-content-wrapper {
   list-style: none;
 }
 
-.cards.block ul {
+.cards.block ul,
+.event-cards.block ul,
+.blog-cards.block ul {
   grid-template-columns: repeat(3, 1fr);
 }
 
@@ -184,28 +97,25 @@ main .default-content-wrapper {
   grid-template-columns: repeat(4, 1fr);
 }
 
-.event-cards.block ul,
-.blog-cards.block ul {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-/* ===== CARD MATCHING YOUR DESIGN ===== */
 .cards.block li,
 .event-cards.block li,
 .blog-cards.block li,
 .creator-cards.block li {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
-  transition: 0.2s ease;
+  transition: 0.2s;
 }
 
-.cards.block li:hover {
+.cards.block li:hover,
+.event-cards.block li:hover,
+.blog-cards.block li:hover {
   transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
 }
 
-/* IMAGE FIX */
+/* CARD IMAGE */
 .cards.block img,
 .event-cards.block img,
 .blog-cards.block img {
@@ -214,15 +124,32 @@ main .default-content-wrapper {
   object-fit: cover;
 }
 
-/* ===== CATEGORY MARQUEE FIX ===== */
-.category-filter.block {
-  overflow: hidden;
+/* CREATOR IMAGE */
+.creator-cards.block img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin: 16px auto;
 }
 
+/* ===== CATEGORY FILTER ===== */
 .category-filter.block ul {
   display: flex;
   gap: 14px;
   animation: marquee 25s linear infinite;
+}
+
+.category-filter.block li {
+  border: 1px solid var(--neutral-light);
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: white;
+  cursor: pointer;
+}
+
+.category-filter.block li:hover {
+  border-color: var(--red-primary);
+  color: var(--red-primary);
 }
 
 @keyframes marquee {
@@ -230,15 +157,14 @@ main .default-content-wrapper {
   to { transform: translateX(-50%); }
 }
 
-/* ===== SECTION HEADINGS ===== */
+/* ===== HEADINGS ===== */
 h2, h3 {
-  font-family: var(--font-display);
   margin-bottom: 20px;
   border-bottom: 4px solid var(--red-primary);
   display: inline-block;
 }
 
-/* ===== MOBILE ===== */
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .cards.block ul,
   .event-cards.block ul,

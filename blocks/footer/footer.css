@@ -1,15 +1,10 @@
 .footer {
   background: var(--bg-dark);
-  color: var(--white);
+  color: white;
   padding: 60px 24px;
 }
 
-/* EDS creates multiple .section blocks inside footer */
-.footer .section {
-  margin-bottom: 20px;
-}
-
-/* GRID FIX (simulate your old layout) */
+/* GRID LAYOUT */
 .footer > div {
   max-width: var(--max-width);
   margin: auto;
@@ -18,22 +13,22 @@
   gap: 24px;
 }
 
+/* TEXT */
+.footer p {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.6);
+}
+
 /* LINKS */
 .footer a {
   display: block;
-  color: rgba(255,255,255,0.6);
-  text-decoration: none;
   margin: 4px 0;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
 }
 
 .footer a:hover {
   color: var(--red-primary);
-}
-
-/* TEXT */
-.footer p {
-  font-size: 0.85rem;
-  color: rgba(255,255,255,0.5);
 }
 
 /* MOBILE */
@@ -41,28 +36,4 @@
   .footer > div {
     grid-template-columns: 1fr;
   }
-}
-
-.footer {
-  background: #242024;
-  color: white;
-  padding: 60px 24px;
-}
-
-.footer .default-content-wrapper {
-  max-width: 1280px;
-  margin: auto;
-}
-
-.footer ul {
-  padding: 0;
-  list-style: none;
-}
-
-.footer a {
-  color: rgba(255,255,255,0.7);
-}
-
-.footer a:hover {
-  color: white;
 }
