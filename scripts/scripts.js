@@ -307,35 +307,58 @@ function buildAutoBlocks(main) {
 }
 
 /**
- * Strong-link → button.primary, em-link → button.secondary, both → button.accent.
+ * Button decoration. Three rules:
+ *   1. <strong><a/></strong>            → .button.primary
+ *   2. <em><a/></em>                    → .button.secondary
+ *   3. <strong><em><a/></em></strong>   → .button.accent (and the reverse)
+ *
+ * Unlike the boilerplate, this version permits multiple buttons inside one
+ * paragraph. Authoring `**Explore All** *Join the Community*` on a single
+ * line gives you two side-by-side buttons.
  */
+function decorateOneButton(a) {
+  a.title = a.title || a.textContent;
+  if (a.querySelector('img')) return false;
+  const text = a.textContent.trim();
+  try {
+    if (new URL(a.href).href === new URL(text, window.location).href) return false;
+  } catch { /* relative link — continue */ }
+
+  const strong = a.closest('strong');
+  const em = a.closest('em');
+  if (!strong && !em) return false;
+
+  a.className = 'button';
+  if (strong && em) {
+    a.classList.add('accent');
+    const outer = strong.contains(em) ? strong : em;
+    outer.replaceWith(a);
+  } else if (strong) {
+    a.classList.add('primary');
+    strong.replaceWith(a);
+  } else {
+    a.classList.add('secondary');
+    em.replaceWith(a);
+  }
+  return true;
+}
+
 function decorateButtons(main) {
-  main.querySelectorAll('p a[href]').forEach((a) => {
-    a.title = a.title || a.textContent;
-    const p = a.closest('p');
-    const text = a.textContent.trim();
-    if (a.querySelector('img') || p.textContent.trim() !== text) return;
-    try {
-      if (new URL(a.href).href === new URL(text, window.location).href) return;
-    } catch { /* relative link — continue */ }
+  // Process one paragraph at a time so we can detect button-only paragraphs.
+  main.querySelectorAll('p').forEach((p) => {
+    const links = [...p.querySelectorAll('a[href]')];
+    if (!links.length) return;
 
-    const strong = a.closest('strong');
-    const em = a.closest('em');
-    if (!strong && !em) return;
+    // Decorate each eligible link.
+    let decoratedCount = 0;
+    links.forEach((a) => { if (decorateOneButton(a)) decoratedCount += 1; });
+    if (!decoratedCount) return;
 
-    p.className = 'button-wrapper';
-    a.className = 'button';
-    if (strong && em) {
-      a.classList.add('accent');
-      const outer = strong.contains(em) ? strong : em;
-      outer.replaceWith(a);
-    } else if (strong) {
-      a.classList.add('primary');
-      strong.replaceWith(a);
-    } else {
-      a.classList.add('secondary');
-      em.replaceWith(a);
-    }
+    // If the paragraph now contains only buttons (and whitespace), tag it.
+    const stripped = p.textContent.replace(/\s+/g, ' ').trim();
+    const buttonText = [...p.querySelectorAll('a.button')]
+      .map((a) => a.textContent.trim()).join(' ').replace(/\s+/g, ' ').trim();
+    if (stripped === buttonText) p.className = 'button-wrapper';
   });
 }
 
