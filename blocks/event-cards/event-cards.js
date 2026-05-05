@@ -1,14 +1,17 @@
 export default async function decorate(block) {
   const config = {};
 
-  // Read authored config
   [...block.children].forEach((row) => {
-    const key = row.children[0]?.textContent.trim();
-    const value = row.children[1]?.textContent.trim();
-    if (key && value) config[key] = value;
+    const cols = [...row.children];
+    if (cols.length < 2) return;
+
+    const key = cols[0].textContent.trim().toLowerCase();
+    const value = cols[1].textContent.trim();
+
+    if (key) config[key] = value;
   });
 
-  block.innerHTML = "";
+  block.textContent = "";
 
   try {
     const resp = await fetch('/data/events.json');
@@ -16,8 +19,8 @@ export default async function decorate(block) {
 
     let filtered = Array.isArray(events) ? events : [];
 
-    if (config.featuredOnly === "true") {
-      filtered = filtered.filter(e => e.featured === true);
+    if (config.featuredonly === "true") {
+      filtered = filtered.filter(e => e.featured);
     }
 
     if (config.limit) {
@@ -25,27 +28,45 @@ export default async function decorate(block) {
     }
 
     if (!filtered.length) {
-      block.innerHTML = `<p class="empty-state">No events available</p>`;
+      block.textContent = "No events available";
       return;
     }
 
-    block.innerHTML = filtered.map(buildEventCard).join("");
+    const grid = document.createElement("div");
+    grid.className = "event-grid";
+
+    filtered.forEach((event) => {
+      const card = document.createElement("article");
+      card.className = "card";
+
+      const img = document.createElement("img");
+      img.className = "card__image";
+      img.src = event.thumbnail || "/assets/images/events/event-card-fallback.jpg";
+
+      const body = document.createElement("div");
+      body.className = "card__body";
+
+      const badge = document.createElement("span");
+      badge.className = "badge";
+      badge.textContent = event.category || "Event";
+
+      const title = document.createElement("h3");
+      title.className = "card__title";
+      title.textContent = event.title;
+
+      const desc = document.createElement("p");
+      desc.className = "card__excerpt";
+      desc.textContent = event.shortDescription;
+
+      body.append(badge, title, desc);
+      card.append(img, body);
+      grid.appendChild(card);
+    });
+
+    block.appendChild(grid);
 
   } catch (e) {
     console.error(e);
-    block.innerHTML = `<p class="empty-state">Failed to load events</p>`;
+    block.textContent = "Failed to load events";
   }
-}
-
-function buildEventCard(event) {
-  return `
-    <article class="card">
-      <img class="card__image" src="${event.thumbnail || ''}" alt="${event.title}">
-      <div class="card__body">
-        <span class="badge">${event.category || "Event"}</span>
-        <h3 class="card__title">${event.title || ""}</h3>
-        <p class="card__excerpt">${event.shortDescription || ""}</p>
-      </div>
-    </article>
-  `;
 }
