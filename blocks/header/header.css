@@ -1,38 +1,95 @@
+/* HEADER ROOT */
 .header {
   position: fixed;
-  top:0;
-  width:100%;
-  height:64px;
-  background:white;
-  border-bottom:1px solid var(--neutral-light);
-  z-index:1000;
+  top: 0;
+  width: 100%;
+  height: 64px;
+  background: var(--white);
+  border-bottom: 1px solid var(--neutral-light);
+  z-index: 1000;
 }
 
+/* NAV WRAPPER */
 .header .nav-wrapper {
   max-width: var(--max-width);
-  margin:auto;
-  height:64px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 24px;
+  margin: auto;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
 }
 
-.header .nav-logo {
+/* NAV MAIN */
+.header nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* BRAND */
+.nav-brand p {
   font-family: var(--font-display);
-  font-size:1.5rem;
+  font-size: 1.5rem;
 }
 
-.header .nav-links {
-  display:flex;
-  gap:16px;
+.nav-brand a {
+  text-decoration: none;
+  color: var(--text-primary);
 }
 
-.header .nav-links a {
+/* LINKS SECTION */
+.nav-sections ul {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-sections a {
+  font-size: 0.9rem;
   color: var(--text-secondary);
-  text-decoration:none;
+  text-decoration: none;
 }
 
-.header .nav-links a:hover {
+.nav-sections a:hover {
   color: var(--red-primary);
+}
+
+/* TOOLS (LOGIN/SIGNUP) */
+.nav-tools ul {
+  display: flex;
+  gap: 12px;
+}
+
+.nav-tools a {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+/* PRIMARY BUTTON */
+.nav-tools a[href="/signup"] {
+  background: var(--red-primary);
+  color: white;
+}
+
+.nav-tools a[href="/signup"]:hover {
+  background: var(--red-deep);
+}
+
+/* HAMBURGER (MOBILE) */
+.nav-hamburger {
+  display: none;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .nav-sections,
+  .nav-tools {
+    display: none;
+  }
+
+  .nav-hamburger {
+    display: block;
+  }
 }

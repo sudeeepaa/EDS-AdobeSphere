@@ -97,3 +97,25 @@ h1,h2,h3 {
   font-size: 0.8rem;
   color: var(--text-muted);
 }
+
+/* FIX EDS DEFAULT CONTENT WRAPPER */
+.default-content-wrapper {
+  max-width: var(--max-width);
+  margin: auto;
+  padding: 0 24px;
+}
+
+/* REMOVE UGLY DEFAULT LIST STYLES */
+.default-content-wrapper ul {
+  list-style: none;
+  padding: 0;
+}
+
+.default-content-wrapper li {
+  margin: 6px 0;
+}
+
+/* SECTION SPACING */
+.section {
+  padding: 40px 0;
+}

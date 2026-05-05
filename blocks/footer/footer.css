@@ -1,20 +1,44 @@
 .footer {
   background: var(--bg-dark);
-  color:white;
-  padding:60px 24px;
+  color: var(--white);
+  padding: 60px 24px;
 }
 
-.footer .footer-grid {
-  display:grid;
-  grid-template-columns:2fr 1fr 1fr;
-  gap:20px;
+/* EDS creates multiple .section blocks inside footer */
+.footer .section {
+  margin-bottom: 20px;
 }
 
+/* GRID FIX (simulate your old layout) */
+.footer > div {
+  max-width: var(--max-width);
+  margin: auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 24px;
+}
+
+/* LINKS */
 .footer a {
-  color:rgba(255,255,255,0.6);
-  text-decoration:none;
+  display: block;
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  margin: 4px 0;
 }
 
 .footer a:hover {
   color: var(--red-primary);
+}
+
+/* TEXT */
+.footer p {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.5);
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .footer > div {
+    grid-template-columns: 1fr;
+  }
 }
