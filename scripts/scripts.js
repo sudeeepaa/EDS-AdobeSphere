@@ -208,3 +208,27 @@ function removeFooterFromMain() {
 }
 
 window.addEventListener('load', removeFooterFromMain);
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const main = document.querySelector("main");
+  if (!main) return;
+
+  // Remove ONLY nav-like UL blocks
+  main.querySelectorAll("ul").forEach((ul) => {
+    const links = [...ul.querySelectorAll("a")].map(a => a.textContent.trim());
+
+    const isNav =
+      links.includes("Home") &&
+      links.includes("Explore");
+
+    const isAuth =
+      links.includes("Sign In") &&
+      links.includes("Sign Up");
+
+    if (isNav || isAuth) {
+      ul.closest(".section")?.remove();
+    }
+  });
+});
