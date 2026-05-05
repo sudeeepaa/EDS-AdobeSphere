@@ -1,38 +1,14 @@
 /*
  * AdobeSphere — hero block.
  * Variants: default, video, search, media, gradient, compact.
- *
- * Layout note — EDS produces the structure
- *   <main>
- *     <div class="section hero-container">    ← container class auto-added
- *       <div class="hero-wrapper">            ← wrapper auto-added
- *         <div class="hero hero-video">       ← the block
- *
- * The section adds 60px top/bottom padding and the section's inner div
- * adds 24px horizontal padding + max-width 1280px. For full-bleed heroes
- * (everything except `compact`) we cancel both with the rules below.
  */
-
-/* 1 ─ Kill the section's vertical padding when it hosts a full-bleed hero. */
-main > .section.hero-container:not(:has(.hero-compact)) {
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-/* 2 ─ Break out of the section's max-width + horizontal padding. */
-.hero-wrapper:not(:has(.hero-compact)) {
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-}
 
 .hero {
   position: relative;
   overflow: hidden;
 }
 
-/* shared content stack — stays centred within a comfortable reading width
-   even though the hero itself spans 100vw */
+/* shared content stack */
 .hero .hero-content {
   position: relative;
   z-index: 4;
@@ -187,6 +163,7 @@ main > .section.hero-container:not(:has(.hero-compact)) {
 
 /* ─── media variant (Event detail banner) ─── */
 .hero.hero-media {
+  position: relative;
   height: 420px;
   display: flex;
   align-items: flex-end;
@@ -301,7 +278,7 @@ main > .section.hero-container:not(:has(.hero-compact)) {
   line-height: 1;
 }
 
-/* ─── compact variant (Blog detail title strip) — stays inside the column ─── */
+/* ─── compact variant (Blog detail title strip) ─── */
 .hero.hero-compact {
   padding: 40px 0 20px;
   background: var(--white);
