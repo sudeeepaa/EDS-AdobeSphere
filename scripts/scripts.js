@@ -14,17 +14,14 @@ import {
 
 /**
  * Builds hero block and prepends to main in a new section.
- * @param {Element} main The container element
  */
 function buildHeroBlock(main) {
   const h1 = main.querySelector('h1');
   const picture = main.querySelector('picture');
-  // eslint-disable-next-line no-bitwise
+
   if (h1 && picture && (h1.compareDocumentPosition(picture) & Node.DOCUMENT_POSITION_PRECEDING)) {
-    // Check if h1 or picture is already inside a hero block
-    if (h1.closest('.hero') || picture.closest('.hero')) {
-      return; // Don't create a duplicate hero block
-    }
+    if (h1.closest('.hero') || picture.closest('.hero')) return;
+
     const section = document.createElement('div');
     section.append(buildBlock('hero', { elems: [picture, h1] }));
     main.prepend(section);
@@ -32,27 +29,26 @@ function buildHeroBlock(main) {
 }
 
 /**
- * load fonts.css and set a session storage flag
+ * Load fonts
  */
 async function loadFonts() {
   await loadCSS(`${window.hlx.codeBasePath}/styles/fonts.css`);
   try {
-    if (!window.location.hostname.includes('localhost')) sessionStorage.setItem('fonts-loaded', 'true');
-  } catch (e) {
-    // do nothing
-  }
+    if (!window.location.hostname.includes('localhost')) {
+      sessionStorage.setItem('fonts-loaded', 'true');
+    }
+  } catch (e) {}
 }
 
 /**
- * Builds all synthetic blocks in a container element.
- * @param {Element} main The container element
+ * Auto blocks
  */
 function buildAutoBlocks(main) {
   try {
-    // auto load `*/fragments/*` references
-    const fragments = [...main.querySelectorAll('a[href*="/fragments/"]')].filter((f) => !f.closest('.fragment'));
+    const fragments = [...main.querySelectorAll('a[href*="/fragments/"]')]
+      .filter((f) => !f.closest('.fragment'));
+
     if (fragments.length > 0) {
-      // eslint-disable-next-line import/no-cycle
       import('../blocks/fragment/fragment.js').then(({ loadFragment }) => {
         fragments.forEach(async (fragment) => {
           try {
@@ -60,7 +56,6 @@ function buildAutoBlocks(main) {
             const frag = await loadFragment(pathname);
             fragment.parentElement.replaceWith(...frag.children);
           } catch (error) {
-            // eslint-disable-next-line no-console
             console.error('Fragment loading failed', error);
           }
         });
@@ -69,14 +64,12 @@ function buildAutoBlocks(main) {
 
     buildHeroBlock(main);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Auto Blocking failed', error);
   }
 }
 
 /**
- * Decorates formatted links to style them as buttons.
- * @param {HTMLElement} main The main container element
+ * Button decoration
  */
 function decorateButtons(main) {
   main.querySelectorAll('p a[href]').forEach((a) => {
@@ -84,22 +77,20 @@ function decorateButtons(main) {
     const p = a.closest('p');
     const text = a.textContent.trim();
 
-    // quick structural checks
     if (a.querySelector('img') || p.textContent.trim() !== text) return;
 
-    // skip URL display links
     try {
       if (new URL(a.href).href === new URL(text, window.location).href) return;
-    } catch { /* continue */ }
+    } catch {}
 
-    // require authored formatting for buttonization
     const strong = a.closest('strong');
     const em = a.closest('em');
     if (!strong && !em) return;
 
     p.className = 'button-wrapper';
     a.className = 'button';
-    if (strong && em) { // high-impact call-to-action
+
+    if (strong && em) {
       a.classList.add('accent');
       const outer = strong.contains(em) ? strong : em;
       outer.replaceWith(a);
@@ -114,10 +105,8 @@ function decorateButtons(main) {
 }
 
 /**
- * Decorates the main element.
- * @param {Element} main The main element
+ * Decorate main
  */
-// eslint-disable-next-line import/prefer-default-export
 export function decorateMain(main) {
   decorateIcons(main);
   buildAutoBlocks(main);
@@ -127,12 +116,12 @@ export function decorateMain(main) {
 }
 
 /**
- * Loads everything needed to get to LCP.
- * @param {Element} doc The container element
+ * Load eager
  */
 async function loadEager(doc) {
   document.documentElement.lang = 'en';
   decorateTemplateAndTheme();
+
   const main = doc.querySelector('main');
   if (main) {
     decorateMain(main);
@@ -141,18 +130,14 @@ async function loadEager(doc) {
   }
 
   try {
-    /* if desktop (proxy for fast connection) or fonts already loaded, load fonts.css */
     if (window.innerWidth >= 900 || sessionStorage.getItem('fonts-loaded')) {
       loadFonts();
     }
-  } catch (e) {
-    // do nothing
-  }
+  } catch (e) {}
 }
 
 /**
- * Loads everything that doesn't need to be delayed.
- * @param {Element} doc The container element
+ * Load lazy
  */
 async function loadLazy(doc) {
   loadHeader(doc.querySelector('header'));
@@ -171,64 +156,51 @@ async function loadLazy(doc) {
 }
 
 /**
- * Loads everything that happens a lot later,
- * without impacting the user experience.
+ * Load delayed
  */
 function loadDelayed() {
-  // eslint-disable-next-line import/no-cycle
   window.setTimeout(() => import('./delayed.js'), 3000);
-  // load anything that can be postponed to the latest here
 }
 
-async function loadPage() {
-  await loadEager(document);
-  await loadLazy(document);
-  loadDelayed();
-}
-
-loadPage();
-
-function removeFooterFromMain() {
+/**
+ * Remove duplicate nav content from main (SAFE VERSION)
+ */
+function cleanMainNav() {
   const main = document.querySelector('main');
   if (!main) return;
 
-  const sections = [...main.querySelectorAll('.section')];
+  const sections = main.querySelectorAll(':scope > .section');
 
   sections.forEach((section) => {
-    const text = section.innerText.toLowerCase();
+    const links = [...section.querySelectorAll('a')].map(a => a.textContent.trim());
 
-    if (
-      text.includes('quick links') ||
-      text.includes('©') ||
-      text.includes('campaigns & events')
-    ) {
+    const isNav =
+      links.includes('Home') &&
+      links.includes('Explore') &&
+      links.includes('About');
+
+    const isAuth =
+      links.includes('Sign In') &&
+      links.includes('Sign Up');
+
+    // only remove sections that are clearly duplicate nav
+    if (isNav || isAuth) {
       section.remove();
     }
   });
 }
 
-window.addEventListener('load', removeFooterFromMain);
+/**
+ * Load page
+ */
+async function loadPage() {
+  await loadEager(document);
+  await loadLazy(document);
 
+  // ✅ run AFTER everything loads
+  cleanMainNav();
 
+  loadDelayed();
+}
 
-document.addEventListener("DOMContentLoaded", () => {
-  const main = document.querySelector("main");
-  if (!main) return;
-
-  // Remove ONLY nav-like UL blocks
-  main.querySelectorAll("ul").forEach((ul) => {
-    const links = [...ul.querySelectorAll("a")].map(a => a.textContent.trim());
-
-    const isNav =
-      links.includes("Home") &&
-      links.includes("Explore");
-
-    const isAuth =
-      links.includes("Sign In") &&
-      links.includes("Sign Up");
-
-    if (isNav || isAuth) {
-      ul.closest(".section")?.remove();
-    }
-  });
-});
+loadPage();
