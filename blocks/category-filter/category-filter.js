@@ -1,18 +1,17 @@
 export default function decorate(block) {
-  const items = block.querySelectorAll('p');
+  const items = [...block.children];
 
-  items.forEach((el) => {
-    const value = el.textContent.trim();
-    el.classList.add('category-pill');
+  block.classList.add('category-filter');
 
-    el.addEventListener('click', () => {
-      if (value === "All") {
-        window.location.href = "/explore";
-        return;
-      }
+  items.forEach((row) => {
+    const text = row.textContent.trim();
 
-      window.location.href =
-        `/explore?category=${encodeURIComponent(value)}`;
-    });
+    const pill = document.createElement('button');
+    pill.className = 'category-pill';
+    pill.textContent = text;
+
+    block.appendChild(pill);
   });
+
+  block.querySelectorAll('div').forEach(d => d.remove());
 }

@@ -1,0 +1,15 @@
+.creator-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.creator-card {
+  text-align: center;
+}
+
+.creator-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+}

@@ -2,77 +2,36 @@ export default function decorate(block) {
   const rows = [...block.children];
   const data = {};
 
-  // Extract data
   rows.forEach((row) => {
-    const cols = [...row.children];
-    if (cols.length < 2) return;
-
-    const key = cols[0].textContent.trim().toLowerCase();
-    const value = cols[1].textContent.trim();
-
+    const key = row.children[0]?.textContent.trim().toLowerCase();
+    const value = row.children[1]?.textContent.trim();
     if (key) data[key] = value;
   });
 
-  // Clear block safely
-  block.textContent = "";
+  block.textContent = '';
 
-  // Create structure WITHOUT template injection
-  const hero = document.createElement("div");
-  hero.className = "hero";
+  const section = document.createElement('section');
+  section.className = 'hero';
 
-  // VIDEO
-  const video = document.createElement("video");
-  video.className = "hero__video";
-  video.autoplay = true;
-  video.muted = true;
-  video.loop = true;
-  video.playsInline = true;
+  section.innerHTML = `
+    <video class="hero__video" autoplay muted loop playsinline>
+      <source src="${data.video}" type="video/mp4">
+    </video>
 
-  const source = document.createElement("source");
-  source.src = data.video || "/assets/videos/home-hero-background.mp4";
-  source.type = "video/mp4";
+    <div class="hero__overlay"></div>
 
-  video.appendChild(source);
+    <div class="hero__content">
+      <h1>${data.title || ""}</h1>
+      <p>${data.description || ""}</p>
 
-  // OVERLAY
-  const overlay = document.createElement("div");
-  overlay.className = "hero__overlay";
+      <div class="hero__actions">
+        ${data["cta primary"] ? `<a href="/explore" class="btn-primary">${data["cta primary"]}</a>` : ""}
+        ${data["cta secondary"] ? `<a href="/signup" class="btn-secondary">${data["cta secondary"]}</a>` : ""}
+      </div>
+    </div>
 
-  // CONTENT
-  const content = document.createElement("div");
-  content.className = "hero__content";
+    ${data["scroll target"] ? `<a href="${data["scroll target"]}" class="hero__scroll">↓</a>` : ""}
+  `;
 
-  const h1 = document.createElement("h1");
-  h1.textContent = data.title || "Create. Explore. Inspire.";
-
-  const p = document.createElement("p");
-  p.textContent = data.description || "Discover Adobe events and creators.";
-
-  content.append(h1, p);
-
-  // BUTTONS
-  const actions = document.createElement("div");
-  actions.className = "hero__actions";
-
-  if (data["cta primary"]) {
-    const btn = document.createElement("a");
-    btn.className = "btn btn-primary";
-    btn.href = "/explore";
-    btn.textContent = data["cta primary"];
-    actions.appendChild(btn);
-  }
-
-  if (data["cta secondary"]) {
-    const btn = document.createElement("a");
-    btn.className = "btn btn-secondary";
-    btn.href = "/signup";
-    btn.textContent = data["cta secondary"];
-    actions.appendChild(btn);
-  }
-
-  content.appendChild(actions);
-
-  // Assemble
-  hero.append(video, overlay, content);
-  block.appendChild(hero);
+  block.appendChild(section);
 }

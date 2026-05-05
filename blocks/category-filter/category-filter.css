@@ -1,0 +1,18 @@
+.category-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.category-pill {
+  padding: 8px 14px;
+  border-radius: 20px;
+  background: #eee;
+  border: none;
+  cursor: pointer;
+}
+
+.category-pill:hover {
+  background: #ddd;
+}
