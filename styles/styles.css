@@ -39,7 +39,7 @@
   /* layout */
   --max-width: 1280px;
   --section-padding: 60px 24px;
-  --nav-height: 0px;
+  --nav-height: 64px;
 
   /* fonts */
   --body-font-family: roboto, roboto-fallback, system-ui, -apple-system, "Segoe UI", arial, sans-serif;
