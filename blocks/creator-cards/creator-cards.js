@@ -28,20 +28,24 @@ export default async function decorate(block) {
       return;
     }
 
-    block.innerHTML = filtered.map(buildCreatorCard).join("");
+    const ul = document.createElement('ul');
+
+    filtered.forEach(c => {
+      const li = document.createElement('li');
+
+      li.innerHTML = `
+        <img src="${c.avatar || ''}" alt="${c.name}">
+        <h3>${c.name || ""}</h3>
+        <p>${c.designation || ""}</p>
+      `;
+
+      ul.appendChild(li);
+    });
+
+    block.appendChild(ul);
 
   } catch (e) {
     console.error(e);
     block.innerHTML = `<p class="empty-state">Failed to load creators</p>`;
   }
-}
-
-function buildCreatorCard(c) {
-  return `
-    <article class="card creator-card">
-      <img class="creator-avatar" src="${c.avatar || ''}" alt="${c.name}">
-      <h3 class="card__title">${c.name || ""}</h3>
-      <p class="text-muted">${c.designation || ""}</p>
-    </article>
-  `;
 }

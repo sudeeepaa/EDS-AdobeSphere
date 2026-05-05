@@ -7,13 +7,12 @@ export default async function decorate(block) {
     if (key && value) config[key] = value;
   });
 
-  block.textContent = '';
+  block.innerHTML = '';
 
   try {
     const resp = await fetch('/data/events.json');
     const json = await resp.json();
 
-    // ✅ HANDLE BOTH formats
     let events = Array.isArray(json) ? json : json.data || [];
 
     if (config.featuredOnly === "true") {
@@ -29,26 +28,24 @@ export default async function decorate(block) {
       return;
     }
 
-    const grid = document.createElement('div');
-    grid.className = 'event-cards__grid';
+    const ul = document.createElement('ul');
 
-    events.forEach((event) => {
-      const card = document.createElement('article');
-      card.className = 'card';
+    events.forEach(event => {
+      const li = document.createElement('li');
 
-      card.innerHTML = `
-        <img class="card__image" src="${event.thumbnail}" alt="${event.title}">
+      li.innerHTML = `
+        <img src="${event.thumbnail}" alt="${event.title}">
         <div class="card__body">
           <span class="badge">${event.category || "Event"}</span>
-          <h3 class="card__title">${event.title}</h3>
-          <p class="card__excerpt">${event.shortDescription}</p>
+          <h3>${event.title}</h3>
+          <p>${event.shortDescription}</p>
         </div>
       `;
 
-      grid.appendChild(card);
+      ul.appendChild(li);
     });
 
-    block.appendChild(grid);
+    block.appendChild(ul);
 
   } catch (e) {
     console.error(e);

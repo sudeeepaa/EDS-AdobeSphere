@@ -28,23 +28,27 @@ export default async function decorate(block) {
       return;
     }
 
-    block.innerHTML = filtered.map(buildBlogCard).join("");
+    const ul = document.createElement('ul');
+
+    filtered.forEach(blog => {
+      const li = document.createElement('li');
+
+      li.innerHTML = `
+        <img src="${blog.coverImage || ''}" alt="${blog.title}">
+        <div class="card__body">
+          <span class="badge">${blog.category || "Article"}</span>
+          <h3>${blog.title || ""}</h3>
+          <p>${blog.excerpt || ""}</p>
+        </div>
+      `;
+
+      ul.appendChild(li);
+    });
+
+    block.appendChild(ul);
 
   } catch (e) {
     console.error(e);
     block.innerHTML = `<p class="empty-state">Failed to load blogs</p>`;
   }
-}
-
-function buildBlogCard(blog) {
-  return `
-    <article class="card">
-      <img class="card__image" src="${blog.coverImage || ''}" alt="${blog.title}">
-      <div class="card__body">
-        <span class="badge">${blog.category || "Article"}</span>
-        <h3 class="card__title">${blog.title || ""}</h3>
-        <p class="card__excerpt">${blog.excerpt || ""}</p>
-      </div>
-    </article>
-  `;
 }

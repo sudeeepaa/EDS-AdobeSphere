@@ -1,17 +1,17 @@
 export default function decorate(block) {
   const items = [...block.children];
 
-  block.classList.add('category-filter');
+  const ul = document.createElement('ul');
 
   items.forEach((row) => {
     const text = row.textContent.trim();
 
-    const pill = document.createElement('button');
-    pill.className = 'category-pill';
-    pill.textContent = text;
+    const li = document.createElement('li');
+    li.textContent = text;
 
-    block.appendChild(pill);
+    ul.appendChild(li);
   });
 
-  block.querySelectorAll('div').forEach(d => d.remove());
+  block.innerHTML = '';
+  block.appendChild(ul);
 }
