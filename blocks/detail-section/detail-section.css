@@ -1,0 +1,263 @@
+/*
+ * AdobeSphere — detail-section block.
+ * Variants: overview, agenda, people, quote, comments, bio, reach-out.
+ */
+
+.detail-section {
+  width: 100%;
+}
+
+.detail-section h2.section-heading {
+  margin-top: 0;
+}
+
+/* overview — fact list + body */
+.detail-section .detail-facts {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 0 0 20px;
+}
+
+@media (min-width: 600px) {
+  .detail-section .detail-facts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.detail-section .detail-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  background: var(--white);
+  border-left: 3px solid var(--red-primary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.detail-section .detail-fact dt {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.detail-section .detail-fact dd {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.detail-section .detail-body {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+/* agenda — vertical timeline */
+.detail-section .detail-agenda {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+.detail-section .detail-agenda::before {
+  content: '';
+  position: absolute;
+  left: 80px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--neutral-light);
+}
+
+.detail-section .detail-agenda-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 20px;
+  padding: 12px 0 24px;
+}
+
+.detail-section .detail-agenda-time {
+  position: relative;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--red-primary);
+  text-align: right;
+}
+
+.detail-section .detail-agenda-time::after {
+  content: '';
+  position: absolute;
+  right: -25px;
+  top: 8px;
+  width: 12px;
+  height: 12px;
+  background: var(--red-primary);
+  border-radius: var(--radius-full);
+  border: 3px solid var(--white);
+}
+
+.detail-section .detail-agenda-body h3 {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+}
+
+.detail-section .detail-agenda-body p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+}
+
+/* people — avatar + bio cards */
+.detail-section .detail-people {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 700px) {
+  .detail-section .detail-people {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.detail-section .detail-person {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  background: var(--white);
+  border: 1px solid var(--neutral-light);
+  border-radius: var(--radius-md);
+}
+
+.detail-section .detail-person img {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.detail-section .detail-person h3 {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+}
+
+.detail-section .detail-person p {
+  margin: 0 0 6px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+/* quote */
+.detail-section .detail-quote {
+  margin: 0 auto;
+  max-width: 760px;
+  padding: 32px 40px;
+  border-left: 4px solid var(--red-primary);
+  background: var(--white);
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-style: italic;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+/* bio */
+.detail-section .detail-bio {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  background: var(--white);
+  border-radius: var(--radius-md);
+}
+
+@media (min-width: 700px) {
+  .detail-section .detail-bio {
+    flex-direction: row;
+  }
+}
+
+.detail-section .detail-bio-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.detail-section .detail-bio-body h3 {
+  margin: 0 0 4px;
+  font-size: 1.4rem;
+}
+
+.detail-section .detail-bio-body p {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* reach-out */
+.detail-section .detail-reach-out {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* comments */
+.detail-section .detail-comments-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: var(--white);
+  border: 1px solid var(--neutral-light);
+  border-radius: var(--radius-md);
+}
+
+.detail-section .detail-comments-composer .button {
+  align-self: flex-end;
+}
+
+.detail-section .detail-comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detail-section .detail-comment {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: var(--white);
+  border-radius: var(--radius-md);
+}
+
+.detail-section .detail-comment img {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.detail-section .detail-comment-meta {
+  margin: 0 0 4px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.detail-section .detail-comment p:last-child {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}

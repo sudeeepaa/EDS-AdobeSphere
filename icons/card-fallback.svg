@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" aria-hidden="true">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e30220"/>
+      <stop offset="100%" stop-color="#242024"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="180" fill="url(#g)"/>
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+        font-family="Impact, Arial Narrow Bold, sans-serif" font-size="40" fill="#fff" letter-spacing="2">
+    <tspan fill="#fff">Adobe</tspan><tspan fill="#fff" opacity="0.8">sphere</tspan>
+  </text>
+</svg>

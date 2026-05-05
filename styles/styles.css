@@ -1,0 +1,425 @@
+/*
+ * AdobeSphere — Global styles
+ * Migrated from /css/global.css and adapted for Edge Delivery Services.
+ * Mobile-first; min-width media queries at 600/900/1200.
+ */
+
+:root {
+  /* brand colours */
+  --red-primary: #e30220;
+  --red-deep: #bf0000;
+  --bg-dark: #242024;
+  --neutral-light: #dadada;
+  --bg-off-white: #f3f4f5;
+  --white: #fff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #555;
+  --text-muted: #888;
+
+  /* legacy EDS aliases — keep so AEM utilities still work */
+  --background-color: var(--white);
+  --light-color: var(--bg-off-white);
+  --dark-color: var(--bg-dark);
+  --text-color: var(--text-primary);
+  --link-color: var(--red-primary);
+  --link-hover-color: var(--red-deep);
+
+  /* shadows / radius / motion */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 8%);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 12%);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 18%);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 350ms ease;
+
+  /* layout */
+  --max-width: 1280px;
+  --section-padding: 60px 24px;
+  --nav-height: 64px;
+
+  /* fonts */
+  --body-font-family: roboto, roboto-fallback, system-ui, -apple-system, "Segoe UI", arial, sans-serif;
+  --heading-font-family: impact, haettenschweiler, "Arial Narrow Bold", "Segoe UI", arial, sans-serif;
+  --font-sans: var(--body-font-family);
+  --font-display: var(--heading-font-family);
+
+  /* type scale */
+  --body-font-size-m: 16px;
+  --body-font-size-s: 14px;
+  --body-font-size-xs: 12px;
+  --heading-font-size-xxl: 4.5rem;
+  --heading-font-size-xl: 2.8rem;
+  --heading-font-size-l: 1.8rem;
+  --heading-font-size-m: 1.3rem;
+  --heading-font-size-s: 1.15rem;
+  --heading-font-size-xs: 1rem;
+}
+
+/* fallback fonts to avoid layout shift */
+@font-face {
+  font-family: roboto-fallback;
+  size-adjust: 99.529%;
+  src: local('Arial');
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  display: none;
+  margin: 0;
+  background: var(--bg-off-white);
+  color: var(--text-primary);
+  font-family: var(--body-font-family);
+  font-size: var(--body-font-size-m);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.appear {
+  display: block;
+}
+
+header {
+  height: var(--nav-height);
+}
+
+header .header,
+footer .footer {
+  visibility: hidden;
+}
+
+header .header[data-block-status="loaded"],
+footer .footer[data-block-status="loaded"] {
+  visibility: visible;
+}
+
+img,
+picture,
+video,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+main img {
+  width: auto;
+}
+
+/* headings — Impact-style display face */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0.8em 0 0.25em;
+  font-family: var(--heading-font-family);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  scroll-margin: 40px;
+}
+
+h1 { font-size: clamp(2.5rem, 5vw, 4.5rem); }
+h2 { font-size: clamp(1.8rem, 3vw, 2.8rem); }
+h3 { font-size: clamp(1.3rem, 2vw, 1.8rem); }
+h4 { font-size: 1.2rem; }
+h5 { font-size: var(--heading-font-size-s); }
+h6 { font-size: var(--heading-font-size-xs); }
+
+p,
+ul,
+ol,
+pre,
+blockquote {
+  margin: 0.8em 0 0.25em;
+}
+
+a:any-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  overflow-wrap: break-word;
+}
+
+a:hover {
+  color: var(--red-primary);
+}
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+ul,
+ol {
+  padding-left: 1.2em;
+}
+
+/* sections — EDS wraps each section in `main > .section > div` */
+main > .section {
+  margin: 0;
+  padding: 60px 0;
+}
+
+main > .section > div {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+main > .section:first-of-type {
+  margin-top: 0;
+}
+
+/* section colour variants — set via Section Metadata > style */
+main .section.dark {
+  background: var(--bg-dark);
+  color: var(--white);
+}
+
+main .section.light {
+  background: var(--bg-off-white);
+}
+
+main .section.flush {
+  padding: 0;
+}
+
+main .section.no-pad-top {
+  padding-top: 0;
+}
+
+main .section.no-pad-bottom {
+  padding-bottom: 0;
+}
+
+/* utility: section heading with red underline (used everywhere) */
+.section-heading,
+main h2.section-heading {
+  display: inline-block;
+  margin-bottom: 28px;
+  padding-bottom: 12px;
+  border-bottom: 4px solid var(--red-primary);
+  line-height: 1;
+}
+
+.text-red { color: var(--red-primary); }
+.text-muted { color: var(--text-muted); }
+
+/* badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--red-primary);
+  color: var(--white);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.badge.outline,
+.badge--outline {
+  background: transparent;
+  color: var(--red-primary);
+  border: 1.5px solid var(--red-primary);
+}
+
+/* buttons — EDS auto-decorates `<strong><a>` as primary, `<em><a>` as secondary */
+p.button-wrapper {
+  margin: 12px 0;
+}
+
+a.button:any-link,
+button.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+a.button.primary,
+button.button.primary {
+  background: var(--red-primary);
+  border-color: var(--red-primary);
+  color: var(--white);
+}
+
+a.button.primary:hover,
+button.button.primary:hover {
+  background: var(--red-deep);
+  border-color: var(--red-deep);
+  transform: translateY(-1px);
+}
+
+a.button.secondary,
+button.button.secondary {
+  background: transparent;
+  border-color: var(--red-primary);
+  color: var(--red-primary);
+}
+
+a.button.secondary:hover,
+button.button.secondary:hover {
+  background: var(--red-primary);
+  color: var(--white);
+}
+
+a.button.accent,
+button.button.accent {
+  background: var(--bg-dark);
+  border-color: var(--bg-dark);
+  color: var(--white);
+}
+
+a.button.accent:hover,
+button.button.accent:hover {
+  background: #333;
+  border-color: #333;
+}
+
+a.button.ghost,
+button.button.ghost {
+  background: transparent;
+  border-color: var(--neutral-light);
+  color: var(--text-primary);
+}
+
+a.button.ghost:hover,
+button.button.ghost:hover {
+  border-color: var(--red-primary);
+  color: var(--red-primary);
+}
+
+/* form-input — used by form / explore / profile blocks */
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--white);
+  border: 1.5px solid var(--neutral-light);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-input:focus {
+  border-color: var(--red-primary);
+  box-shadow: 0 0 0 3px rgba(227, 2, 32, 10%);
+}
+
+.form-input.error {
+  border-color: #dc2626;
+}
+
+.form-error {
+  display: block;
+  margin-top: 4px;
+  color: #dc2626;
+  font-size: 0.8rem;
+}
+
+/* icons */
+.icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+}
+
+.icon img,
+.icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* blockquote — used by detail-section quote variant + creator hero quote */
+blockquote {
+  margin: 24px 0;
+  padding: 16px 24px;
+  border-left: 4px solid var(--red-primary);
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+/* selection / scrollbar polish */
+::selection {
+  background: var(--red-primary);
+  color: var(--white);
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--red-primary);
+  border-radius: var(--radius-full);
+}
+
+/* reveal-on-scroll utility (kept compatible with the original site) */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ─────────── breakpoints ─────────── */
+@media (min-width: 600px) {
+  main > .section > div {
+    padding: 0 32px;
+  }
+}
+
+@media (min-width: 900px) {
+  :root {
+    --body-font-size-m: 17px;
+  }
+}

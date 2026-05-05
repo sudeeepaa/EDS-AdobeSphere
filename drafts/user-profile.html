@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>My Profile — AdobeSphere</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/svg+xml" href="/icons/card-fallback.svg">
+  <script src="/scripts/aem.js" type="module"></script>
+  <script src="/scripts/scripts.js" type="module"></script>
+  <link rel="stylesheet" href="/styles/styles.css"/>
+</head>
+<body>
+  <header></header>
+  <main>
+
+    <!-- Editable user dashboard -->
+    <div>
+      <h1>My Profile</h1>
+      <div class="profile user">
+        <div></div>
+      </div>
+    </div>
+
+    <!-- Saved events grid (with-save lets the user un-save) -->
+    <div>
+      <div class="cards events with-save">
+        <div><div>Title</div><div>Saved Events</div></div>
+        <div><div>Source</div><div>events</div></div>
+        <div><div>Empty</div><div>You haven't saved any events yet — browse Explore to find some.</div></div>
+      </div>
+    </div>
+
+    <!-- Saved blogs grid -->
+    <div>
+      <div class="cards blogs with-save">
+        <div><div>Title</div><div>Saved Blogs</div></div>
+        <div><div>Source</div><div>blogs</div></div>
+        <div><div>Empty</div><div>You haven't saved any articles yet — find some on Explore.</div></div>
+      </div>
+    </div>
+
+    <!-- Registered events with cancel buttons -->
+    <div>
+      <div class="cards events with-actions">
+        <div><div>Title</div><div>My Registrations</div></div>
+        <div><div>Source</div><div>events</div></div>
+        <div><div>Empty</div><div>You haven't registered for anything yet.</div></div>
+      </div>
+    </div>
+
+    <!-- Published blogs with edit/delete -->
+    <div>
+      <div class="cards blogs with-actions">
+        <div><div>Title</div><div>My Published Blogs</div></div>
+        <div><div>Source</div><div>blogs</div></div>
+        <div><div>Empty</div><div>You haven't published any blogs yet. Try the editor!</div></div>
+      </div>
+    </div>
+
+  </main>
+  <footer></footer>
+</body>
+</html>

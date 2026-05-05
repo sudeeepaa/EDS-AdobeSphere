@@ -1,0 +1,310 @@
+/*
+ * AdobeSphere — hero block.
+ * Variants: default, video, search, media, gradient, compact.
+ */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+}
+
+/* shared content stack */
+.hero .hero-content {
+  position: relative;
+  z-index: 4;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 24px;
+  text-align: center;
+}
+
+.hero .hero-content h1,
+.hero .hero-content h2 {
+  margin: 0 0 18px;
+}
+
+.hero .hero-content p {
+  margin: 0 auto 28px;
+  max-width: 680px;
+  font-size: clamp(1rem, 1.4vw, 1.22rem);
+}
+
+.hero .hero-content .button-wrapper {
+  display: inline-block;
+  margin: 0 6px;
+}
+
+/* ─── default variant ─── */
+.hero.hero-default {
+  padding: 80px 0 60px;
+  background: var(--bg-off-white);
+}
+
+.hero.hero-default .hero-content h1 {
+  color: var(--text-primary);
+}
+
+/* ─── video variant (Home page) ─── */
+.hero.hero-video {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #1f1a1f 0%, #2b2329 45%, #1d1d1f 100%);
+  color: var(--white);
+}
+
+.hero.hero-video .hero-content {
+  color: var(--white);
+}
+
+.hero.hero-video .hero-content h1 {
+  color: var(--white);
+}
+
+.hero.hero-video .hero-content p {
+  color: rgba(255, 255, 255, 86%);
+}
+
+.hero .hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.hero .hero-bg video,
+.hero .hero-bg picture,
+.hero .hero-bg img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero .hero-gradient {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(227, 2, 32, 25%), transparent 40%),
+    linear-gradient(120deg, rgba(227, 2, 32, 20%) 0%, rgba(36, 32, 36, 20%) 60%, rgba(227, 2, 32, 18%) 100%);
+  animation: hero-shift 10s ease-in-out infinite alternate;
+}
+
+.hero .hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: rgba(0, 0, 0, 55%);
+}
+
+@keyframes hero-shift {
+  from { opacity: 0.75; }
+  to { opacity: 1; }
+}
+
+.hero .hero-scroll {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  color: var(--white);
+  opacity: 0.9;
+  animation: hero-bounce 1.7s ease-in-out infinite;
+}
+
+@keyframes hero-bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(8px); }
+}
+
+/* ─── search variant (Explore) ─── */
+.hero.hero-search-variant {
+  padding: 80px 0 50px;
+  background: linear-gradient(135deg, var(--bg-off-white) 0%, var(--white) 100%);
+}
+
+.hero .hero-search {
+  position: relative;
+  display: flex;
+  width: 100%;
+  max-width: 540px;
+  margin: 24px auto 0;
+}
+
+.hero .hero-search-input {
+  flex: 1;
+  padding-right: 56px;
+  border-radius: var(--radius-full);
+}
+
+.hero .hero-search-btn {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  background: var(--red-primary);
+  color: var(--white);
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero .hero-search-btn:hover {
+  background: var(--red-deep);
+}
+
+/* ─── media variant (Event detail banner) ─── */
+.hero.hero-media {
+  position: relative;
+  height: 420px;
+  display: flex;
+  align-items: flex-end;
+  color: var(--white);
+}
+
+.hero .hero-banner {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.hero .hero-banner picture,
+.hero .hero-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero .hero-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 10%) 0%, rgba(0, 0, 0, 75%) 100%);
+}
+
+.hero.hero-media .hero-content {
+  text-align: left;
+  padding-bottom: 32px;
+  max-width: var(--max-width);
+}
+
+.hero.hero-media .hero-content h1 {
+  color: var(--white);
+  margin-bottom: 12px;
+}
+
+.hero.hero-media .hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 12px;
+  color: rgba(255, 255, 255, 90%);
+  font-size: 0.95rem;
+}
+
+.hero.hero-media .hero-meta p {
+  margin: 0;
+  max-width: none;
+}
+
+/* ─── gradient variant (Creator profile) ─── */
+.hero.hero-gradient-variant {
+  padding: 80px 0 60px;
+  background: linear-gradient(135deg, var(--red-primary) 0%, var(--bg-dark) 100%);
+  color: var(--white);
+}
+
+.hero.hero-gradient-variant .hero-content h1 {
+  color: var(--white);
+}
+
+.hero.hero-gradient-variant .hero-content p {
+  color: rgba(255, 255, 255, 90%);
+}
+
+.hero .hero-avatar {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 16px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  border: 4px solid var(--white);
+  box-shadow: var(--shadow-md);
+}
+
+.hero .hero-avatar picture,
+.hero .hero-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero .hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.hero .hero-stats ul {
+  display: contents;
+  list-style: none;
+  padding: 0;
+}
+
+.hero .hero-stats li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 10%);
+  border-radius: var(--radius-md);
+  min-width: 120px;
+}
+
+.hero .hero-stats li strong {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+/* ─── compact variant (Blog detail title strip) ─── */
+.hero.hero-compact {
+  padding: 40px 0 20px;
+  background: var(--white);
+  text-align: left;
+}
+
+.hero.hero-compact .hero-content {
+  max-width: var(--max-width);
+  text-align: left;
+}
+
+.hero.hero-compact .hero-content h1 {
+  margin-top: 8px;
+}
+
+@media (max-width: 599px) {
+  .hero.hero-video {
+    min-height: 90vh;
+  }
+
+  .hero.hero-media {
+    height: 320px;
+  }
+
+  .hero .hero-stats li {
+    min-width: 100px;
+    padding: 10px 16px;
+  }
+}

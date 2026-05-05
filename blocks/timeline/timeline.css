@@ -1,0 +1,125 @@
+/*
+ * AdobeSphere — timeline block (Platform Journey ribbon).
+ */
+
+.timeline {
+  position: relative;
+}
+
+.timeline .timeline-track {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+}
+
+@media (min-width: 900px) {
+  .timeline .timeline-track {
+    flex-direction: row;
+    gap: 32px;
+    overflow-x: auto;
+    padding-bottom: 24px;
+    scroll-snap-type: x mandatory;
+  }
+
+  .timeline .timeline-track::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--neutral-light);
+    z-index: 0;
+  }
+}
+
+.timeline .timeline-item {
+  position: relative;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+@media (min-width: 900px) {
+  .timeline .timeline-item {
+    width: 320px;
+  }
+}
+
+.timeline .timeline-card {
+  position: relative;
+  padding: 20px;
+  background: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  z-index: 1;
+}
+
+.timeline .timeline-header {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--red-primary);
+}
+
+.timeline .timeline-header h3 {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: var(--text-primary);
+}
+
+.timeline .timeline-header time {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--red-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.timeline .timeline-bullets {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.timeline .timeline-bullets li {
+  margin: 4px 0;
+}
+
+.timeline .timeline-dot {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: -8px;
+  width: 16px;
+  height: 16px;
+  background: var(--red-primary);
+  border-radius: var(--radius-full);
+  border: 3px solid var(--white);
+  box-shadow: 0 0 0 1px var(--red-primary);
+}
+
+@media (min-width: 900px) {
+  .timeline .timeline-dot {
+    display: block;
+  }
+}
+
+.timeline .timeline-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* hide scrollbar polish */
+.timeline .timeline-track::-webkit-scrollbar {
+  height: 4px;
+}
+
+.timeline .timeline-track::-webkit-scrollbar-thumb {
+  background: var(--red-primary);
+  border-radius: var(--radius-full);
+}

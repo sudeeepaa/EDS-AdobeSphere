@@ -1,0 +1,290 @@
+/*
+ * AdobeSphere — header / navbar
+ * Mobile-first: drawer below 900px, horizontal bar from 900px up.
+ */
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 900;
+  height: var(--nav-height);
+  background: var(--white);
+  border-bottom: 1px solid var(--neutral-light);
+  transition: box-shadow var(--transition-base);
+}
+
+.header.scrolled,
+.header #nav.scrolled {
+  box-shadow: var(--shadow-sm);
+}
+
+.header .nav-wrapper {
+  height: 100%;
+}
+
+.header #nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: var(--max-width);
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* brand wordmark */
+.header .nav-brand {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.header .nav-brand p {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header .nav-brand picture,
+.header .nav-brand img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.header .nav-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.header .nav-brand-link strong,
+.header .nav-brand-link em,
+.header .nav-brand .adobe {
+  color: var(--red-primary);
+  font-style: normal;
+  font-weight: inherit;
+}
+
+/* primary links — authored as a UL inside section 2 */
+.header .nav-sections {
+  display: none;
+  flex: 1;
+}
+
+.header .nav-sections ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.header .nav-sections a {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.header .nav-sections a:hover,
+.header .nav-sections a[aria-current="page"] {
+  color: var(--red-primary);
+  background: rgba(227, 2, 32, 6%);
+}
+
+/* tools (auth zone) */
+.header .nav-tools {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.header .nav-auth {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header .nav-auth .button {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+}
+
+/* avatar dropdown */
+.header .nav-user {
+  position: relative;
+}
+
+.header .nav-user-toggle {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  background: transparent;
+  border: 2px solid var(--neutral-light);
+  transition: border-color var(--transition-fast);
+}
+
+.header .nav-user-toggle:hover {
+  border-color: var(--red-primary);
+}
+
+.header .nav-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+}
+
+.header .nav-user-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  padding: 8px 0;
+  background: var(--white);
+  border: 1px solid var(--neutral-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.header .nav-user-menu.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.header .nav-user-menu a,
+.header .nav-user-menu button {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.header .nav-user-menu a:hover,
+.header .nav-user-menu button:hover {
+  background: var(--bg-off-white);
+  color: var(--red-primary);
+}
+
+/* hamburger */
+.header .nav-hamburger {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 36px;
+  height: 36px;
+  margin-right: auto;
+  padding: 6px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.header .nav-hamburger span {
+  display: block;
+  height: 2px;
+  background: var(--text-primary);
+  border-radius: 2px;
+  transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+
+.header #nav[aria-expanded="true"] .nav-hamburger span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.header #nav[aria-expanded="true"] .nav-hamburger span:nth-child(2) {
+  opacity: 0;
+}
+
+.header #nav[aria-expanded="true"] .nav-hamburger span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+/* mobile drawer (below 900px) */
+@media (max-width: 899px) {
+  .header #nav .nav-sections {
+    display: none;
+    position: fixed;
+    top: var(--nav-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 24px;
+    background: var(--white);
+    overflow-y: auto;
+  }
+
+  .header #nav[aria-expanded="true"] .nav-sections {
+    display: block;
+  }
+
+  .header #nav .nav-sections ul {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .header #nav .nav-sections a {
+    padding: 14px 16px;
+    font-size: 1rem;
+    border-bottom: 1px solid var(--neutral-light);
+    border-radius: 0;
+  }
+
+  .header .nav-auth .button {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (min-width: 900px) {
+  .header .nav-hamburger {
+    display: none;
+  }
+
+  .header .nav-sections {
+    display: flex;
+  }
+}
+
+/* push page content below the fixed header */
+body > header {
+  height: var(--nav-height);
+}
+
+main {
+  padding-top: var(--nav-height);
+}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Blog — AdobeSphere</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/svg+xml" href="/icons/card-fallback.svg">
+  <script src="/scripts/aem.js" type="module"></script>
+  <script src="/scripts/scripts.js" type="module"></script>
+  <link rel="stylesheet" href="/styles/styles.css"/>
+</head>
+<body>
+  <header></header>
+  <main>
+
+    <!-- HERO (compact variant) -->
+    <div>
+      <div class="hero compact">
+        <div>
+          <h1>Article Title</h1>
+        </div>
+      </div>
+    </div>
+
+    <!-- Author bio strip -->
+    <div>
+      <div class="detail-section bio blog">
+        <div><div>Id Source</div><div>blogs</div></div>
+      </div>
+    </div>
+
+    <!-- Article body — when the blog content lives in JSON, the page-level script
+         injects it here. For authored long-form blogs the author can write paragraphs
+         directly in this section, with no block. -->
+    <div id="article-body">
+      <p>The article body is rendered by the blog detail page script, which reads
+      <code>content[]</code> from the matching <code>/data/blogs.json</code> entry
+      and renders heading / paragraph / image blocks in order.</p>
+    </div>
+
+    <!-- Comments -->
+    <div class="section-metadata"><div><div>style</div><div>light</div></div></div>
+    <div>
+      <div class="detail-section comments">
+        <div><div>Title</div><div>Discussion</div></div>
+      </div>
+    </div>
+
+    <!-- More from blog -->
+    <div>
+      <div class="cards blogs">
+        <div><div>Title</div><div>More from the Blog</div></div>
+        <div><div>Source</div><div>blogs</div></div>
+        <div><div>Limit</div><div>3</div></div>
+      </div>
+    </div>
+
+  </main>
+  <footer></footer>
+</body>
+</html>

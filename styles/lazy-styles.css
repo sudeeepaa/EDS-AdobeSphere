@@ -1,0 +1,99 @@
+/*
+ * AdobeSphere — Lazy styles (loaded after LCP).
+ * Keep below-the-fold global niceties here so the eager bundle stays light.
+ */
+
+#toast-container {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.toast {
+  position: relative;
+  max-width: 360px;
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
+  background: var(--bg-dark);
+  color: var(--white);
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 300ms ease, transform 300ms ease;
+  pointer-events: auto;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast.toast-success { background: #16a34a; }
+.toast.toast-error   { background: #dc2626; }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 60%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-base);
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-box {
+  width: 90%;
+  max-width: 540px;
+  max-height: 90vh;
+  padding: 40px;
+  overflow-y: auto;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  transform: translateY(30px);
+  transition: transform var(--transition-base);
+}
+
+.modal-overlay.open .modal-box {
+  transform: translateY(0);
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 1.5rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 480px) {
+  #toast-container {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    align-items: stretch;
+  }
+
+  .toast {
+    max-width: none;
+  }
+
+  .modal-box {
+    padding: 28px;
+  }
+}

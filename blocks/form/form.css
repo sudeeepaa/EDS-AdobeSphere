@@ -1,0 +1,158 @@
+/*
+ * AdobeSphere — form block (contact / login / signup / registration / blog-editor).
+ */
+
+.form .form {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 30px;
+  background: var(--white);
+  border: 1px solid var(--neutral-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.form .form h1,
+.form .form h2 {
+  margin: 0 0 20px;
+}
+
+.form .form-group {
+  margin-bottom: 16px;
+}
+
+.form .form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.form .form-counter {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.form .form-status {
+  margin-top: 12px;
+  color: #16a34a;
+  font-weight: 500;
+}
+
+.form .form-error-global {
+  margin: 10px 0;
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.form .form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+/* auth forms — wider top brand */
+.form .form-auth {
+  max-width: 540px;
+}
+
+.form .form-brand {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.form .form-wordmark {
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  letter-spacing: 0.02em;
+}
+
+.form .form-wordmark .adobe {
+  color: var(--red-primary);
+  margin-right: 6px;
+}
+
+.form .form-bottom {
+  margin-top: 18px;
+  font-size: 0.88rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.form .form-bottom a {
+  color: var(--red-primary);
+  font-weight: 600;
+}
+
+/* password show/hide */
+.form .form-password {
+  position: relative;
+}
+
+.form .form-toggle-password {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  padding: 4px 8px;
+  background: transparent;
+  border: 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.form .form-toggle-password:hover {
+  color: var(--red-primary);
+}
+
+/* registration */
+.form .form-radios {
+  display: flex;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+.form .form-radios label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.form .form-radios input {
+  accent-color: var(--red-primary);
+}
+
+.form .companion-block {
+  margin-bottom: 12px;
+  padding: 16px;
+  border: 1px solid var(--neutral-light);
+  border-radius: var(--radius-md);
+}
+
+.form .companion-block p {
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+
+/* blog editor */
+.form .form-blog-editor {
+  max-width: 800px;
+}
+
+.form .form-content {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.form-blog-editor .form-actions {
+  justify-content: space-between;
+}

@@ -1,0 +1,113 @@
+/*
+ * AdobeSphere — footer.
+ * Dark background, three columns of links, red-underlined headings.
+ */
+
+footer .footer {
+  background: var(--bg-dark);
+  color: var(--white);
+}
+
+footer .footer-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 60px 24px 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+}
+
+@media (min-width: 600px) {
+  footer .footer-inner {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  footer .footer-inner {
+    grid-template-columns: 2fr 1fr 1fr;
+  }
+}
+
+footer .footer-col h2,
+footer .footer-col h3,
+footer .footer-col h4 {
+  display: inline-block;
+  margin: 0 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--red-primary);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  color: var(--white);
+}
+
+footer .footer-col p {
+  margin: 0 0 12px;
+  color: rgba(255, 255, 255, 50%);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  max-width: 32ch;
+}
+
+footer .footer-col p strong {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  color: var(--red-primary);
+}
+
+footer .footer-col p strong + span,
+footer .footer-col p strong + em {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-style: normal;
+  color: var(--white);
+}
+
+footer .footer-col ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+footer .footer-col li {
+  margin: 0;
+}
+
+footer .footer-col a {
+  display: inline-block;
+  padding: 4px 0;
+  color: rgba(255, 255, 255, 65%);
+  font-size: 0.88rem;
+  text-decoration: none;
+  transition: color var(--transition-fast), padding-left var(--transition-fast);
+}
+
+footer .footer-col a:hover {
+  color: var(--white);
+  padding-left: 4px;
+}
+
+/* bottom strip — the author's last paragraph */
+footer .footer-bottom {
+  grid-column: 1 / -1;
+  margin-top: 36px;
+  padding: 20px 0;
+  border-top: 1px solid rgba(255, 255, 255, 10%);
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 45%);
+}
+
+footer .footer-bottom p {
+  margin: 0;
+  max-width: none;
+}
+
+footer .footer-fallback {
+  padding: 24px;
+  text-align: center;
+  background: var(--bg-dark);
+  color: rgba(255, 255, 255, 60%);
+}
