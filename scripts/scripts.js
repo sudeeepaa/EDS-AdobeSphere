@@ -187,3 +187,24 @@ async function loadPage() {
 }
 
 loadPage();
+
+function removeFooterFromMain() {
+  const main = document.querySelector('main');
+  if (!main) return;
+
+  const sections = [...main.querySelectorAll('.section')];
+
+  sections.forEach((section) => {
+    const text = section.innerText.toLowerCase();
+
+    if (
+      text.includes('quick links') ||
+      text.includes('©') ||
+      text.includes('campaigns & events')
+    ) {
+      section.remove();
+    }
+  });
+}
+
+window.addEventListener('load', removeFooterFromMain);
