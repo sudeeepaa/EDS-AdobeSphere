@@ -1,20 +1,15 @@
 /**
  * AdobeSphere — tabs block.
  *
- * Turns a list of tab names into a tabbed interface.
- * The block itself renders the tab buttons. The *subsequent sections* in the
- * document become the tab panels.
- *
  * Authoring format:
  * | tabs |
  * |---|
- * | Events & Campaigns | events |
- * | Blogs & Articles   | blogs  |
+ * | Events & Campaigns | events   |
+ * | Blogs & Articles   | blogs    |
  * | Creators           | creators |
  *
- * The second column (optional) is the tab ID, used for URL ?tab=id matching.
- * The first row links to the immediately following section, the second row
- * links to the section after that, etc.
+ * The second column is the tab ID used for URL ?tab=id matching and
+ * for cross-tab search coordination with cards.js.
  */
 
 export default function decorate(block) {
@@ -50,28 +45,24 @@ export default function decorate(block) {
 
   block.append(tabsList);
 
-  // Setup tab panels (the following sections)
+  // Link each tab to the section that immediately follows the tabs section
   const section = block.closest('.section');
   let currentPanel = section.nextElementSibling;
 
   tabs.forEach((tab) => {
     if (!currentPanel) return;
-
-    // Setup panel attributes
     currentPanel.id = `tabpanel-${tab.id}`;
     currentPanel.setAttribute('role', 'tabpanel');
     currentPanel.setAttribute('aria-labelledby', `tab-${tab.id}`);
     currentPanel.classList.add('tabs-panel');
-
     tab.panel = currentPanel;
     currentPanel = currentPanel.nextElementSibling;
   });
 
-  // ── Core activate function ─────────────────────────────────────────────
-  // updateUrl = true  → writes ?tab= to the address bar (manual click / search)
-  // updateUrl = false → silent activation on first load (keeps /explore clean)
+  // ── Activate a tab ─────────────────────────────────────────────────────
+  // updateUrl = true  → writes ?tab=id to the address bar
+  // updateUrl = false → silent (used on first load so /explore stays clean)
   function activateTab(tab, updateUrl) {
-    // Deactivate all
     tabs.forEach((t) => {
       t.button.classList.remove('active');
       t.button.setAttribute('aria-selected', 'false');
@@ -81,7 +72,6 @@ export default function decorate(block) {
       }
     });
 
-    // Activate target
     tab.button.classList.add('active');
     tab.button.setAttribute('aria-selected', 'true');
     if (tab.panel) {
@@ -89,7 +79,6 @@ export default function decorate(block) {
       tab.panel.style.display = '';
     }
 
-    // Only touch the URL when explicitly requested
     if (updateUrl) {
       const url = new URL(window.location);
       url.searchParams.set('tab', tab.id);
@@ -97,64 +86,54 @@ export default function decorate(block) {
     }
   }
 
-  // Wire click handlers — always update the URL on a real user click
+  // Manual tab clicks always update the URL
   tabs.forEach((tab) => {
     tab.button.addEventListener('click', () => activateTab(tab, true));
   });
 
-  // ── Initial activation ─────────────────────────────────────────────────
-  // If ?tab= is already in the URL (e.g. shared link), honour it and keep
-  // the URL unchanged. If there is no ?tab= (bare /explore), activate the
-  // first tab silently so the address bar stays clean.
+  // ── Initial load ───────────────────────────────────────────────────────
+  // Honour ?tab= if present (e.g. shared link), otherwise activate first
+  // tab silently so the address bar stays as /explore
   const urlParams = new URLSearchParams(window.location.search);
   const activeTabId = urlParams.get('tab');
-  const targetTab = tabs.find((t) => t.id === activeTabId) || tabs[0];
-
-  if (targetTab) {
-    activateTab(targetTab, !!activeTabId);
-  }
+  const initialTab = tabs.find((t) => t.id === activeTabId) || tabs[0];
+  if (initialTab) activateTab(initialTab, !!activeTabId);
 
   // ── Cross-tab search coordinator ───────────────────────────────────────
-  // Listens for adobesphere:search:results events broadcast by each cards
-  // block after every renderGrid(). Collects all reports within one rAF
-  // window, then switches to the highest-priority tab that has results.
+  // cards.js fires adobesphere:search:results { type, count, q } after every
+  // renderGrid(). We collect results from all three datasets within one rAF,
+  // then switch to the first tab (events → blogs → creators) that has matches.
   //
-  // Priority order matches TAB_PRIORITY below — easy to adjust.
-  // Empty query (user cleared search) skips coordination entirely so the
-  // tab doesn't jump around unexpectedly.
+  // If nothing matches, we leave the current tab alone.
+  // If the query is empty (user cleared search), we do nothing.
 
-  const TAB_PRIORITY = ['events', 'blogs', 'creato', 'creators'];
+  const PRIORITY = ['events', 'blogs', 'creators'];
+  let pending = {};
+  let rafId = null;
 
-  let pendingResults = {};
-  let coordinatorRaf = null;
+  function switchToWinningTab() {
+    const winner = PRIORITY.find((type) => (pending[type] || 0) > 0);
+    pending = {};
+    if (!winner) return;
 
-  function pickBestTab() {
-    const winner = TAB_PRIORITY.find((id) => (pendingResults[id] || 0) > 0);
-    pendingResults = {};
-
-    if (!winner) return; // nothing matched — let each tab show its own empty state
-
-    const target = tabs.find((t) => t.id === winner || t.id.startsWith(winner.slice(0, 5)));
+    const target = tabs.find((t) => t.id === winner);
     if (target && !target.button.classList.contains('active')) {
-      activateTab(target, true); // update URL so the user can see / share the result tab
+      activateTab(target, true);
     }
   }
 
   window.addEventListener('adobesphere:search:results', (e) => {
     const { type, count, q } = e.detail;
 
-    // Don't auto-switch when the search is empty
     if (!q) {
-      pendingResults = {};
+      pending = {};
       return;
     }
 
-    pendingResults[type] = count;
+    pending[type] = count;
 
-    // Wait one animation frame so all three card blocks have reported
-    // before we decide which tab wins — prevents a mid-flight switch.
-    cancelAnimationFrame(coordinatorRaf);
-    coordinatorRaf = requestAnimationFrame(pickBestTab);
+    // Wait for all card blocks to report before deciding
+    cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(switchToWinningTab);
   });
-  // ── end coordinator ────────────────────────────────────────────────────
 }
