@@ -186,18 +186,23 @@ function ensureHeading(content) {
 function hydrateMediaFromEntity(entity, content, media) {
   const { Utils } = window.AdobeSphere;
 
-  // Banner: only override if author didn't supply one.
+  // Banner: use entity thumbnail, falling back to what the author supplied.
   let resolvedMedia = media;
-  if (!resolvedMedia && entity.thumbnail) {
+  if (entity.thumbnail) {
     const url = Utils.normaliseAsset(entity.thumbnail, '');
     if (url) resolvedMedia = { kind: 'image', url };
   }
 
-  // Heading: only inject if author didn't supply one.
-  if (!content.querySelector('h1, h2') && entity.title) {
-    const h1 = document.createElement('h1');
-    h1.textContent = entity.title;
-    content.prepend(h1);
+  // Heading: replace the authored placeholder with the entity title.
+  if (entity.title) {
+    const existing = content.querySelector('h1, h2');
+    if (existing) {
+      existing.textContent = entity.title;
+    } else {
+      const h1 = document.createElement('h1');
+      h1.textContent = entity.title;
+      content.prepend(h1);
+    }
   }
 
   // Meta line: date · venue · location.
@@ -293,6 +298,10 @@ export default async function decorate(block) {
       if (entity) {
         if (isMedia) media = hydrateMediaFromEntity(entity, content, media);
         else if (isCompact) hydrateCompactFromEntity(entity, content);
+        // Update the document title with the entity's real name.
+        if (entity.title || entity.name) {
+          document.title = `${entity.title || entity.name} — AdobeSphere`;
+        }
       }
     } catch { /* fall back to authored content */ }
   }

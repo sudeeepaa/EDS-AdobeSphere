@@ -410,6 +410,11 @@ async function applyDynamicRoute(doc) {
       main.innerHTML = html;
       // Remove the error-page flag if the 404 shell set it.
       window.isErrorPage = false;
+      // Fix the page title — replace "Page not found" with something reasonable.
+      // The actual entity title will be set later by the hero block once it hydrates.
+      const slug = decodeURIComponent(pathname.split('/').filter(Boolean).pop() || '');
+      const label = slug.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+      document.title = `${label} — AdobeSphere`;
     }
     return true;
   } catch {
