@@ -39,13 +39,14 @@ function classify(block) {
 function readConfig(block) {
   // Recognises rows like `Source | events`, `Filter | featured=true`, `Limit | 6`,
   // `Title | Featured Events`, `Empty | No events available`, `Ids From | creators.eventIds`.
+  // Also supports `Filters | true` and `Pagination | 6`
   const cfg = {};
   const rows = [...block.children];
   rows.forEach((row) => {
     if (row.children.length !== 2) return;
     const key = row.children[0].textContent.trim().toLowerCase();
     const value = row.children[1].textContent.trim();
-    if (['source', 'filter', 'limit', 'title', 'empty', 'ids', 'ids from'].includes(key)) {
+    if (['source', 'filter', 'filters', 'limit', 'title', 'empty', 'ids', 'ids from', 'pagination'].includes(key)) {
       cfg[key.replace(/\s/g, '_')] = value;
       row.remove();
     }
@@ -278,6 +279,67 @@ function buildStaticCard(row, variants) {
   return card;
 }
 
+function uniqueValues(items, picker) {
+  const seen = new Set();
+  items.forEach((it) => {
+    const v = picker(it);
+    if (Array.isArray(v)) v.forEach((x) => x && seen.add(x));
+    else if (v) seen.add(v);
+  });
+  return [...seen].sort((a, b) => String(a).localeCompare(String(b)));
+}
+
+function matchesText(item, q) {
+  if (!q) return true;
+  return JSON.stringify(item).toLowerCase().includes(q.toLowerCase());
+}
+
+function getFilteredItems(type, items, f) {
+  if (type === 'events') {
+    return items.filter((e) => {
+      if (!matchesText(e, f.q)) return false;
+      if (f.category && e.category !== f.category) return false;
+      if (f.location && f.location.length) {
+        const city = e.location && e.location.city;
+        if (!city || !f.location.includes(city)) return false;
+      }
+      if (f.date && f.date !== 'all') {
+        const today = new Date();
+        const ev = new Date(e.date);
+        if (f.date === 'upcoming' && ev < today) return false;
+        if (f.date === 'past' && ev >= today) return false;
+      }
+      return true;
+    });
+  }
+  if (type === 'blogs') {
+    return items.filter((b) => {
+      if (!matchesText(b, f.q)) return false;
+      if (f.category && b.category !== f.category) return false;
+      if (f.author) {
+        const name = (b.author && b.author.name) || '';
+        if (!name.toLowerCase().includes(f.author.toLowerCase())) return false;
+      }
+      return true;
+    }).sort((a, b) => {
+      if (f.sort === 'oldest') return new Date(a.publishedDate) - new Date(b.publishedDate);
+      return new Date(b.publishedDate) - new Date(a.publishedDate);
+    });
+  }
+  if (type === 'creators') {
+    return items.filter((c) => {
+      if (!matchesText(c, f.q)) return false;
+      if (f.designation && f.designation.length && !f.designation.includes(c.designation)) return false;
+      return true;
+    }).sort((a, b) => {
+      if (f.sort === 'name-desc') return String(b.name).localeCompare(String(a.name));
+      if (f.sort === 'testimonials') return ((b.stats && b.stats.testimonialsGiven) || 0) - ((a.stats && a.stats.testimonialsGiven) || 0);
+      return String(a.name).localeCompare(String(b.name));
+    });
+  }
+  return items;
+}
+
 function dispatchBuilder(type) {
   switch (type) {
     case 'events': return buildEventCard;
@@ -292,21 +354,14 @@ async function hydrateFromData(block, type, cfg, opts) {
   const { Utils } = window.AdobeSphere;
   const data = await Utils.fetchData(type === 'events' ? 'campaigns' : type);
 
-  const grid = document.createElement('div');
-  grid.className = `cards-grid grid-${type}`;
-  if (opts.horizontal) grid.classList.add('horizontal');
-  block.append(grid);
-
   if (!Array.isArray(data) || !data.length) {
-    grid.innerHTML = `<p class="cards-empty">${escapeHtml(cfg.empty || `No ${type} available.`)}</p>`;
+    block.innerHTML = `<p class="cards-empty">${escapeHtml(cfg.empty || `No ${type} available.`)}</p>`;
     return;
   }
 
   let items = data.slice();
 
-  // Resolve `Ids From | <source>.<field>` — e.g. `creators.eventIds` reads the
-  // current URL's creator entity, takes its `eventIds` array, and uses those as
-  // the id whitelist. Used on creator-profile to render that creator's content.
+  // Resolve Ids From
   let idsFromList = null;
   if (cfg.ids_from) {
     const [refSource, refField] = cfg.ids_from.split('.').map((s) => s.trim());
@@ -324,7 +379,7 @@ async function hydrateFromData(block, type, cfg, opts) {
     }
   }
 
-  // Explicit IDs (cfg.ids) > resolved Ids From > filter+limit.
+  // Pre-filter with Explicit IDs or `Filter | featured=true`
   if (cfg.ids) {
     const ids = cfg.ids.split(',').map((s) => s.trim()).filter(Boolean);
     items = ids.map((id) => items.find((it) => it.id === id)).filter(Boolean);
@@ -332,17 +387,154 @@ async function hydrateFromData(block, type, cfg, opts) {
     items = idsFromList.map((id) => items.find((it) => it.id === id)).filter(Boolean);
   } else {
     items = applyFilter(items, cfg.filter);
-    if (cfg.limit) items = items.slice(0, parseInt(cfg.limit, 10) || items.length);
   }
 
-  if (!items.length) {
-    grid.innerHTML = `<p class="cards-empty">${escapeHtml(cfg.empty || `No ${type} match.`)}</p>`;
+  const enableFilters = cfg.filters === 'true';
+  const pageSize = parseInt(cfg.pagination, 10) || 0;
+  const builder = dispatchBuilder(type);
+
+  // If no dynamic features, render static grid and exit early
+  if (!enableFilters && !pageSize) {
+    if (cfg.limit) items = items.slice(0, parseInt(cfg.limit, 10) || items.length);
+    const grid = document.createElement('div');
+    grid.className = `cards-grid grid-${type}`;
+    if (opts.horizontal) grid.classList.add('horizontal');
+    block.append(grid);
+    if (!items.length) {
+      grid.innerHTML = `<p class="cards-empty">${escapeHtml(cfg.empty || `No ${type} match.`)}</p>`;
+    } else {
+      items.forEach((item) => grid.append(builder(item, opts)));
+    }
     return;
   }
 
-  const builder = dispatchBuilder(type);
-  if (!builder) return;
-  items.forEach((item) => grid.append(builder(item, opts)));
+  // --- Dynamic Mode (Filters and/or Pagination) ---
+  const filterHost = document.createElement('div');
+  filterHost.className = 'explore-filters';
+  
+  const grid = document.createElement('div');
+  grid.className = `cards-grid grid-${type}`;
+  if (opts.horizontal) grid.classList.add('horizontal');
+
+  const pagiHost = document.createElement('div');
+  pagiHost.className = 'explore-pagination';
+
+  if (enableFilters) block.append(filterHost);
+  block.append(grid);
+  if (pageSize) block.append(pagiHost);
+
+  const state = {
+    page: 1,
+    q: new URLSearchParams(window.location.search).get('q') || '',
+    f: type === 'events' ? { category: '', location: [], date: 'all' } 
+       : type === 'blogs' ? { category: '', author: '', sort: 'newest' }
+       : { designation: [], sort: 'name-asc' }
+  };
+
+  function renderGrid() {
+    const filtered = getFilteredItems(type, items, { q: state.q, ...state.f });
+    
+    let slice = filtered;
+    if (pageSize) {
+      const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+      if (state.page > totalPages) state.page = totalPages;
+      const start = (state.page - 1) * pageSize;
+      slice = filtered.slice(start, start + pageSize);
+
+      pagiHost.innerHTML = `
+        <button type="button" class="button ghost" data-prev ${state.page === 1 ? 'disabled' : ''}>Prev</button>
+        <span class="explore-page">Page ${state.page} of ${totalPages} (${filtered.length} result${filtered.length === 1 ? '' : 's'})</span>
+        <button type="button" class="button ghost" data-next ${state.page >= totalPages ? 'disabled' : ''}>Next</button>`;
+      pagiHost.querySelector('[data-prev]').addEventListener('click', () => { if (state.page > 1) { state.page -= 1; renderGrid(); } });
+      pagiHost.querySelector('[data-next]').addEventListener('click', () => { if (state.page < totalPages) { state.page += 1; renderGrid(); } });
+    } else if (cfg.limit) {
+      slice = filtered.slice(0, parseInt(cfg.limit, 10));
+    }
+
+    grid.innerHTML = '';
+    if (!slice.length) {
+      grid.innerHTML = `<p class="cards-empty">${escapeHtml(cfg.empty || 'No results match your filters.')}</p>`;
+    } else {
+      slice.forEach((item) => grid.append(builder(item, opts)));
+    }
+  }
+
+  function renderFilters() {
+    if (!enableFilters) return;
+    let html = '';
+    if (type === 'events') {
+      const cats = uniqueValues(items, (e) => e.category);
+      const cities = uniqueValues(items, (e) => e.location && e.location.city);
+      html += `
+        <select class="form-input" data-filter="category">
+          <option value="">All Categories</option>
+          ${cats.map((c) => `<option value="${escapeHtml(c)}"${state.f.category === c ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('')}
+        </select>
+        <fieldset class="explore-radios" aria-label="Date">
+          <label><input type="radio" name="evt-date-${type}" value="all"${state.f.date === 'all' ? ' checked' : ''}> All</label>
+          <label><input type="radio" name="evt-date-${type}" value="upcoming"${state.f.date === 'upcoming' ? ' checked' : ''}> Upcoming</label>
+          <label><input type="radio" name="evt-date-${type}" value="past"${state.f.date === 'past' ? ' checked' : ''}> Past</label>
+        </fieldset>
+        <fieldset class="explore-checkboxes" aria-label="Location">
+          <legend>Location</legend>
+          ${cities.map((c) => `<label><input type="checkbox" value="${escapeHtml(c)}"${state.f.location.includes(c) ? ' checked' : ''}> ${escapeHtml(c)}</label>`).join('')}
+        </fieldset>`;
+    } else if (type === 'blogs') {
+      const cats = uniqueValues(items, (b) => b.category);
+      html += `
+        <select class="form-input" data-filter="category">
+          <option value="">All Categories</option>
+          ${cats.map((c) => `<option value="${escapeHtml(c)}"${state.f.category === c ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('')}
+        </select>
+        <input type="text" class="form-input" placeholder="Search by author" data-filter="author" value="${escapeHtml(state.f.author)}">
+        <select class="form-input" data-filter="sort">
+          <option value="newest"${state.f.sort === 'newest' ? ' selected' : ''}>Newest</option>
+          <option value="oldest"${state.f.sort === 'oldest' ? ' selected' : ''}>Oldest</option>
+        </select>`;
+    } else {
+      const designations = uniqueValues(items, (c) => c.designation);
+      html += `
+        <select class="form-input" data-filter="sort">
+          <option value="name-asc"${state.f.sort === 'name-asc' ? ' selected' : ''}>Name A–Z</option>
+          <option value="name-desc"${state.f.sort === 'name-desc' ? ' selected' : ''}>Name Z–A</option>
+          <option value="testimonials"${state.f.sort === 'testimonials' ? ' selected' : ''}>Testimonials</option>
+        </select>
+        <fieldset class="explore-checkboxes" aria-label="Designation">
+          <legend>Designation</legend>
+          ${designations.map((d) => `<label><input type="checkbox" value="${escapeHtml(d)}"${state.f.designation.includes(d) ? ' checked' : ''}> ${escapeHtml(d)}</label>`).join('')}
+        </fieldset>`;
+    }
+    filterHost.innerHTML = html;
+
+    // Bind events
+    if (type === 'events') {
+      filterHost.querySelector('[data-filter="category"]').addEventListener('change', (e) => { state.f.category = e.target.value; state.page = 1; renderGrid(); });
+      filterHost.querySelectorAll('[name="evt-date-' + type + '"]').forEach((r) => r.addEventListener('change', (e) => { state.f.date = e.target.value; state.page = 1; renderGrid(); }));
+      filterHost.querySelectorAll('.explore-checkboxes input').forEach((c) => c.addEventListener('change', () => {
+        state.f.location = [...filterHost.querySelectorAll('.explore-checkboxes input:checked')].map((x) => x.value);
+        state.page = 1; renderGrid();
+      }));
+    } else if (type === 'blogs') {
+      filterHost.querySelector('[data-filter="category"]').addEventListener('change', (e) => { state.f.category = e.target.value; state.page = 1; renderGrid(); });
+      filterHost.querySelector('[data-filter="author"]').addEventListener('input', (e) => { state.f.author = e.target.value; state.page = 1; renderGrid(); });
+      filterHost.querySelector('[data-filter="sort"]').addEventListener('change', (e) => { state.f.sort = e.target.value; state.page = 1; renderGrid(); });
+    } else {
+      filterHost.querySelector('[data-filter="sort"]').addEventListener('change', (e) => { state.f.sort = e.target.value; state.page = 1; renderGrid(); });
+      filterHost.querySelectorAll('.explore-checkboxes input').forEach((c) => c.addEventListener('change', () => {
+        state.f.designation = [...filterHost.querySelectorAll('.explore-checkboxes input:checked')].map((x) => x.value);
+        state.page = 1; renderGrid();
+      }));
+    }
+  }
+
+  window.addEventListener('adobesphere:search', (e) => {
+    state.q = e.detail || '';
+    state.page = 1;
+    renderGrid();
+  });
+
+  renderFilters();
+  renderGrid();
 }
 
 function hydrateStatic(block, opts) {

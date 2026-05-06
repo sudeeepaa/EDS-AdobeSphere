@@ -238,15 +238,53 @@ Author at `/footer`. Each top-level section becomes one footer column. The **las
 
 ## 5. Explore
 
-A single block, no config required. Drop it on the page and it renders tabs / search / filters / grid / pagination, hydrating all three datasets.
+The Explore page is authored using a combination of blocks rather than a single monolithic block. This allows complete control over the layout.
 
-| Explore |
+### Recommended Document Structure for Explore Page
+
+```markdown
+# Explore the AdobeSphere
+Find events, stories, and creators shaping the next wave of digital creativity.
+
+| hero (search) |
 |---|
-| Page Size | 9 |
+| Placeholder | Search events, blogs, creators… |
 
-The `Page Size` row is optional (defaults to 9).
+---
 
-URL params honoured: `?tab=events|blogs|creators`, `?q=text`, `?category=name`. Linking from the marquee already passes these.
+| tabs |
+|---|
+| Events & Campaigns |
+| Blogs & Articles |
+| Creators |
+
+---
+
+| cards (events) |
+|---|
+| Source | events |
+| Pagination | 6 |
+| Filters | true |
+
+---
+
+| cards (blogs) |
+|---|
+| Source | blogs |
+| Pagination | 6 |
+| Filters | true |
+
+---
+
+| cards (creators) |
+|---|
+| Source | creators |
+| Pagination | 6 |
+| Filters | true |
+```
+
+The `tabs` block automatically treats the subsequent sections as its tab panels. 
+The `cards` block supports `Pagination | X` and `Filters | true` to render interactive grids without needing a dedicated "explore" block. URL params like `?tab=blogs` or `?q=text` are honored.
 
 ---
 

@@ -87,8 +87,10 @@ function takeKeyedRows(block) {
 function renderSearch(placeholder) {
   const wrap = document.createElement('div');
   wrap.className = 'hero-search';
+  const initialQ = new URLSearchParams(window.location.search).get('q') || '';
+  const escapeHtml = window.AdobeSphere?.Utils?.escapeHtml || ((s) => s);
   wrap.innerHTML = `
-    <input type="search" class="form-input hero-search-input" placeholder="${placeholder || 'Search…'}" aria-label="Search">
+    <input type="search" class="form-input hero-search-input" placeholder="${escapeHtml(placeholder || 'Search…')}" aria-label="Search" value="${escapeHtml(initialQ)}">
     <button type="button" class="hero-search-btn" aria-label="Run search">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"></circle>
@@ -96,12 +98,26 @@ function renderSearch(placeholder) {
       </svg>
     </button>`;
   const input = wrap.querySelector('.hero-search-input');
+  const isExplore = window.location.pathname.includes('/explore');
+
   const submit = () => {
     const q = input.value.trim();
-    window.location.href = q ? `/explore?q=${encodeURIComponent(q)}` : '/explore';
+    if (isExplore) {
+      const url = new URL(window.location);
+      if (q) url.searchParams.set('q', q);
+      else url.searchParams.delete('q');
+      window.history.replaceState({}, '', url);
+      window.dispatchEvent(new CustomEvent('adobesphere:search', { detail: q }));
+    } else {
+      window.location.href = q ? `/explore?q=${encodeURIComponent(q)}` : '/explore';
+    }
   };
+
   wrap.querySelector('.hero-search-btn').addEventListener('click', submit);
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
+  if (isExplore) {
+    input.addEventListener('input', submit);
+  }
   return wrap;
 }
 

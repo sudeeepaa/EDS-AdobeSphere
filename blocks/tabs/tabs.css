@@ -1,0 +1,76 @@
+/* AdobeSphere tabs block */
+
+.tabs {
+  margin-top: 40px;
+}
+
+.tabs-list {
+  display: flex;
+  gap: 32px;
+  border-bottom: 2px solid var(--neutral-light);
+  margin-bottom: 32px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.tabs-list::-webkit-scrollbar {
+  display: none;
+}
+
+.tabs-tab {
+  background: none;
+  border: none;
+  padding: 0 0 12px 0;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+  transition: color var(--transition-fast);
+}
+
+.tabs-tab:hover {
+  color: var(--text-primary);
+}
+
+.tabs-tab.active {
+  color: var(--red-primary);
+}
+
+.tabs-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; /* cover the border-bottom of the parent */
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--red-primary);
+  border-radius: 2px 2px 0 0;
+}
+
+/* Ensure the tab panels behave nicely */
+.section.tabs-panel {
+  display: none;
+  animation: fadeIn var(--transition-base) ease;
+}
+
+.section.tabs-panel.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .tabs-list {
+    gap: 20px;
+  }
+  .tabs-tab {
+    font-size: 1rem;
+  }
+}
