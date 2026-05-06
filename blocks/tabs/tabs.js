@@ -53,16 +53,16 @@ export default function decorate(block) {
   // Setup tab panels (the following sections)
   const section = block.closest('.section');
   let currentPanel = section.nextElementSibling;
-  
+
   tabs.forEach((tab) => {
     if (!currentPanel) return;
-    
+
     // Setup panel attributes
     currentPanel.id = `tabpanel-${tab.id}`;
     currentPanel.setAttribute('role', 'tabpanel');
     currentPanel.setAttribute('aria-labelledby', `tab-${tab.id}`);
     currentPanel.classList.add('tabs-panel');
-    
+
     tab.panel = currentPanel;
     currentPanel = currentPanel.nextElementSibling;
 
@@ -97,8 +97,43 @@ export default function decorate(block) {
   const urlParams = new URLSearchParams(window.location.search);
   const activeTabId = urlParams.get('tab');
   const targetTab = tabs.find((t) => t.id === activeTabId) || tabs[0];
-  
+
   if (targetTab) {
     targetTab.button.click();
+    const TAB_PRIORITY = ['events', 'blogs', 'creato', 'creators'];
+    // 'creato' handles the truncated id that tabs.js derived from "Creators"
+    // if the author omitted an explicit id column (see tabs.js id derivation).
+
+    let pendingResults = {};
+    let coordinatorRaf = null;
+
+    function pickBestTab() {
+      // Find highest-priority tab that has results.
+      // If nothing matched at all, stay on current tab (don't disrupt user).
+      const winner = TAB_PRIORITY.find((id) => pendingResults[id] > 0);
+      pendingResults = {};
+
+      if (!winner) return; // no results anywhere — let each tab show its own empty state
+
+      const target = tabs.find((t) => t.id === winner || t.id.startsWith(winner.slice(0, 5)));
+      if (target && !target.button.classList.contains('active')) {
+        target.button.click();
+      }
+    }
+
+    window.addEventListener('adobesphere:search:results', (e) => {
+      const { type, count, q } = e.detail;
+
+      // Only coordinate when there is an actual search query.
+      // Empty query = user cleared search → don't auto-switch tabs.
+      if (!q) { pendingResults = {}; return; }
+
+      pendingResults[type] = count;
+
+      // Debounce: wait one animation frame after the last report fires
+      // so all three card blocks have had a chance to report.
+      cancelAnimationFrame(coordinatorRaf);
+      coordinatorRaf = requestAnimationFrame(pickBestTab);
+    });
   }
 }

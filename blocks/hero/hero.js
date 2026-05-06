@@ -113,11 +113,18 @@ function renderSearch(placeholder) {
     }
   };
 
+  // AFTER:
   wrap.querySelector('.hero-search-btn').addEventListener('click', submit);
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
-  if (isExplore) {
-    input.addEventListener('input', submit);
-  }
+
+  // Instant search: debounced on input so every keystroke triggers
+  // without hammering renderGrid. 250 ms feels responsive without flicker.
+  let debounceTimer;
+  input.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(submit, 250);
+  });
+
   return wrap;
 }
 
@@ -148,7 +155,7 @@ function buildBgLayer(media) {
       layer.append(video);
       video.addEventListener('loadedmetadata', () => {
         const p = video.play();
-        if (p && typeof p.catch === 'function') p.catch(() => {});
+        if (p && typeof p.catch === 'function') p.catch(() => { });
       });
     } else if (media.kind === 'image') {
       const img = document.createElement('img');
