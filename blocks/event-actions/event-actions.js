@@ -62,6 +62,13 @@ export default async function decorate(block) {
   const eventId = entity.id;
   const past = isPastEvent(entity.date);
 
+  /* ── Lift block to <main> so position: sticky works across the entire page ── */
+  const section = block.closest('.section');
+  if (section && section.parentElement) {
+    section.parentElement.insertBefore(block, section.nextSibling);
+    if (!section.textContent.trim()) section.style.display = 'none';
+  }
+
   /* ── Clear authored content, rebuild as buttons ── */
   block.textContent = '';
   block.classList.add('event-actions');
