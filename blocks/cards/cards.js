@@ -441,12 +441,29 @@ async function hydrateFromData(block, type, cfg, opts) {
       const start = (state.page - 1) * pageSize;
       slice = filtered.slice(start, start + pageSize);
 
-      pagiHost.innerHTML = `
-        <button type="button" class="button ghost" data-prev ${state.page === 1 ? 'disabled' : ''}>Prev</button>
-        <span class="explore-page">Page ${state.page} of ${totalPages} (${filtered.length} result${filtered.length === 1 ? '' : 's'})</span>
-        <button type="button" class="button ghost" data-next ${state.page >= totalPages ? 'disabled' : ''}>Next</button>`;
-      pagiHost.querySelector('[data-prev]').addEventListener('click', () => { if (state.page > 1) { state.page -= 1; renderGrid(); } });
-      pagiHost.querySelector('[data-next]').addEventListener('click', () => { if (state.page < totalPages) { state.page += 1; renderGrid(); } });
+      // Rebuild pagination buttons — only render Prev/Next when that
+      // direction actually exists, so disabled states are never shown.
+      pagiHost.innerHTML = '';
+      if (state.page > 1) {
+        const prevBtn = document.createElement('button');
+        prevBtn.type = 'button';
+        prevBtn.className = 'button ghost';
+        prevBtn.textContent = 'Previous';
+        prevBtn.addEventListener('click', () => { state.page -= 1; renderGrid(); });
+        pagiHost.append(prevBtn);
+      }
+      const pageLabel = document.createElement('span');
+      pageLabel.className = 'explore-page';
+      pageLabel.textContent = `Page ${state.page} of ${totalPages} (${filtered.length} result${filtered.length === 1 ? '' : 's'})`;
+      pagiHost.append(pageLabel);
+      if (state.page < totalPages) {
+        const nextBtn = document.createElement('button');
+        nextBtn.type = 'button';
+        nextBtn.className = 'button ghost';
+        nextBtn.textContent = 'Next';
+        nextBtn.addEventListener('click', () => { state.page += 1; renderGrid(); });
+        pagiHost.append(nextBtn);
+      }
     } else if (cfg.limit) {
       slice = filtered.slice(0, parseInt(cfg.limit, 10));
     }
@@ -455,14 +472,14 @@ async function hydrateFromData(block, type, cfg, opts) {
     if (!slice.length) {
       grid.innerHTML = `<p class="cards-empty">${escapeHtml(cfg.empty || 'No results match your filters.')}</p>`;
     } else {
-      slice.forEach((item) => grid.append(builder(item, opts)));
-
-      // Force-reveal paginated cards — IntersectionObserver won't re-fire
-      // for nodes that land inside an already-visible viewport after a swap.
-      requestAnimationFrame(() => {
-        grid.querySelectorAll('.reveal:not(.revealed)').forEach((el) => {
-          el.classList.add('revealed');
-        });
+      slice.forEach((item) => {
+        const card = builder(item, opts);
+        // Pre-reveal: cards rendered by pagination / filter / search are
+        // already inside the visible viewport. Adding 'revealed' BEFORE
+        // appending means the element never enters the DOM in an invisible
+        // state, bypassing any IntersectionObserver timing issues entirely.
+        card.classList.add('revealed');
+        grid.append(card);
       });
     }
   }
