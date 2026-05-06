@@ -475,10 +475,10 @@ async function hydrateFromData(block, type, cfg, opts) {
       slice.forEach((item) => {
         const card = builder(item, opts);
         // Pre-reveal: cards rendered by pagination / filter / search are
-        // already inside the visible viewport. Adding 'revealed' BEFORE
+        // already inside the visible viewport. Adding 'visible' BEFORE
         // appending means the element never enters the DOM in an invisible
         // state, bypassing any IntersectionObserver timing issues entirely.
-        card.classList.add('revealed');
+        card.classList.add('visible');
         grid.append(card);
       });
     }

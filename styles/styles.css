@@ -129,12 +129,29 @@ h6 {
   scroll-margin: 40px;
 }
 
-h1 { font-size: clamp(2.5rem, 5vw, 4.5rem); }
-h2 { font-size: clamp(1.8rem, 3vw, 2.8rem); }
-h3 { font-size: clamp(1.3rem, 2vw, 1.8rem); }
-h4 { font-size: 1.2rem; }
-h5 { font-size: var(--heading-font-size-s); }
-h6 { font-size: var(--heading-font-size-xs); }
+h1 {
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+}
+
+h2 {
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+}
+
+h3 {
+  font-size: clamp(1.3rem, 2vw, 1.8rem);
+}
+
+h4 {
+  font-size: 1.2rem;
+}
+
+h5 {
+  font-size: var(--heading-font-size-s);
+}
+
+h6 {
+  font-size: var(--heading-font-size-xs);
+}
 
 p,
 ul,
@@ -174,19 +191,19 @@ ol {
 }
 
 /* sections — EDS wraps each section in `main > .section > div` */
-main > .section {
+main>.section {
   margin: 0;
   padding: 60px 0;
 }
 
-main > .section > div {
+main>.section>div {
   width: 100%;
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 0 24px;
 }
 
-main > .section:first-of-type {
+main>.section:first-of-type {
   margin-top: 0;
 }
 
@@ -222,8 +239,13 @@ main h2.section-heading {
   line-height: 1;
 }
 
-.text-red { color: var(--red-primary); }
-.text-muted { color: var(--text-muted); }
+.text-red {
+  color: var(--red-primary);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
 
 /* badges */
 .badge {
@@ -398,7 +420,8 @@ blockquote {
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-.reveal.visible {
+.reveal.visible,
+.reveal.revealed {
   opacity: 1;
   transform: none;
 }
@@ -413,7 +436,7 @@ blockquote {
 
 /* ─────────── breakpoints ─────────── */
 @media (min-width: 600px) {
-  main > .section > div {
+  main>.section>div {
     padding: 0 32px;
   }
 }
