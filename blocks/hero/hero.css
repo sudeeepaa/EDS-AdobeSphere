@@ -191,20 +191,33 @@
 
 .hero.hero-media .hero-content {
   text-align: left;
-  padding-bottom: 32px;
+  padding-bottom: 40px;
   max-width: var(--max-width);
+}
+
+.hero .hero-category-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  background: var(--red-primary);
+  color: var(--white);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
 }
 
 .hero.hero-media .hero-content h1 {
   color: var(--white);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .hero.hero-media .hero-meta {
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 12px;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
   color: rgba(255, 255, 255, 90%);
   font-size: 0.95rem;
 }
@@ -212,6 +225,70 @@
 .hero.hero-media .hero-meta p {
   margin: 0;
   max-width: none;
+}
+
+/* ─── Event action bar (sticky Save + Register) ─── */
+.hero-action-bar {
+  position: sticky;
+  top: 64px;
+  z-index: 800;
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+  padding: 14px 0;
+}
+
+.hero-action-bar-inner {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.hero-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 1px solid var(--neutral-light);
+  background: var(--white);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.hero-save-btn:hover {
+  border-color: var(--text-primary);
+}
+
+.hero-save-btn.saved {
+  border-color: var(--red-primary);
+  color: var(--red-primary);
+}
+
+.hero-reg-btn {
+  padding: 10px 24px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: none;
+}
+
+.hero-reg-btn.is-ended {
+  background: #9ca3af;
+  color: var(--white);
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.hero-reg-btn.is-registered {
+  background: #16a34a;
+  color: var(--white);
 }
 
 /* ─── gradient variant (Creator profile) ─── */

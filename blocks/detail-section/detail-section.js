@@ -60,7 +60,7 @@ function renderOverview(block, cfg, entity, headingText) {
   if (entity.date || entity.time) {
     const Utils = window.AdobeSphere.Utils;
     const date = Utils.formatDate(entity.date);
-    facts.push(['Date & Time', `${date}${entity.time ? ` · ${entity.time}` : ''}`]);
+    facts.push(['Date & Time', `${date}${entity.time ? ` at ${entity.time}` : ''}`]);
   }
   if (entity.venue) facts.push(['Venue', entity.venue]);
   if (entity.category) facts.push(['Category', entity.category]);
@@ -96,7 +96,7 @@ function renderAgenda(block, cfg, entity) {
 
 /* ─── people (presenters / speakers / hosts) ─── */
 
-function renderPeople(block, cfg, entity) {
+async function renderPeople(block, cfg, entity) {
   // The people variant reads its sub-section (presenters / guestSpeakers / hosts) from
   // the block's class. da.live may hyphenate: `people-presenters` → split to find group.
   const group = (() => {
@@ -112,17 +112,31 @@ function renderPeople(block, cfg, entity) {
   const grid = block.querySelector('.detail-people');
   if (!people.length) { grid.innerHTML = `<p>${escapeHtml(cfg.empty || 'No people listed yet.')}</p>`; return; }
 
+  // Build a name→creatorId map so person cards can link to creator profiles.
+  let creatorMap = {};
+  try {
+    const creators = await window.AdobeSphere.Utils.fetchData('creators');
+    if (Array.isArray(creators)) {
+      creators.forEach((c) => { if (c.name && c.id) creatorMap[c.name.toLowerCase()] = c.id; });
+    }
+  } catch { /* noop — cards simply won't link */ }
+
   const Utils = window.AdobeSphere.Utils;
   grid.innerHTML = people.map((p) => {
     const avatar = Utils.normaliseAsset(p.avatar, '/icons/user-default.svg');
-    return `<article class="detail-person reveal">
+    const creatorId = creatorMap[(p.name || '').toLowerCase()];
+    const href = creatorId ? `/creator-profile/${creatorId}` : '';
+    const cardContent = `
       <img src="${escapeHtml(avatar)}" alt="${escapeHtml(p.name || 'Person')}" loading="lazy">
       <div class="detail-person-body">
         <h3>${escapeHtml(p.name || '')}</h3>
         <p class="text-muted">${escapeHtml(p.designation || '')}</p>
         <p>${escapeHtml(p.bio || '')}</p>
-      </div>
-    </article>`;
+      </div>`;
+    if (href) {
+      return `<a href="${escapeHtml(href)}" class="detail-person detail-person-link reveal">${cardContent}</a>`;
+    }
+    return `<article class="detail-person reveal">${cardContent}</article>`;
   }).join('');
 }
 
@@ -327,7 +341,7 @@ export default async function decorate(block) {
 
   if (variant === 'overview') renderOverview(block, cfg, entity, cfg.title || 'Overview');
   else if (variant === 'agenda') renderAgenda(block, cfg, entity);
-  else if (['people', 'presenters', 'speakers', 'hosts'].includes(variant)) renderPeople(block, cfg, entity);
+  else if (['people', 'presenters', 'speakers', 'hosts'].includes(variant)) await renderPeople(block, cfg, entity);
   else if (variant === 'quote') renderQuote(block, cfg, entity);
   else if (variant === 'bio') renderBio(block, cfg, entity);
   else if (variant === 'reach-out') renderReachOut(block, cfg, entity);

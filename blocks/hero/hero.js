@@ -193,6 +193,14 @@ function hydrateMediaFromEntity(entity, content, media) {
     if (url) resolvedMedia = { kind: 'image', url };
   }
 
+  // Category badge above the heading.
+  if (entity.category) {
+    const badge = document.createElement('span');
+    badge.className = 'hero-category-badge';
+    badge.textContent = entity.category;
+    content.prepend(badge);
+  }
+
   // Heading: replace the authored placeholder with the entity title.
   if (entity.title) {
     const existing = content.querySelector('h1, h2');
@@ -201,28 +209,117 @@ function hydrateMediaFromEntity(entity, content, media) {
     } else {
       const h1 = document.createElement('h1');
       h1.textContent = entity.title;
-      content.prepend(h1);
+      // Insert after badge if it exists.
+      const badge = content.querySelector('.hero-category-badge');
+      if (badge) badge.after(h1);
+      else content.prepend(h1);
     }
   }
 
-  // Meta line: date · venue · location.
+  // Meta: date on one line, location on another.
   if (!content.querySelector('.hero-meta')) {
-    const parts = [];
-    if (entity.date) parts.push(Utils.formatDate(entity.date) + (entity.time ? ` · ${entity.time}` : ''));
-    if (entity.venue) parts.push(entity.venue);
+    const meta = document.createElement('div');
+    meta.className = 'hero-meta';
+    if (entity.date) {
+      const dateLine = document.createElement('p');
+      dateLine.textContent = Utils.formatDate(entity.date);
+      meta.append(dateLine);
+    }
     if (entity.location) {
       const loc = [entity.location.city, entity.location.state, entity.location.country].filter(Boolean).join(', ');
-      if (loc) parts.push(loc);
+      if (loc) {
+        const locLine = document.createElement('p');
+        locLine.textContent = loc;
+        meta.append(locLine);
+      }
     }
-    if (parts.length) {
-      const meta = document.createElement('div');
-      meta.className = 'hero-meta';
-      meta.innerHTML = parts.map((p) => `<p>${Utils.escapeHtml(p)}</p>`).join('');
-      content.append(meta);
-    }
+    if (meta.children.length) content.append(meta);
   }
 
   return resolvedMedia;
+}
+
+/* ─── Event action bar (Save + Register) ─── */
+
+function isPastEvent(dateStr) {
+  if (!dateStr) return false;
+  const parts = String(dateStr).split('-').map(Number);
+  if (parts.length !== 3 || parts.some(Number.isNaN)) return false;
+  const eventDate = new Date(parts[0], parts[1] - 1, parts[2]);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return eventDate < today;
+}
+
+function buildEventActionBar(entity) {
+  if (!entity || !entity.id) return null;
+  const { Storage } = window.AdobeSphere;
+  const eventId = entity.id;
+  const past = isPastEvent(entity.date);
+
+  const bar = document.createElement('div');
+  bar.className = 'hero-action-bar';
+  bar.id = 'event-action-bar';
+
+  const inner = document.createElement('div');
+  inner.className = 'hero-action-bar-inner';
+
+  // Save button.
+  const saveBtn = document.createElement('button');
+  saveBtn.type = 'button';
+  saveBtn.className = 'button secondary hero-save-btn';
+  const isSaved = Storage.isSaved('events', eventId);
+  saveBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M6 3H18C18.55 3 19 3.45 19 4V21L12 17L5 21V4C5 3.45 5.45 3 6 3Z" stroke="currentColor" stroke-width="1.7" fill="${isSaved ? 'currentColor' : 'none'}"/>
+  </svg> <span>${isSaved ? 'Saved' : 'Save Event'}</span>`;
+  if (isSaved) saveBtn.classList.add('saved');
+
+  saveBtn.addEventListener('click', () => {
+    if (!Storage.isLoggedIn()) {
+      window.location.href = '/login';
+      return;
+    }
+    const wasSaved = Storage.isSaved('events', eventId);
+    Storage.toggleSaved('events', eventId);
+    if (wasSaved) {
+      saveBtn.classList.remove('saved');
+      saveBtn.querySelector('span').textContent = 'Save Event';
+      saveBtn.querySelector('path').setAttribute('fill', 'none');
+    } else {
+      saveBtn.classList.add('saved');
+      saveBtn.querySelector('span').textContent = 'Saved';
+      saveBtn.querySelector('path').setAttribute('fill', 'currentColor');
+    }
+  });
+
+  // Register button.
+  const regBtn = document.createElement('button');
+  regBtn.type = 'button';
+  if (past) {
+    regBtn.className = 'button hero-reg-btn is-ended';
+    regBtn.textContent = 'Event Ended';
+    regBtn.disabled = true;
+  } else {
+    const regs = Storage.getRegistrations();
+    const isReg = regs.some((r) => r.eventId === eventId);
+    regBtn.className = `button primary hero-reg-btn${isReg ? ' is-registered' : ''}`;
+    regBtn.textContent = isReg ? 'Registered ✓' : 'Register for this Event';
+    regBtn.addEventListener('click', () => {
+      if (!Storage.isLoggedIn()) {
+        window.location.href = '/login';
+        return;
+      }
+      const alreadyReg = Storage.getRegistrations().some((r) => r.eventId === eventId);
+      if (alreadyReg) return;
+      Storage.registerForEvent(eventId);
+      regBtn.classList.add('is-registered');
+      regBtn.textContent = 'Registered ✓';
+    });
+  }
+
+  inner.append(saveBtn, regBtn);
+  bar.append(inner);
+  return bar;
 }
 
 function hydrateCompactFromEntity(entity, content) {
@@ -345,4 +442,20 @@ export default async function decorate(block) {
   if (isGradient) block.classList.add('hero-gradient-variant');
   if (isCompact) block.classList.add('hero-compact');
   if (variants.length === 0 && !isVideo) block.classList.add('hero-default');
+
+  // Inject the event action bar after the hero's parent section (sticky).
+  if (isMedia && autoSource === 'events') {
+    try {
+      const entity = await fetchEntity('events');
+      if (entity) {
+        const actionBar = buildEventActionBar(entity);
+        if (actionBar) {
+          const section = block.closest('.section') || block.parentElement;
+          if (section && section.parentElement) {
+            section.parentElement.insertBefore(actionBar, section.nextSibling);
+          }
+        }
+      }
+    } catch { /* noop */ }
+  }
 }
