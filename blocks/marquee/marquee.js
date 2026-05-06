@@ -42,12 +42,60 @@ export default function decorate(block) {
   const row = document.createElement('div');
   row.className = 'marquee-pills';
   row.setAttribute('role', 'tablist');
+
+  const isExplore = window.location.pathname.startsWith('/explore');
+
+  // Mark the pill whose params match the current URL on load
+  const currentParams = new URLSearchParams(window.location.search);
+
   pills.forEach((p, i) => {
     const a = document.createElement('a');
-    a.className = `marquee-pill${i === 0 ? ' active' : ''}`;
     a.href = pillHref(p);
     a.dataset.label = p.label;
     a.textContent = p.label;
+
+    // Check if this pill matches the current URL state
+    const pillParams = new URLSearchParams(p.params);
+    const isActive = pillParams.get('tab') === currentParams.get('tab')
+      && (pillParams.get('category') || '') === (currentParams.get('category') || '');
+    a.className = `marquee-pill${(isActive || i === 0 && !currentParams.get('tab')) ? ' active' : ''}`;
+
+    // In-page filter when already on /explore; full nav otherwise
+    a.addEventListener('click', (e) => {
+      if (!isExplore) return; // let normal anchor navigation happen
+      e.preventDefault();
+
+      const params = new URLSearchParams(p.params);
+      const tab = params.get('tab') || 'events';
+      const category = params.get('category') || '';
+
+      // Update URL
+      const url = new URL(window.location);
+      url.searchParams.set('tab', tab);
+      if (category) url.searchParams.set('category', category);
+      else url.searchParams.delete('category');
+      window.history.replaceState({}, '', url);
+
+      // Switch tab
+      window.dispatchEvent(new CustomEvent('adobesphere:switchtab', { detail: tab }));
+
+      // Apply filter to the matching cards block
+      const filterState = tab === 'events'
+        ? { category, location: [], date: 'all' }
+        : tab === 'blogs'
+          ? { category, author: '', sort: 'newest' }
+          : { designation: [], sort: 'name-asc' };
+
+      window.dispatchEvent(new CustomEvent('adobesphere:filter', {
+        detail: { source: tab, state: filterState },
+      }));
+
+      // Update active pill across both the real row and the aria-hidden clone
+      wrap.querySelectorAll('.marquee-pill').forEach((pill) => {
+        pill.classList.toggle('active', pill.dataset.label === p.label);
+      });
+    });
+
     row.append(a);
   });
   wrap.append(row);
