@@ -118,41 +118,62 @@
 .detail-section .detail-people {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 20px;
-}
-
-@media (min-width: 700px) {
-  .detail-section .detail-people {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  gap: 14px;
 }
 
 .detail-section .detail-person {
   display: flex;
   gap: 16px;
+  align-items: flex-start;
   padding: 20px;
   background: var(--white);
-  border: 1px solid var(--neutral-light);
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .detail-section .detail-person img {
-  width: 80px;
-  height: 80px;
-  border-radius: var(--radius-full);
+  width: 96px;
+  height: 72px;
+  border-radius: var(--radius-md);
   object-fit: cover;
   flex-shrink: 0;
+  background: rgba(0, 0, 0, 6%);
+}
+
+.detail-section .detail-person-body {
+  min-width: 0;
+  flex: 1;
 }
 
 .detail-section .detail-person h3 {
-  margin: 0 0 4px;
-  font-size: 1.1rem;
+  margin: 0 0 2px;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.detail-section .detail-person .text-muted {
+  margin: 0 0 8px;
+  font-size: 0.86rem;
 }
 
 .detail-section .detail-person p {
   margin: 0 0 6px;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 599px) {
+  .detail-section .detail-person {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .detail-section .detail-person img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
 }
 
 /* quote */

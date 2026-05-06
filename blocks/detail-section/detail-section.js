@@ -98,10 +98,11 @@ function renderAgenda(block, cfg, entity) {
 
 function renderPeople(block, cfg, entity) {
   // The people variant reads its sub-section (presenters / guestSpeakers / hosts) from
-  // a `Group | presenters|guestSpeakers|hosts` config row, defaulting to presenters.
+  // the block's class. da.live may hyphenate: `people-presenters` → split to find group.
   const group = (() => {
     const ids = ['presenters', 'speakers', 'hosts', 'guests', 'authors'];
-    return ids.find((g) => block.classList.contains(g)) || 'presenters';
+    const flat = [...block.classList].flatMap((c) => c.split('-'));
+    return ids.find((g) => flat.includes(g)) || 'presenters';
   })();
   const dataKey = group === 'speakers' ? 'guestSpeakers' : group;
 
@@ -285,17 +286,22 @@ export default async function decorate(block) {
   const cfg = readConfig(block);
   const variants = [...block.classList];
 
+  // da.live may emit hyphenated classes like `people-presenters` (single class)
+  // instead of two separate classes `people` + `presenters`.  Normalise by
+  // checking both the raw classList and a flattened version that splits hyphens.
+  const flatVariants = variants.flatMap((c) => c.split('-'));
+
   // Determine which variant is active.
   const variant = ['overview', 'agenda', 'people', 'quote', 'comments', 'bio', 'reach-out',
-    'presenters', 'speakers', 'hosts', 'article-body'].find((v) => variants.includes(v)) || 'overview';
+    'presenters', 'speakers', 'hosts', 'article-body'].find((v) => flatVariants.includes(v)) || 'overview';
 
   // Hydrate entity if needed.
   let entity = null;
   if (['overview', 'agenda', 'people', 'presenters', 'speakers', 'hosts', 'quote', 'bio', 'reach-out', 'article-body'].includes(variant)) {
     // Source priority: explicit Id Source > variant class hint > URL path > default 'events'.
     const source = cfg.id_source
-      || (variants.includes('blog') ? 'blogs' : null)
-      || (variants.includes('creator') ? 'creators' : null)
+      || (flatVariants.includes('blog') ? 'blogs' : null)
+      || (flatVariants.includes('creator') ? 'creators' : null)
       || (() => {
         const p = window.location.pathname;
         if (/^\/blog\//.test(p)) return 'blogs';
