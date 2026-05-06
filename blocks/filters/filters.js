@@ -101,6 +101,39 @@ export default async function decorate(block) {
     if (urlParams.get('sort')) state.sort = urlParams.get('sort');
     if (urlParams.get('date')) state.date = urlParams.get('date');
 
+    // Track whether this block's tab is currently active
+    let isActive = false;
+
+    // Find which tab panel this block belongs to
+    const findTabPanel = () => {
+        let parent = block.closest('.section');
+        while (parent) {
+            if (parent.id && parent.id.startsWith('tabpanel-')) {
+                return parent;
+            }
+            parent = parent.nextElementSibling;
+        }
+        return null;
+    };
+
+    const tabPanel = findTabPanel();
+    const getActiveTab = () => {
+        if (tabPanel) {
+            return tabPanel.id.replace('tabpanel-', '');
+        }
+        return null;
+    };
+
+    const updateVisibility = () => {
+        const activeTab = getActiveTab();
+        isActive = activeTab === source;
+        
+        if (isActive) {
+            // When this tab becomes active, dispatch initial state
+            dispatchFilter(source, { ...state });
+        }
+    };
+
     function render() {
         block.innerHTML = '';
 
@@ -268,7 +301,22 @@ export default async function decorate(block) {
     }
 
     render();
+    updateVisibility();
+
+    // Listen for tab changes — re-render and dispatch state when this tab becomes active
+    window.addEventListener('adobesphere:switchtab', (e) => {
+        const newTab = e.detail;
+        if (newTab === source && !isActive) {
+            isActive = true;
+            render();
+            dispatchFilter(source, { ...state });
+        } else if (newTab !== source && isActive) {
+            isActive = false;
+        }
+    });
 
     // Fire initial state so cards block syncs on load (e.g. URL has ?category=…)
-    dispatchFilter(source, { ...state });
+    if (isActive) {
+        dispatchFilter(source, { ...state });
+    }
 }

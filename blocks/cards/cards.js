@@ -432,6 +432,35 @@ async function hydrateFromData(block, type, cfg, opts) {
         : { designation: [], sort: urlParams.get('sort') || 'name-asc' },
   };
 
+  // Track whether this block's tab is currently active
+  let isActive = false;
+
+  // Find which tab panel this block belongs to
+  const findTabPanel = () => {
+    let parent = block.closest('.section');
+    while (parent) {
+      if (parent.id && parent.id.startsWith('tabpanel-')) {
+        return parent;
+      }
+      parent = parent.nextElementSibling;
+    }
+    return null;
+  };
+
+  const tabPanel = findTabPanel();
+  const getActiveTab = () => {
+    if (tabPanel) {
+      return tabPanel.id.replace('tabpanel-', '');
+    }
+    return null;
+  };
+
+  const updateVisibility = () => {
+    isActive = getActiveTab() === type;
+  };
+
+  updateVisibility();
+
   function renderGrid() {
     const filtered = getFilteredItems(type, items, { q: state.q, ...state.f });
 
@@ -497,6 +526,17 @@ async function hydrateFromData(block, type, cfg, opts) {
     state.f = { ...e.detail.state };
     state.page = 1;
     renderGrid();
+  });
+
+  // Listen for tab switches — re-render when this tab becomes active
+  window.addEventListener('adobesphere:switchtab', (e) => {
+    const newTab = e.detail;
+    if (newTab === type && !isActive) {
+      isActive = true;
+      renderGrid();
+    } else if (newTab !== type && isActive) {
+      isActive = false;
+    }
   });
 
   let searchDebounce;
