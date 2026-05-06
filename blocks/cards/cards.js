@@ -441,12 +441,33 @@ async function hydrateFromData(block, type, cfg, opts) {
       const start = (state.page - 1) * pageSize;
       slice = filtered.slice(start, start + pageSize);
 
-      pagiHost.innerHTML = `
-        <button type="button" class="button ghost" data-prev ${state.page === 1 ? 'disabled' : ''}>Prev</button>
-        <span class="explore-page">Page ${state.page} of ${totalPages} (${filtered.length} result${filtered.length === 1 ? '' : 's'})</span>
-        <button type="button" class="button ghost" data-next ${state.page >= totalPages ? 'disabled' : ''}>Next</button>`;
-      pagiHost.querySelector('[data-prev]').addEventListener('click', () => { if (state.page > 1) { state.page -= 1; renderGrid(); } });
-      pagiHost.querySelector('[data-next]').addEventListener('click', () => { if (state.page < totalPages) { state.page += 1; renderGrid(); } });
+      // Rebuild pagination: only show Prev / Next when there are pages in that direction.
+      pagiHost.innerHTML = '';
+
+      if (state.page > 1) {
+        const prevBtn = document.createElement('button');
+        prevBtn.type = 'button';
+        prevBtn.className = 'button ghost';
+        prevBtn.dataset.prev = '';
+        prevBtn.textContent = 'Previous';
+        prevBtn.addEventListener('click', () => { state.page -= 1; renderGrid(); });
+        pagiHost.append(prevBtn);
+      }
+
+      const pageLabel = document.createElement('span');
+      pageLabel.className = 'explore-page';
+      pageLabel.textContent = `Page ${state.page} of ${totalPages} (${filtered.length} result${filtered.length === 1 ? '' : 's'})`;
+      pagiHost.append(pageLabel);
+
+      if (state.page < totalPages) {
+        const nextBtn = document.createElement('button');
+        nextBtn.type = 'button';
+        nextBtn.className = 'button ghost';
+        nextBtn.dataset.next = '';
+        nextBtn.textContent = 'Next';
+        nextBtn.addEventListener('click', () => { state.page += 1; renderGrid(); });
+        pagiHost.append(nextBtn);
+      }
     } else if (cfg.limit) {
       slice = filtered.slice(0, parseInt(cfg.limit, 10));
     }
@@ -548,9 +569,9 @@ async function hydrateFromData(block, type, cfg, opts) {
     const clearBtn = filterHost.querySelector('.clear-filters');
     if (clearBtn) {
       clearBtn.addEventListener('click', () => {
-        state.f = type === 'events' ? { category: '', location: [], date: 'all' } 
-                : type === 'blogs' ? { category: '', author: '', sort: 'newest' }
-                : { designation: [], sort: 'name-asc' };
+        state.f = type === 'events' ? { category: '', location: [], date: 'all' }
+          : type === 'blogs' ? { category: '', author: '', sort: 'newest' }
+            : { designation: [], sort: 'name-asc' };
         state.page = 1;
         renderFilters();
         renderGrid();

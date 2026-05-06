@@ -18,6 +18,7 @@
 }
 
 @media (min-width: 900px) {
+
   .cards .cards-grid.grid-events,
   .cards .cards-grid.grid-blogs,
   .cards .cards-grid.grid-testimonials,
@@ -394,4 +395,20 @@
 .cards .explore-page {
   font-size: 0.88rem;
   color: var(--text-muted);
+}
+
+/* ─── Pagination layout update ─────────────────────────────────────────────
+ * Prev / Next buttons are now conditionally rendered (only injected into the
+ * DOM when there are pages in that direction). The rules below ensure the
+ * pagination bar stays vertically stable and the page-counter stays centred
+ * when it is the only child (single-page results or exactly-1-button cases).
+ * The old `[disabled]` selector rules are no longer needed.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.cards .explore-pagination {
+  min-height: 48px;
+  /* prevents grid height-jump when buttons appear / disappear */
+}
+
+.cards .explore-page {
+  text-align: center;
 }
