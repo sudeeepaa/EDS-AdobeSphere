@@ -567,6 +567,62 @@ function hydrateStatic(block, opts) {
   block.append(grid);
 }
 
+/* ─────────── user-profile card hydrators ─────────── */
+
+async function hydrateUserSource(block, source, cfg, opts) {
+  const { Storage, Utils } = window.AdobeSphere;
+  const grid = document.createElement('div');
+  grid.className = `cards-grid grid-${source.replace('saved-', '').replace('registered-', '').replace('user-', '')}`;
+  if (opts.horizontal) grid.classList.add('horizontal');
+
+  if (source === 'user-blogs') {
+    const blogs = Storage.getUserBlogs();
+    if (!blogs.length) {
+      grid.innerHTML = `<p class="cards-empty">${escapeHtml(cfg.empty || 'You haven\'t published any blogs yet.')}</p>`;
+    } else {
+      blogs.forEach((b) => grid.append(buildBlogCard(b, opts)));
+    }
+    block.append(grid);
+    return;
+  }
+
+  const savedType = source === 'saved-events' ? 'events'
+    : source === 'saved-blogs' ? 'blogs'
+      : source === 'registered-events' ? 'events' : null;
+
+  if (!savedType) {
+    block.innerHTML = `<p class="cards-empty">Unknown user source: ${escapeHtml(source)}</p>`;
+    return;
+  }
+
+  const dataFile = savedType === 'events' ? 'campaigns' : savedType;
+  const data = await Utils.fetchData(dataFile);
+  if (!Array.isArray(data)) {
+    block.innerHTML = `<p class="cards-empty">${escapeHtml(cfg.empty || 'Could not load data.')}</p>`;
+    return;
+  }
+
+  let ids;
+  if (source === 'registered-events') {
+    ids = Storage.getRegistrations().map((r) => r.eventId);
+  } else {
+    ids = Storage.getSaved(savedType);
+  }
+
+  const items = ids.map((id) => data.find((it) => it.id === id)).filter(Boolean);
+
+  if (!items.length) {
+    const msg = source === 'registered-events'
+      ? 'You haven\'t registered for any events yet.'
+      : `You haven't saved any ${savedType} yet.`;
+    grid.innerHTML = `<p class="cards-empty">${escapeHtml(cfg.empty || msg)}</p>`;
+  } else {
+    const builder = savedType === 'events' ? buildEventCard : buildBlogCard;
+    items.forEach((item) => grid.append(builder(item, opts)));
+  }
+  block.append(grid);
+}
+
 export default async function decorate(block) {
   const variants = classify(block);
   const cfg = readConfig(block);
@@ -583,7 +639,12 @@ export default async function decorate(block) {
   const source = (cfg.source || variants.type || '').toLowerCase();
   const opts = { withSave: variants.withSave, withActions: variants.withActions, horizontal: variants.horizontal };
 
-  if (['events', 'blogs', 'creators'].includes(source)) {
+  const USER_SOURCES = ['saved-events', 'saved-blogs', 'registered-events', 'user-blogs'];
+
+  if (USER_SOURCES.includes(source)) {
+    block.dataset.source = source;
+    await hydrateUserSource(block, source, cfg, opts);
+  } else if (['events', 'blogs', 'creators'].includes(source)) {
     block.dataset.source = source;
     await hydrateFromData(block, source, cfg, opts);
   } else if (variants.type === 'testimonials' || block.children.length > 0) {

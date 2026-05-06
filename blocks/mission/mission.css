@@ -1,0 +1,109 @@
+/*
+ * AdobeSphere — mission block ("Made with Purpose" section on About page).
+ * One card per contributor: circular avatar left, bio right.
+ */
+
+.mission .mission-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.mission .mission-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  padding: 36px;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (min-width: 600px) {
+  .mission .mission-card {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+/* ── avatar ─────────────────────────────────────────────────────────── */
+.mission .mission-avatar {
+  flex-shrink: 0;
+  width: 120px;
+  height: 120px;
+}
+
+.mission .mission-avatar img {
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 3px solid var(--neutral-light);
+  display: block;
+}
+
+/* ── body ────────────────────────────────────────────────────────────── */
+.mission .mission-body {
+  flex: 1;
+}
+
+.mission .mission-name {
+  margin: 0 0 4px;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.mission .mission-role {
+  margin: 0 0 16px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.mission .mission-bio {
+  margin: 0 0 16px;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+/* ── social links ────────────────────────────────────────────────────── */
+.mission .mission-socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+}
+
+.mission .mission-socials a {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 20px;
+  border: 2px solid var(--red-primary);
+  border-radius: var(--radius-sm);
+  color: var(--red-primary);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.mission .mission-socials a:hover {
+  background: var(--red-primary);
+  color: var(--white);
+}
+
+/* ── compact on mobile ───────────────────────────────────────────────── */
+@media (max-width: 599px) {
+  .mission .mission-card {
+    text-align: center;
+  }
+
+  .mission .mission-socials {
+    justify-content: center;
+  }
+}

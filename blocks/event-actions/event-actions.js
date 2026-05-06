@@ -3,21 +3,23 @@
  *
  * A sticky action bar with Save + Register buttons for event detail pages.
  *
- * ┌─────────────────────────────────────────────┐
- * │              event-actions                  │
- * ├──────────────────────┬──────────────────────┤
- * │ Save Event           │ Register for this    │
- * │                      │ Event                │
- * └──────────────────────┴──────────────────────┘
+ * ┌─────────────────────────────────────────────────────────────┐
+ * │                     event-actions                           │
+ * ├──────────────────────┬──────────────────────────────────────┤
+ * │ Save Event           │ Register for this Event              │
+ * └──────────────────────┴──────────────────────────────────────┘
  *
  * Column 1  →  Save / Unsave toggle label
  * Column 2  →  Register / Cancel / Event Ended label
  *
  * The block auto-detects the event from the URL, then rewrites both
  * cells into interactive buttons with the correct initial state.
+ *
+ * Registration flow: clicking the Register button fires the custom event
+ * `adobesphere:show-registration`, which the form (event-registration) block
+ * listens for and opens as a modal. The form block fires
+ * `adobesphere:registration-changed` on success so this block can update.
  */
-
-const SOURCE_FILE = { events: 'campaigns' };
 
 function getUrlId() {
   const fromQuery = new URLSearchParams(window.location.search).get('id');
@@ -108,7 +110,7 @@ export default async function decorate(block) {
     regBtn.textContent = 'Event Ended';
     regBtn.disabled = true;
   } else {
-    const isReg = Storage.isLoggedIn()
+    const isReg = () => Storage.isLoggedIn()
       && Storage.getRegistrations().some((r) => r.eventId === eventId);
 
     const updateRegUI = (registered) => {
@@ -117,18 +119,24 @@ export default async function decorate(block) {
     };
 
     regBtn.className = 'event-actions-register';
-    updateRegUI(isReg);
+    updateRegUI(isReg());
 
     regBtn.addEventListener('click', () => {
       if (!Storage.isLoggedIn()) { window.location.href = '/login'; return; }
-      const alreadyReg = Storage.getRegistrations().some((r) => r.eventId === eventId);
-      if (alreadyReg) {
+      if (isReg()) {
+        // Already registered → cancel directly (no form needed)
         Storage.cancelRegistration(eventId);
         updateRegUI(false);
+        window.AdobeSphere.Utils.toast('Registration cancelled.', 'success');
       } else {
-        Storage.registerForEvent(eventId);
-        updateRegUI(true);
+        // Not yet registered → open the registration form modal
+        window.dispatchEvent(new CustomEvent('adobesphere:show-registration'));
       }
+    });
+
+    // Stay in sync when the registration form modal submits successfully
+    window.addEventListener('adobesphere:registration-changed', (e) => {
+      if (e.detail === eventId) updateRegUI(isReg());
     });
   }
 

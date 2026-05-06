@@ -163,6 +163,27 @@ const Storage = {
     all[blogId] = list;
     return writeJSON(STORAGE_KEYS.COMMENTS, all);
   },
+
+  // Every new sign-up creates a matching local creator entry so that the
+  // "Creators" stat counter equals the "Registered Users" counter.
+  upsertLocalCreator(user) {
+    if (!user || !user.email) return false;
+    const key = 'adobesphere_local_creators';
+    const creators = readJSON(key, {});
+    creators[user.email] = {
+      ...creators[user.email],
+      email: user.email,
+      name: user.name || '',
+      createdAt: user.createdAt || new Date().toISOString(),
+    };
+    return writeJSON(key, creators);
+  },
+
+  getLocalCreatorsCount() {
+    try {
+      return Object.keys(JSON.parse(localStorage.getItem('adobesphere_local_creators') || '{}')).length;
+    } catch { return 0; }
+  },
 };
 
 /* ─── Helpers shared across blocks (avatars, dates, escaping, etc.) ─── */

@@ -36,6 +36,19 @@ async function resolveTarget(source) {
     try { return Object.keys(JSON.parse(localStorage.getItem('adobesphere_users') || '{}')).length; }
     catch { return 0; }
   }
+
+  // 'creators' = curated JSON creators PLUS any users who self-registered
+  // (each sign-up auto-creates a local creator entry via Storage.upsertLocalCreator).
+  // This keeps the Creators count equal to the Registered Users count.
+  if (source === 'creators') {
+    const data = await window.AdobeSphere.Utils.fetchData('creators');
+    const jsonCount = Array.isArray(data) ? data.length : 0;
+    const localCount = window.AdobeSphere.Storage.getLocalCreatorsCount
+      ? window.AdobeSphere.Storage.getLocalCreatorsCount()
+      : 0;
+    return jsonCount + localCount;
+  }
+
   const file = source === 'events' ? 'campaigns' : source;
   const data = await window.AdobeSphere.Utils.fetchData(file);
   return Array.isArray(data) ? data.length : 0;

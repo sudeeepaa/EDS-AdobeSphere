@@ -62,7 +62,9 @@ export default function decorate(block) {
   // ── Activate a tab ─────────────────────────────────────────────────────
   // updateUrl = true  → writes ?tab=id to the address bar
   // updateUrl = false → silent (used on first load so /explore stays clean)
-  function activateTab(tab, updateUrl) {
+  // fromEvent = true  → called from the adobesphere:switchtab listener;
+  //                     do NOT re-fire the event to prevent infinite loops.
+  function activateTab(tab, updateUrl, fromEvent = false) {
     tabs.forEach((t) => {
       t.button.classList.remove('active');
       t.button.setAttribute('aria-selected', 'false');
@@ -84,6 +86,13 @@ export default function decorate(block) {
       url.searchParams.set('tab', tab.id);
       window.history.replaceState({}, '', url);
     }
+
+    // Notify filter/cards/marquee blocks that a tab has become active.
+    // Guard with fromEvent to prevent infinite re-entrancy when this function
+    // is itself called in response to adobesphere:switchtab.
+    if (!fromEvent) {
+      window.dispatchEvent(new CustomEvent('adobesphere:switchtab', { detail: tab.id }));
+    }
   }
 
   // Manual tab clicks always update the URL
@@ -98,6 +107,18 @@ export default function decorate(block) {
   const activeTabId = urlParams.get('tab');
   const initialTab = tabs.find((t) => t.id === activeTabId) || tabs[0];
   if (initialTab) activateTab(initialTab, !!activeTabId);
+
+  // ── Force-load all tab panel sections ─────────────────────────────────
+  // EDS lazy-loads sections via IntersectionObserver. Sections hidden with
+  // display:none have zero height, so the observer never fires for them and
+  // their block JS is never executed.  We explicitly load every panel so
+  // that filters/cards blocks are initialised even when their tab starts
+  // hidden.  loadSection guards against double-loading via dataset status.
+  import('../../scripts/aem.js').then(({ loadSection }) => {
+    tabs.forEach(({ panel }) => {
+      if (panel) loadSection(panel);
+    });
+  });
 
   // ── Cross-tab search coordinator ───────────────────────────────────────
   // cards.js fires adobesphere:search:results { type, count, q } after every
@@ -137,9 +158,10 @@ export default function decorate(block) {
     rafId = requestAnimationFrame(switchToWinningTab);
   });
 
-  // Marquee and direct links fire this to switch tab by id without a search
+  // Marquee and direct links fire this to switch tab by id without a search.
+  // fromEvent=true so activateTab does not re-fire the event and loop.
   window.addEventListener('adobesphere:switchtab', (e) => {
     const target = tabs.find((t) => t.id === e.detail);
-    if (target) activateTab(target, true);
+    if (target) activateTab(target, true, true);
   });
 }

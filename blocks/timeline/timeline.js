@@ -1,13 +1,14 @@
 /**
- * AdobeSphere timeline block — Platform Journey ribbon.
+ * AdobeSphere timeline block — Platform Journey auto-scroll ribbon.
  *
  * Authoring contract: each row is one milestone.
  *   col 1 = title (e.g. "Ideation & Vision")
  *   col 2 = date  (e.g. "Apr 09, 2026")
  *   col 3 = bullet points authored as a UL — each <li> becomes a separate line.
  *
- * Layout: horizontally scrollable ribbon of cards, each connected by a red dot.
- * On mobile, cards stack vertically into a single column.
+ * Layout: auto-scrolling horizontal ribbon (marquee style). Cards loop
+ * seamlessly. Hover / focus pauses the animation.
+ * Reduced-motion: static horizontally-scrollable list with no animation.
  */
 
 function escapeHtml(v) { return window.AdobeSphere.Utils.escapeHtml(v); }
@@ -35,13 +36,9 @@ export default function decorate(block) {
     return;
   }
 
-  const track = document.createElement('div');
-  track.className = 'timeline-track';
-  track.setAttribute('role', 'list');
-
-  milestones.forEach((m) => {
+  function buildCard(m) {
     const article = document.createElement('article');
-    article.className = 'timeline-item reveal';
+    article.className = 'timeline-item';
     article.setAttribute('role', 'listitem');
     article.innerHTML = `
       <div class="timeline-card">
@@ -52,10 +49,32 @@ export default function decorate(block) {
         <ul class="timeline-bullets">
           ${m.bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join('')}
         </ul>
-        <span class="timeline-dot" aria-hidden="true"></span>
       </div>`;
-    track.append(article);
-  });
+    return article;
+  }
 
-  block.append(track);
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'timeline-track-wrap';
+
+  const track = document.createElement('div');
+  track.className = 'timeline-track';
+  track.setAttribute('role', 'list');
+  track.setAttribute('aria-label', 'Platform journey milestones');
+
+  milestones.forEach((m) => track.append(buildCard(m)));
+
+  wrap.append(track);
+
+  // Seamless auto-scroll: duplicate the track so the loop is invisible.
+  if (!reduceMotion) {
+    const clone = track.cloneNode(true);
+    clone.setAttribute('aria-hidden', 'true');
+    clone.querySelectorAll('[role="listitem"]').forEach((el) => el.setAttribute('tabindex', '-1'));
+    wrap.append(clone);
+    wrap.classList.add('timeline-auto-scroll');
+  }
+
+  block.append(wrap);
 }

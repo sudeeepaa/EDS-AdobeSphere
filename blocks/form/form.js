@@ -241,7 +241,12 @@ function renderSignup(block, cfg) {
     }
 
     const { Storage, Utils } = window.AdobeSphere;
-    Storage.upsertUser({ email: email.value, name: name.value, password: pwd.value, createdAt: new Date().toISOString() });
+    const newUser = { email: email.value, name: name.value, password: pwd.value, createdAt: new Date().toISOString() };
+    Storage.upsertUser(newUser);
+    // Every registered user automatically gets a creator profile so that the
+    // Registered Users count always equals the Creator Profiles count on the
+    // Stats block (which resolves 'creators' by counting users + local creators).
+    if (typeof Storage.upsertLocalCreator === 'function') Storage.upsertLocalCreator(newUser);
     Storage.setSession({ email: email.value, name: name.value });
     Utils.toast(cfg.success || 'Account created! Redirecting…', 'success');
     setTimeout(() => { window.location.href = cfg.after || '/'; }, 600);
@@ -249,54 +254,75 @@ function renderSignup(block, cfg) {
 }
 
 /* ─────────── EVENT REGISTRATION ─────────── */
+// The registration form renders as a modal overlay that is hidden by default.
+// It opens when `event-actions.js` fires `adobesphere:show-registration` and
+// closes on successful submission or when the user clicks the backdrop/close.
 
 function renderEventRegistration(block, cfg) {
+  // Wrap the entire form in a modal overlay so it is invisible until triggered.
   block.innerHTML = `
-    <form class="form form-registration" novalidate>
-      ${cfg.title ? `<h2>${escapeHtml(cfg.title)}</h2>` : ''}
-      <p class="text-muted">Fill in your preferences to confirm registration.</p>
+    <div class="modal-overlay form-registration-overlay" role="dialog" aria-modal="true" aria-label="Event registration">
+      <div class="modal-box form-registration-box">
+        <button type="button" class="modal-close form-reg-close" aria-label="Close">&times;</button>
+        <form class="form form-registration" novalidate>
+          <h2>${escapeHtml(cfg.title || 'Register for this Event')}</h2>
+          <p class="text-muted">Fill in your preferences to confirm registration.</p>
 
-      <div class="form-group">
-        <label for="r-food">Food Preference</label>
-        <select id="r-food" class="form-input" required>
-          <option value="">Select preference</option>
-          <option value="vegetarian">Vegetarian</option>
-          <option value="vegan">Vegan</option>
-          <option value="non-vegetarian">Non-Vegetarian</option>
-          <option value="gluten-free">Gluten-Free</option>
-          <option value="no-preference">No Preference</option>
-        </select>
+          <div class="form-group">
+            <label for="r-food">Food Preference</label>
+            <select id="r-food" class="form-input" required>
+              <option value="">Select preference</option>
+              <option value="vegetarian">Vegetarian</option>
+              <option value="vegan">Vegan</option>
+              <option value="non-vegetarian">Non-Vegetarian</option>
+              <option value="gluten-free">Gluten-Free</option>
+              <option value="no-preference">No Preference</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Will you bring a companion?</label>
+            <div class="form-radios">
+              <label><input type="radio" name="companion" value="no" checked> No</label>
+              <label><input type="radio" name="companion" value="yes"> Yes (max 2)</label>
+            </div>
+          </div>
+
+          <div class="companion-fields" hidden>
+            <div class="companion-block">
+              <p>Companion 1</p>
+              <div class="form-group"><label>Name</label><input type="text" class="form-input" data-companion="1-name"></div>
+              <div class="form-group"><label>Email</label><input type="email" class="form-input" data-companion="1-email"></div>
+              <div class="form-group"><label>Age</label><input type="number" class="form-input" data-companion="1-age" min="1" max="120"></div>
+            </div>
+            <div class="companion-block">
+              <p>Companion 2 (optional)</p>
+              <div class="form-group"><label>Name</label><input type="text" class="form-input" data-companion="2-name"></div>
+              <div class="form-group"><label>Email</label><input type="email" class="form-input" data-companion="2-email"></div>
+              <div class="form-group"><label>Age</label><input type="number" class="form-input" data-companion="2-age" min="1" max="120"></div>
+            </div>
+          </div>
+
+          <p class="form-error form-error-global"></p>
+          <button type="submit" class="button primary">${escapeHtml(cfg.submit || 'Confirm Registration')}</button>
+        </form>
       </div>
+    </div>`;
 
-      <div class="form-group">
-        <label>Will you bring a companion?</label>
-        <div class="form-radios">
-          <label><input type="radio" name="companion" value="no" checked> No</label>
-          <label><input type="radio" name="companion" value="yes"> Yes (max 2)</label>
-        </div>
-      </div>
-
-      <div class="companion-fields" hidden>
-        <div class="companion-block">
-          <p>Companion 1</p>
-          <div class="form-group"><label>Name</label><input type="text" class="form-input" data-companion="1-name"></div>
-          <div class="form-group"><label>Email</label><input type="email" class="form-input" data-companion="1-email"></div>
-          <div class="form-group"><label>Age</label><input type="number" class="form-input" data-companion="1-age" min="1" max="120"></div>
-        </div>
-        <div class="companion-block">
-          <p>Companion 2 (optional)</p>
-          <div class="form-group"><label>Name</label><input type="text" class="form-input" data-companion="2-name"></div>
-          <div class="form-group"><label>Email</label><input type="email" class="form-input" data-companion="2-email"></div>
-          <div class="form-group"><label>Age</label><input type="number" class="form-input" data-companion="2-age" min="1" max="120"></div>
-        </div>
-      </div>
-
-      <p class="form-error form-error-global"></p>
-      <button type="submit" class="button primary">${escapeHtml(cfg.submit || 'Confirm Registration')}</button>
-    </form>`;
-
+  const overlay = block.querySelector('.form-registration-overlay');
   const form = block.querySelector('form');
   const compFields = form.querySelector('.companion-fields');
+
+  const openModal = () => { overlay.classList.add('open'); document.body.style.overflow = 'hidden'; };
+  const closeModal = () => { overlay.classList.remove('open'); document.body.style.overflow = ''; };
+
+  // Close on backdrop click or close button
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+  block.querySelector('.form-reg-close').addEventListener('click', closeModal);
+
+  // Open when event-actions fires the show-registration event
+  window.addEventListener('adobesphere:show-registration', openModal);
+
   form.querySelectorAll('[name="companion"]').forEach((r) => r.addEventListener('change', (e) => {
     compFields.hidden = e.target.value === 'no';
   }));
@@ -316,12 +342,15 @@ function renderEventRegistration(block, cfg) {
       return;
     }
 
-    // Pull event id from URL params or page metadata.
+    // Pull event id from URL params or the last URL segment.
     const eventId = new URLSearchParams(window.location.search).get('id')
       || document.querySelector('meta[name="event-id"]')?.content
-      || window.location.pathname.split('/').pop();
+      || window.location.pathname.split('/').filter(Boolean).pop();
     Storage.registerForEvent(eventId, { food: food.value });
     Utils.toast(cfg.success || 'You\'re registered. See you there!', 'success');
+    closeModal();
+    // Notify event-actions to update its button state
+    window.dispatchEvent(new CustomEvent('adobesphere:registration-changed', { detail: eventId }));
     if (cfg.after) setTimeout(() => { window.location.href = cfg.after; }, 800);
   });
 }

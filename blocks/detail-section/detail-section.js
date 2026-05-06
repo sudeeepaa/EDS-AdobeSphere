@@ -268,10 +268,10 @@ function renderArticleBody(block, cfg, entity) {
       const h2 = document.createElement('h2');
       h2.textContent = text;
       article.append(h2);
-    } else if (blk.type === 'image' && blk.url) {
+    } else if (blk.type === 'image' && (blk.src || blk.url)) {
       const fig = document.createElement('figure');
       const img = document.createElement('img');
-      img.src = window.AdobeSphere.Utils.normaliseAsset(blk.url, '');
+      img.src = window.AdobeSphere.Utils.normaliseAsset(blk.src || blk.url, '');
       img.alt = blk.alt || '';
       img.loading = 'lazy';
       fig.append(img);
@@ -303,11 +303,16 @@ export default async function decorate(block) {
   // da.live may emit hyphenated classes like `people-presenters` (single class)
   // instead of two separate classes `people` + `presenters`.  Normalise by
   // checking both the raw classList and a flattened version that splits hyphens.
+  // IMPORTANT: also check `variants` directly — `flatVariants.includes('reach-out')`
+  // will always be false because 'reach-out'.split('-') = ['reach','out'], so
+  // the hyphenated string 'reach-out' is never in the flat array.
   const flatVariants = variants.flatMap((c) => c.split('-'));
 
   // Determine which variant is active.
   const variant = ['overview', 'agenda', 'people', 'quote', 'comments', 'bio', 'reach-out',
-    'presenters', 'speakers', 'hosts', 'article-body'].find((v) => flatVariants.includes(v)) || 'overview';
+    'presenters', 'speakers', 'hosts', 'article-body'].find((v) =>
+    variants.includes(v) || flatVariants.includes(v)
+  ) || 'overview';
 
   // Hydrate entity if needed.
   let entity = null;
