@@ -65,75 +65,96 @@ export default function decorate(block) {
 
     tab.panel = currentPanel;
     currentPanel = currentPanel.nextElementSibling;
+  });
 
-    // Click handler
-    tab.button.addEventListener('click', () => {
-      // Update URL without reloading
+  // ── Core activate function ─────────────────────────────────────────────
+  // updateUrl = true  → writes ?tab= to the address bar (manual click / search)
+  // updateUrl = false → silent activation on first load (keeps /explore clean)
+  function activateTab(tab, updateUrl) {
+    // Deactivate all
+    tabs.forEach((t) => {
+      t.button.classList.remove('active');
+      t.button.setAttribute('aria-selected', 'false');
+      if (t.panel) {
+        t.panel.classList.remove('active');
+        t.panel.style.display = 'none';
+      }
+    });
+
+    // Activate target
+    tab.button.classList.add('active');
+    tab.button.setAttribute('aria-selected', 'true');
+    if (tab.panel) {
+      tab.panel.classList.add('active');
+      tab.panel.style.display = '';
+    }
+
+    // Only touch the URL when explicitly requested
+    if (updateUrl) {
       const url = new URL(window.location);
       url.searchParams.set('tab', tab.id);
       window.history.replaceState({}, '', url);
+    }
+  }
 
-      // Deactivate all
-      tabs.forEach((t) => {
-        t.button.classList.remove('active');
-        t.button.setAttribute('aria-selected', 'false');
-        if (t.panel) {
-          t.panel.classList.remove('active');
-          t.panel.style.display = 'none';
-        }
-      });
-
-      // Activate current
-      tab.button.classList.add('active');
-      tab.button.setAttribute('aria-selected', 'true');
-      if (tab.panel) {
-        tab.panel.classList.add('active');
-        tab.panel.style.display = '';
-      }
-    });
+  // Wire click handlers — always update the URL on a real user click
+  tabs.forEach((tab) => {
+    tab.button.addEventListener('click', () => activateTab(tab, true));
   });
 
-  // Hydrate from URL or default to first
+  // ── Initial activation ─────────────────────────────────────────────────
+  // If ?tab= is already in the URL (e.g. shared link), honour it and keep
+  // the URL unchanged. If there is no ?tab= (bare /explore), activate the
+  // first tab silently so the address bar stays clean.
   const urlParams = new URLSearchParams(window.location.search);
   const activeTabId = urlParams.get('tab');
   const targetTab = tabs.find((t) => t.id === activeTabId) || tabs[0];
 
   if (targetTab) {
-    targetTab.button.click();
-    const TAB_PRIORITY = ['events', 'blogs', 'creato', 'creators'];
-    // 'creato' handles the truncated id that tabs.js derived from "Creators"
-    // if the author omitted an explicit id column (see tabs.js id derivation).
+    activateTab(targetTab, !!activeTabId);
+  }
 
-    let pendingResults = {};
-    let coordinatorRaf = null;
+  // ── Cross-tab search coordinator ───────────────────────────────────────
+  // Listens for adobesphere:search:results events broadcast by each cards
+  // block after every renderGrid(). Collects all reports within one rAF
+  // window, then switches to the highest-priority tab that has results.
+  //
+  // Priority order matches TAB_PRIORITY below — easy to adjust.
+  // Empty query (user cleared search) skips coordination entirely so the
+  // tab doesn't jump around unexpectedly.
 
-    function pickBestTab() {
-      // Find highest-priority tab that has results.
-      // If nothing matched at all, stay on current tab (don't disrupt user).
-      const winner = TAB_PRIORITY.find((id) => pendingResults[id] > 0);
+  const TAB_PRIORITY = ['events', 'blogs', 'creato', 'creators'];
+
+  let pendingResults = {};
+  let coordinatorRaf = null;
+
+  function pickBestTab() {
+    const winner = TAB_PRIORITY.find((id) => (pendingResults[id] || 0) > 0);
+    pendingResults = {};
+
+    if (!winner) return; // nothing matched — let each tab show its own empty state
+
+    const target = tabs.find((t) => t.id === winner || t.id.startsWith(winner.slice(0, 5)));
+    if (target && !target.button.classList.contains('active')) {
+      activateTab(target, true); // update URL so the user can see / share the result tab
+    }
+  }
+
+  window.addEventListener('adobesphere:search:results', (e) => {
+    const { type, count, q } = e.detail;
+
+    // Don't auto-switch when the search is empty
+    if (!q) {
       pendingResults = {};
-
-      if (!winner) return; // no results anywhere — let each tab show its own empty state
-
-      const target = tabs.find((t) => t.id === winner || t.id.startsWith(winner.slice(0, 5)));
-      if (target && !target.button.classList.contains('active')) {
-        target.button.click();
-      }
+      return;
     }
 
-    window.addEventListener('adobesphere:search:results', (e) => {
-      const { type, count, q } = e.detail;
+    pendingResults[type] = count;
 
-      // Only coordinate when there is an actual search query.
-      // Empty query = user cleared search → don't auto-switch tabs.
-      if (!q) { pendingResults = {}; return; }
-
-      pendingResults[type] = count;
-
-      // Debounce: wait one animation frame after the last report fires
-      // so all three card blocks have had a chance to report.
-      cancelAnimationFrame(coordinatorRaf);
-      coordinatorRaf = requestAnimationFrame(pickBestTab);
-    });
-  }
+    // Wait one animation frame so all three card blocks have reported
+    // before we decide which tab wins — prevents a mid-flight switch.
+    cancelAnimationFrame(coordinatorRaf);
+    coordinatorRaf = requestAnimationFrame(pickBestTab);
+  });
+  // ── end coordinator ────────────────────────────────────────────────────
 }
