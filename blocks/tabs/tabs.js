@@ -45,18 +45,47 @@ export default function decorate(block) {
 
   block.append(tabsList);
 
-  // Link each tab to the section that immediately follows the tabs section
+  // ── Panel assignment ────────────────────────────────────────────────────
+  // Two authoring patterns are supported:
+  //
+  //   A) Inline — filters/cards blocks follow the tabs block in the SAME
+  //      section (e.g. the Explore page: tabs + filters(events) + cards(events)
+  //      are all in section 2, with blogs/creators content in sections 3/4).
+  //      The first tab "owns" those sibling blocks; subsequent tabs own the
+  //      next sibling sections.
+  //
+  //   B) All-sections — every tab's content is in its own subsequent section
+  //      (the classic EDS tabs pattern). Detected when there are no sibling
+  //      blocks after the tabs block within the same section.
+  //
   const section = block.closest('.section');
+
+  // Collect sibling block wrappers that follow the tabs block in the same section.
+  const inlineSiblings = [];
+  let sib = block.nextElementSibling;
+  while (sib) { inlineSiblings.push(sib); sib = sib.nextElementSibling; }
+
+  const hasInline = inlineSiblings.length > 0;
   let currentPanel = section.nextElementSibling;
 
-  tabs.forEach((tab) => {
-    if (!currentPanel) return;
-    currentPanel.id = `tabpanel-${tab.id}`;
-    currentPanel.setAttribute('role', 'tabpanel');
-    currentPanel.setAttribute('aria-labelledby', `tab-${tab.id}`);
-    currentPanel.classList.add('tabs-panel');
-    tab.panel = currentPanel;
-    currentPanel = currentPanel.nextElementSibling;
+  tabs.forEach((tab, i) => {
+    if (i === 0 && hasInline) {
+      // Pattern A: first tab's content lives inline in the tabs section.
+      // Mark the section so filters/cards can find their panel by ID.
+      section.id = `tabpanel-${tab.id}`;
+      section.setAttribute('role', 'tabpanel');
+      section.setAttribute('aria-labelledby', `tab-${tab.id}`);
+      tab.inline = inlineSiblings; // show/hide these elements, not the section
+    } else {
+      // Pattern B (or subsequent tabs in Pattern A): content is a separate section.
+      if (!currentPanel) return;
+      currentPanel.id = `tabpanel-${tab.id}`;
+      currentPanel.setAttribute('role', 'tabpanel');
+      currentPanel.setAttribute('aria-labelledby', `tab-${tab.id}`);
+      currentPanel.classList.add('tabs-panel');
+      tab.panel = currentPanel;
+      currentPanel = currentPanel.nextElementSibling;
+    }
   });
 
   // ── Activate a tab ─────────────────────────────────────────────────────
@@ -68,7 +97,9 @@ export default function decorate(block) {
     tabs.forEach((t) => {
       t.button.classList.remove('active');
       t.button.setAttribute('aria-selected', 'false');
-      if (t.panel) {
+      if (t.inline) {
+        t.inline.forEach((el) => { el.style.display = 'none'; });
+      } else if (t.panel) {
         t.panel.classList.remove('active');
         t.panel.style.display = 'none';
       }
@@ -76,7 +107,9 @@ export default function decorate(block) {
 
     tab.button.classList.add('active');
     tab.button.setAttribute('aria-selected', 'true');
-    if (tab.panel) {
+    if (tab.inline) {
+      tab.inline.forEach((el) => { el.style.display = ''; });
+    } else if (tab.panel) {
       tab.panel.classList.add('active');
       tab.panel.style.display = '';
     }
@@ -108,12 +141,13 @@ export default function decorate(block) {
   const initialTab = tabs.find((t) => t.id === activeTabId) || tabs[0];
   if (initialTab) activateTab(initialTab, !!activeTabId);
 
-  // ── Force-load all tab panel sections ─────────────────────────────────
+  // ── Force-load separate tab panel sections ─────────────────────────────
   // EDS lazy-loads sections via IntersectionObserver. Sections hidden with
   // display:none have zero height, so the observer never fires for them and
-  // their block JS is never executed.  We explicitly load every panel so
-  // that filters/cards blocks are initialised even when their tab starts
-  // hidden.  loadSection guards against double-loading via dataset status.
+  // their block JS is never executed.  We explicitly load every separate
+  // panel section so that filters/cards blocks initialise even when hidden.
+  // Inline sibling blocks (first tab) are loaded normally by EDS since
+  // their parent section is always visible.
   import('../../scripts/aem.js').then(({ loadSection }) => {
     tabs.forEach(({ panel }) => {
       if (panel) loadSection(panel);

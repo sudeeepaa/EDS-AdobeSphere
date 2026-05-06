@@ -60,6 +60,14 @@ function uniqueValues(items, picker) {
     return [...seen].sort((a, b) => String(a).localeCompare(String(b)));
 }
 
+// Smart defaults per source — every filter is ON unless the author
+// explicitly overrides it with "false" in the da.live table.
+const SOURCE_DEFAULTS = {
+    events: { category_filter: 'true', date_filter: 'true', location_filter: 'true' },
+    blogs: { category_filter: 'true', author_filter: 'true', sort: 'true' },
+    creators: { designation_filter: 'true', sort: 'true' },
+};
+
 function readConfig(block) {
     const cfg = {};
     [...block.children].forEach((row) => {
@@ -69,6 +77,10 @@ function readConfig(block) {
         cfg[key] = val;
         row.remove();
     });
+    // Apply per-source defaults for any key not explicitly authored
+    const src = cfg.source || 'events';
+    const defaults = SOURCE_DEFAULTS[src] || {};
+    Object.keys(defaults).forEach((k) => { if (!(k in cfg)) cfg[k] = defaults[k]; });
     return cfg;
 }
 
