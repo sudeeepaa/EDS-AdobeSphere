@@ -261,3 +261,40 @@
   font-size: 0.95rem;
   line-height: 1.5;
 }
+
+/* article-body — long-form blog content */
+.detail-section .detail-article {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.detail-section .detail-article h2 {
+  margin: 32px 0 12px;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+.detail-section .detail-article p {
+  margin: 0 0 16px;
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--text-secondary);
+}
+
+.detail-section .detail-article figure {
+  margin: 28px 0;
+  padding: 0;
+}
+
+.detail-section .detail-article figure img {
+  width: 100%;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+}
+
+.detail-section .detail-article figcaption {
+  margin-top: 8px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-align: center;
+}

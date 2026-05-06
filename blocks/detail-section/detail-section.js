@@ -235,6 +235,50 @@ function renderComments(block, cfg) {
   refresh();
 }
 
+/* ─── article-body (blog content array) ─── */
+
+function renderArticleBody(block, cfg, entity) {
+  if (!entity || !Array.isArray(entity.content) || !entity.content.length) {
+    block.innerHTML = `<p>${escapeHtml(cfg.empty || 'Article content is unavailable.')}</p>`;
+    return;
+  }
+
+  const article = document.createElement('article');
+  article.className = 'detail-article';
+
+  entity.content.forEach((blk) => {
+    if (!blk || !blk.text) return;
+    const text = String(blk.text);
+    if (blk.type === 'heading') {
+      const h2 = document.createElement('h2');
+      h2.textContent = text;
+      article.append(h2);
+    } else if (blk.type === 'image' && blk.url) {
+      const fig = document.createElement('figure');
+      const img = document.createElement('img');
+      img.src = window.AdobeSphere.Utils.normaliseAsset(blk.url, '');
+      img.alt = blk.alt || '';
+      img.loading = 'lazy';
+      fig.append(img);
+      if (blk.caption) {
+        const cap = document.createElement('figcaption');
+        cap.textContent = blk.caption;
+        fig.append(cap);
+      }
+      article.append(fig);
+    } else {
+      // Default: paragraph. Splits on \n\n to support multi-para text in one block.
+      text.split(/\n\n+/).forEach((para) => {
+        const p = document.createElement('p');
+        p.textContent = para.trim();
+        if (p.textContent) article.append(p);
+      });
+    }
+  });
+
+  block.append(article);
+}
+
 /* ─── dispatcher ─── */
 
 export default async function decorate(block) {
@@ -243,14 +287,25 @@ export default async function decorate(block) {
 
   // Determine which variant is active.
   const variant = ['overview', 'agenda', 'people', 'quote', 'comments', 'bio', 'reach-out',
-    'presenters', 'speakers', 'hosts'].find((v) => variants.includes(v)) || 'overview';
+    'presenters', 'speakers', 'hosts', 'article-body'].find((v) => variants.includes(v)) || 'overview';
 
   // Hydrate entity if needed.
   let entity = null;
-  if (['overview', 'agenda', 'people', 'presenters', 'speakers', 'hosts', 'quote', 'bio', 'reach-out'].includes(variant)) {
+  if (['overview', 'agenda', 'people', 'presenters', 'speakers', 'hosts', 'quote', 'bio', 'reach-out', 'article-body'].includes(variant)) {
     const source = cfg.id_source || (variants.includes('blog') ? 'blogs' : variants.includes('creator') ? 'creators' : 'events');
     const id = cfg.id || getEntityId();
     if (id) entity = await loadEntity(source, id);
+  }
+
+  // Bio on a blog page: the loaded entity is the blog, but renderBio expects a
+  // creator-shaped object.  Cross-reference blog.author.id → creators.json so
+  // the bio strip shows the author's full profile (avatar, fullBio, socials).
+  if (variant === 'bio' && entity && entity.author && entity.author.id) {
+    const authorId = entity.author.id;
+    try {
+      const creator = await loadEntity('creators', authorId);
+      if (creator) entity = creator;
+    } catch { /* fall back to blog.author inline fields */ }
   }
 
   block.textContent = '';
@@ -262,4 +317,5 @@ export default async function decorate(block) {
   else if (variant === 'bio') renderBio(block, cfg, entity);
   else if (variant === 'reach-out') renderReachOut(block, cfg, entity);
   else if (variant === 'comments') renderComments(block, cfg);
+  else if (variant === 'article-body') renderArticleBody(block, cfg, entity);
 }

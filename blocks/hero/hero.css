@@ -294,6 +294,29 @@
   margin-top: 8px;
 }
 
+.hero .hero-compact-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.hero .hero-compact-meta a {
+  color: var(--red-primary);
+  text-decoration: none;
+}
+
+.hero .hero-compact-meta a:hover {
+  text-decoration: underline;
+}
+
+.hero .hero-compact-meta-sep {
+  color: var(--neutral-light);
+}
+
 @media (max-width: 599px) {
   .hero.hero-video {
     min-height: 90vh;

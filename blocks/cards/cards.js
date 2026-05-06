@@ -38,15 +38,15 @@ function classify(block) {
 
 function readConfig(block) {
   // Recognises rows like `Source | events`, `Filter | featured=true`, `Limit | 6`,
-  // `Title | Featured Events`, `Empty | No events available`.
+  // `Title | Featured Events`, `Empty | No events available`, `Ids From | creators.eventIds`.
   const cfg = {};
   const rows = [...block.children];
   rows.forEach((row) => {
     if (row.children.length !== 2) return;
     const key = row.children[0].textContent.trim().toLowerCase();
     const value = row.children[1].textContent.trim();
-    if (['source', 'filter', 'limit', 'title', 'empty', 'ids'].includes(key)) {
-      cfg[key] = value;
+    if (['source', 'filter', 'limit', 'title', 'empty', 'ids', 'ids from'].includes(key)) {
+      cfg[key.replace(/\s/g, '_')] = value;
       row.remove();
     }
   });
@@ -304,10 +304,32 @@ async function hydrateFromData(block, type, cfg, opts) {
 
   let items = data.slice();
 
-  // explicit ID list wins over filter+limit.
+  // Resolve `Ids From | <source>.<field>` — e.g. `creators.eventIds` reads the
+  // current URL's creator entity, takes its `eventIds` array, and uses those as
+  // the id whitelist. Used on creator-profile to render that creator's content.
+  let idsFromList = null;
+  if (cfg.ids_from) {
+    const [refSource, refField] = cfg.ids_from.split('.').map((s) => s.trim());
+    const refFile = refSource === 'events' ? 'campaigns' : refSource;
+    const refData = await Utils.fetchData(refFile);
+    if (Array.isArray(refData)) {
+      const urlId = (() => {
+        const q = new URLSearchParams(window.location.search).get('id');
+        if (q) return q;
+        const seg = window.location.pathname.split('/').filter(Boolean);
+        return seg.length >= 2 ? decodeURIComponent(seg[seg.length - 1]) : null;
+      })();
+      const refEntity = urlId && refData.find((it) => it.id === urlId);
+      if (refEntity && Array.isArray(refEntity[refField])) idsFromList = refEntity[refField];
+    }
+  }
+
+  // Explicit IDs (cfg.ids) > resolved Ids From > filter+limit.
   if (cfg.ids) {
     const ids = cfg.ids.split(',').map((s) => s.trim()).filter(Boolean);
     items = ids.map((id) => items.find((it) => it.id === id)).filter(Boolean);
+  } else if (idsFromList) {
+    items = idsFromList.map((id) => items.find((it) => it.id === id)).filter(Boolean);
   } else {
     items = applyFilter(items, cfg.filter);
     if (cfg.limit) items = items.slice(0, parseInt(cfg.limit, 10) || items.length);

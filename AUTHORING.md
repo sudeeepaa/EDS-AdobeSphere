@@ -206,6 +206,22 @@ Author at `/footer`. Each top-level section becomes one footer column. The **las
 | Arjun Patel | Motion Designer | Following creators here is genuinely useful. I learn… | ![arjun](/assets/images/profiles/arjun-patel-testimonial.jpg) |
 | Leila Hassan | Brand Strategist | Saving events and reading the discussion threads turned… | ![leila](/assets/images/profiles/leila-hassan-testimonial.jpg) |
 
+### 4.10 Cards (events) — Ids From (creator's events)
+
+| Cards (events) |
+|---|
+| Title | Events |
+| Source | events |
+| Ids From | creators.eventIds |
+
+### 4.11 Cards (blogs) — Ids From (creator's blogs)
+
+| Cards (blogs) |
+|---|
+| Title | Blog Posts |
+| Source | blogs |
+| Ids From | creators.blogIds |
+
 ### Recognised config rows
 
 | Key | Effect |
@@ -213,6 +229,7 @@ Author at `/footer`. Each top-level section becomes one footer column. The **las
 | `Source` | One of `events`, `blogs`, `creators`. Hydrates from `/data/{name}.json` (campaigns.json for events). |
 | `Filter` | `field=value` (e.g. `featured=true`, `category=Workshops`). |
 | `Ids` | Comma-separated list of ids — wins over `Filter`. |
+| `Ids From` | Cross-reference pattern like `creators.eventIds`. Reads the current URL entity from `{source}`, takes `{field}` as an id list, and filters the cards to those ids only. |
 | `Limit` | Max number of cards to render. |
 | `Title` | Optional `<h2>` rendered above the grid. |
 | `Empty` | Message shown when the filtered list is empty. |
@@ -346,7 +363,15 @@ Three variants, same pattern. Add `presenters`, `speakers`, or `hosts` to the bl
 | Title | Reach Out |
 | Id Source | creators |
 
-### 7.7 Detail-section (comments) — blog discussion thread
+### 7.7 Detail-section (article-body) — blog content rendering
+
+| Detail-section (article-body) |
+|---|
+| Id Source | blogs |
+
+> Renders the `content[]` array from `blogs.json`. Each element with `type: heading` becomes an `<h2>`, `type: paragraph` becomes `<p>`, and `type: image` becomes a `<figure>`.
+
+### 7.8 Detail-section (comments) — blog discussion thread
 
 | Detail-section (comments) |
 |---|
@@ -470,40 +495,39 @@ You can stack multiples: `style | light, no-pad-bottom`.
 4. Timeline                         ← Platform Journey
 ```
 
-### Event detail page
+### Event detail page — `/events/template`
 
 ```
-1. Hero (media)                     ← image banner with title + meta
-2. Cards (events with-save with-actions)  ← Save + Register CTA bar
-3. Detail-section (overview)
-4. [Section Metadata: style | light] + Detail-section (agenda)
-5. Detail-section (people presenters)
-6. Detail-section (people speakers)
-7. Detail-section (people hosts)
-8. Detail-section (quote)
-9. Form (event-registration)        ← inline registration form
-10. [Section Metadata: style | light] + Cards (events) [Limit 3]   ← related events
+1. Hero (media) [Id Source | events]              ← dynamic banner + title + meta
+2. Detail-section (overview) [Id Source | events]
+3. [Section Metadata: style | light] + Detail-section (agenda) [Id Source | events]
+4. Detail-section (people presenters) [Id Source | events]
+5. Detail-section (people speakers) [Id Source | events]
+6. Detail-section (people hosts) [Id Source | events]
+7. Detail-section (quote) [Id Source | events]
+8. Form (event-registration)
+9. [Section Metadata: style | light] + Cards (events) [Limit 3]   ← related events
 ```
 
-### Blog detail page
+### Blog detail page — `/blog/template`
 
 ```
-1. Hero (compact)                   ← title strip
-2. Detail-section (bio blog)        ← author strip
-3. (article body — authored as default content blocks: paragraphs, headings, images)
+1. Hero (compact) [Id Source | blogs]             ← category · date · author + title
+2. Detail-section (article-body) [Id Source | blogs] ← renders content[] array
+3. Detail-section (bio blog) [Id Source | blogs]   ← author bio (cross-refs creators.json)
 4. [Section Metadata: style | light] + Detail-section (comments)
-5. Cards (blogs) [Limit 3]          ← more from blog
+5. Cards (blogs) [Limit 3]                         ← more from blog
 ```
 
-### Creator profile page
+### Creator profile page — `/creator-profile/template`
 
 ```
-1. [Section Metadata: style | flush] + Profile (creator)   ← gradient header w/ avatar + stats
-2. Detail-section (bio creator)
-3. [Section Metadata: style | light] + Detail-section (reach-out)
-4. Cards (events)                   ← creator's events
-5. Cards (blogs)                    ← creator's blogs
-6. Detail-section (quote)
+1. [Section Metadata: style | flush] + Profile (creator)
+2. Detail-section (bio creator) [Id Source | creators]
+3. [Section Metadata: style | light] + Cards (events) [Ids From | creators.eventIds]
+4. Cards (blogs) [Ids From | creators.blogIds]
+5. Detail-section (quote creator) [Id Source | creators]
+6. Detail-section (reach-out) [Id Source | creators]
 ```
 
 ### User profile page

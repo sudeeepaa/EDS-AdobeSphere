@@ -5,68 +5,79 @@
  *   • default / no variant  → centred heading + paragraph + buttons.
  *   • video   → background video + heading + paragraph + buttons + scroll chevron.
  *   • search  → heading + paragraph + search input.
- *   • media   → full-width banner image + badge + heading + meta.
+ *   • media   → full-width banner image + heading + meta. DYNAMIC if `Id Source` set.
  *   • gradient → red→dark gradient hero with avatar + stats.
- *   • compact → low-profile hero used for Blog detail title row.
+ *   • compact → low-profile hero used for Blog detail title row. DYNAMIC if `Id Source` set.
  *
  * Forgiving authoring:
- *   • The first row may be a <picture>, an <a href="..."> link, OR plain text
- *     containing a URL. If it points to .mp4/.webm, the block auto-promotes
- *     itself to the `video` variant (no need to set it explicitly).
- *   • If no <h1>/<h2> is present in the body, the first text-only paragraph
- *     is promoted to <h1>. Authors can write plain text and still get a hero.
- *   • Authors can put both buttons in one paragraph (`**Explore** *Join*`);
- *     decorateButtons in scripts.js handles that.
+ *   • The first row may be a <picture>, an <a href="..."> link, OR plain text URL.
+ *     If it points to .mp4/.webm, the block auto-promotes itself to `video` variant.
+ *   • If no <h1>/<h2> is present, the first text-only paragraph is promoted to <h1>.
+ *   • Authors can put both buttons in one paragraph; scripts.js handles that.
+ *
+ * Dynamic mode:
+ *   When the author writes `Id Source | events|blogs|creators`, the block looks up
+ *   the entity by the current URL's id (last URL segment or ?id=…) and hydrates
+ *   the title, banner image, and meta line for media/compact variants.
  */
 
 const VIDEO_RE = /\.(mp4|webm)(\?[^\s]*)?$/i;
 const IMAGE_RE = /\.(jpe?g|png|webp|gif|svg)(\?[^\s]*)?$/i;
 const URL_LIKE = /^(https?:\/\/|\/)\S+$/i;
 
-/**
- * Inspect the first row and lift it into a media descriptor:
- *   { kind: 'picture', node }  |  { kind: 'video', url }  |  { kind: 'image', url }
- * Returns null if the first row isn't recognisably media.
- */
+const SOURCE_FILE = { events: 'campaigns', blogs: 'blogs', creators: 'creators' };
+
+function getUrlId() {
+  const fromQuery = new URLSearchParams(window.location.search).get('id');
+  if (fromQuery) return fromQuery;
+  const segments = window.location.pathname.split('/').filter(Boolean);
+  if (segments.length >= 2) return decodeURIComponent(segments[segments.length - 1]);
+  return null;
+}
+
+async function fetchEntity(source) {
+  const file = SOURCE_FILE[source];
+  if (!file) return null;
+  const id = getUrlId();
+  if (!id) return null;
+  const data = await window.AdobeSphere.Utils.fetchData(file);
+  return Array.isArray(data) ? (data.find((it) => it.id === id) || null) : null;
+}
+
 function takeMediaRow(block) {
   const first = block.firstElementChild;
   if (!first) return null;
   const cell = first.firstElementChild;
   if (!cell) return null;
 
-  // Case 1 — cell contains a <picture>.
   const picture = cell.querySelector('picture');
   if (picture) {
     first.remove();
     return { kind: 'picture', node: picture };
   }
-
-  // Case 2 — cell contains a single <a href="..."> with no extra text.
   const anchor = cell.querySelector('a[href]');
   if (anchor && cell.textContent.trim() === anchor.textContent.trim()) {
     const href = anchor.getAttribute('href') || '';
     if (VIDEO_RE.test(href)) { first.remove(); return { kind: 'video', url: href }; }
     if (IMAGE_RE.test(href)) { first.remove(); return { kind: 'image', url: href }; }
   }
-
-  // Case 3 — cell content is just a URL string (no link, no picture).
   const text = cell.textContent.trim();
   if (text && URL_LIKE.test(text) && !cell.querySelector('a, img, picture')) {
     if (VIDEO_RE.test(text)) { first.remove(); return { kind: 'video', url: text }; }
     if (IMAGE_RE.test(text)) { first.remove(); return { kind: 'image', url: text }; }
   }
-
   return null;
 }
 
 function takeKeyedRows(block) {
   const map = {};
+  const allowed = ['search', 'placeholder', 'avatar', 'stats', 'meta', 'id source'];
   [...block.children].forEach((row) => {
     if (row.children.length !== 2) return;
     const key = row.children[0].textContent.trim().toLowerCase();
     const val = row.children[1];
-    if (['search', 'placeholder', 'avatar', 'stats', 'meta'].includes(key)) {
-      map[key] = val;
+    if (allowed.includes(key)) {
+      map[key.replace(/\s/g, '_')] = val;
       row.remove();
     }
   });
@@ -108,46 +119,33 @@ function renderScrollChevron() {
 function buildBgLayer(media) {
   const layer = document.createElement('div');
   layer.className = 'hero-bg';
-
   if (media) {
     if (media.kind === 'picture') {
       layer.append(media.node);
     } else if (media.kind === 'video') {
       const ext = (media.url.match(/\.(mp4|webm)/i) || ['', 'mp4'])[1].toLowerCase();
       const video = document.createElement('video');
-      video.autoplay = true;
-      video.muted = true;
-      video.loop = true;
-      video.playsInline = true;
-      video.preload = 'auto';
+      video.autoplay = true; video.muted = true; video.loop = true;
+      video.playsInline = true; video.preload = 'auto';
       video.setAttribute('aria-hidden', 'true');
       video.innerHTML = `<source src="${media.url}" type="video/${ext}">`;
       layer.append(video);
-      // Some browsers ignore inline autoplay attrs until user interaction —
-      // explicitly call play() once metadata loads to maximise chances.
       video.addEventListener('loadedmetadata', () => {
         const p = video.play();
-        if (p && typeof p.catch === 'function') p.catch(() => { /* autoplay blocked */ });
+        if (p && typeof p.catch === 'function') p.catch(() => {});
       });
     } else if (media.kind === 'image') {
       const img = document.createElement('img');
-      img.src = media.url;
-      img.alt = '';
-      img.loading = 'eager';
+      img.src = media.url; img.alt = ''; img.loading = 'eager';
       layer.append(img);
     }
   }
-
   const grad = document.createElement('div');
-  grad.className = 'hero-gradient';
-  grad.setAttribute('aria-hidden', 'true');
+  grad.className = 'hero-gradient'; grad.setAttribute('aria-hidden', 'true');
   layer.append(grad);
-
   const overlay = document.createElement('div');
-  overlay.className = 'hero-overlay';
-  overlay.setAttribute('aria-hidden', 'true');
+  overlay.className = 'hero-overlay'; overlay.setAttribute('aria-hidden', 'true');
   layer.append(overlay);
-
   return layer;
 }
 
@@ -158,8 +156,7 @@ function buildBannerLayer(media) {
     if (media.kind === 'picture') layer.append(media.node);
     else if (media.kind === 'image') {
       const img = document.createElement('img');
-      img.src = media.url;
-      img.alt = '';
+      img.src = media.url; img.alt = '';
       layer.append(img);
     }
   }
@@ -170,11 +167,6 @@ function buildBannerLayer(media) {
   return layer;
 }
 
-/**
- * If the author wrote a hero with no markdown heading, the body shows up as
- * one or more <p> elements. Promote the first non-link, non-image paragraph
- * into an <h1> so the page reads like a hero.
- */
 function ensureHeading(content) {
   if (content.querySelector('h1, h2')) return;
   const candidates = content.querySelectorAll('p');
@@ -189,20 +181,90 @@ function ensureHeading(content) {
   }
 }
 
-export default function decorate(block) {
+/* ─── dynamic hydration helpers ─── */
+
+function hydrateMediaFromEntity(entity, content, media) {
+  const { Utils } = window.AdobeSphere;
+
+  // Banner: only override if author didn't supply one.
+  let resolvedMedia = media;
+  if (!resolvedMedia && entity.thumbnail) {
+    const url = Utils.normaliseAsset(entity.thumbnail, '');
+    if (url) resolvedMedia = { kind: 'image', url };
+  }
+
+  // Heading: only inject if author didn't supply one.
+  if (!content.querySelector('h1, h2') && entity.title) {
+    const h1 = document.createElement('h1');
+    h1.textContent = entity.title;
+    content.prepend(h1);
+  }
+
+  // Meta line: date · venue · location.
+  if (!content.querySelector('.hero-meta')) {
+    const parts = [];
+    if (entity.date) parts.push(Utils.formatDate(entity.date) + (entity.time ? ` · ${entity.time}` : ''));
+    if (entity.venue) parts.push(entity.venue);
+    if (entity.location) {
+      const loc = [entity.location.city, entity.location.state, entity.location.country].filter(Boolean).join(', ');
+      if (loc) parts.push(loc);
+    }
+    if (parts.length) {
+      const meta = document.createElement('div');
+      meta.className = 'hero-meta';
+      meta.innerHTML = parts.map((p) => `<p>${Utils.escapeHtml(p)}</p>`).join('');
+      content.append(meta);
+    }
+  }
+
+  return resolvedMedia;
+}
+
+function hydrateCompactFromEntity(entity, content) {
+  const { Utils } = window.AdobeSphere;
+
+  // Heading.
+  if (!content.querySelector('h1, h2') && entity.title) {
+    const h1 = document.createElement('h1');
+    h1.textContent = entity.title;
+    content.prepend(h1);
+  }
+
+  // Meta line above heading: category · date · author.
+  if (!content.querySelector('.hero-compact-meta')) {
+    const parts = [];
+    if (entity.category) parts.push(`<span class="badge outline">${Utils.escapeHtml(entity.category)}</span>`);
+    if (entity.publishedDate) parts.push(`<span>${Utils.escapeHtml(Utils.formatShortDate(entity.publishedDate))}</span>`);
+    const authorName = entity.author && entity.author.name;
+    const authorId = entity.author && entity.author.id;
+    if (authorName) {
+      const link = authorId
+        ? `<a href="/creator-profile/${encodeURIComponent(authorId.replace(/^user:/, ''))}">${Utils.escapeHtml(authorName)}</a>`
+        : Utils.escapeHtml(authorName);
+      parts.push(`<span>By ${link}</span>`);
+    }
+    if (parts.length) {
+      const meta = document.createElement('p');
+      meta.className = 'hero-compact-meta';
+      meta.innerHTML = parts.join(' <span class="hero-compact-meta-sep">·</span> ');
+      const heading = content.querySelector('h1, h2');
+      if (heading) heading.before(meta); else content.prepend(meta);
+    }
+  }
+}
+
+export default async function decorate(block) {
   const variants = [...block.classList].filter((c) => c !== 'hero' && c !== 'block');
   const isSearch = variants.includes('search');
   const isMedia = variants.includes('media');
   const isGradient = variants.includes('gradient');
   const isCompact = variants.includes('compact');
 
-  const media = takeMediaRow(block);
+  let media = takeMediaRow(block);
   const keyed = takeKeyedRows(block);
-
-  // Auto-detect video variant from the media itself.
   const isVideo = variants.includes('video') || (media && media.kind === 'video');
 
-  // Whatever's left is the textual content (heading + paragraphs + button-wrappers).
+  // Pull authored content into a stack we can manipulate.
   const content = document.createElement('div');
   content.className = 'hero-content';
   while (block.firstElementChild) {
@@ -213,27 +275,37 @@ export default function decorate(block) {
 
   ensureHeading(content);
 
+  // Dynamic hydration when `Id Source | …` is present.
+  if (keyed.id_source) {
+    const source = keyed.id_source.textContent.trim().toLowerCase();
+    try {
+      const entity = await fetchEntity(source);
+      if (entity) {
+        if (isMedia) media = hydrateMediaFromEntity(entity, content, media);
+        else if (isCompact) hydrateCompactFromEntity(entity, content);
+      }
+    } catch { /* fall back to authored content */ }
+  }
+
+  // Static keyed rows (gradient avatar/stats, media meta, search placeholder).
   if (isGradient && keyed.avatar) {
     const avatar = document.createElement('div');
     avatar.className = 'hero-avatar';
     while (keyed.avatar.firstElementChild) avatar.append(keyed.avatar.firstElementChild);
     content.prepend(avatar);
   }
-
-  if (isMedia && keyed.meta) {
+  if (isMedia && keyed.meta && !content.querySelector('.hero-meta')) {
     const meta = document.createElement('div');
     meta.className = 'hero-meta';
     while (keyed.meta.firstElementChild) meta.append(keyed.meta.firstElementChild);
     content.append(meta);
   }
-
   if (isSearch) {
     const placeholder = (keyed.placeholder || keyed.search)
       ? (keyed.placeholder || keyed.search).textContent.trim()
       : 'Search events, blogs, creators…';
     content.append(renderSearch(placeholder));
   }
-
   if (isGradient && keyed.stats) {
     const stats = document.createElement('div');
     stats.className = 'hero-stats';
@@ -241,15 +313,11 @@ export default function decorate(block) {
     content.append(stats);
   }
 
+  // Render.
   block.textContent = '';
-  if (isMedia) {
-    block.append(buildBannerLayer(media));
-  } else if (isVideo || (media && !isCompact && !isMedia)) {
-    block.append(buildBgLayer(media));
-  }
-
+  if (isMedia) block.append(buildBannerLayer(media));
+  else if (isVideo || (media && !isCompact && !isMedia)) block.append(buildBgLayer(media));
   block.append(content);
-
   if (isVideo) block.append(renderScrollChevron());
 
   if (isVideo) block.classList.add('hero-video');
