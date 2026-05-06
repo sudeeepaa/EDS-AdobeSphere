@@ -1,0 +1,113 @@
+/*
+ * AdobeSphere — filters block.
+ * Mirrors the explore-filter styles from cards.css but scoped to .filters
+ * so the two can coexist without conflict.
+ */
+
+.filters {
+    background: var(--bg-off-white, #f9fafb);
+    border-radius: var(--radius-md);
+    margin-bottom: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.filters .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+}
+
+.filters .filter-row-split {
+    justify-content: space-between;
+}
+
+.filters .filter-row-full {
+    width: 100%;
+}
+
+.filters .form-input {
+    min-width: 220px;
+    flex: 1 1 auto;
+}
+
+.filters .filter-clear {
+    margin-left: auto;
+    min-width: 140px;
+    background: var(--white);
+    border: 1px solid var(--neutral-light);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    padding: 10px 20px;
+}
+
+.filters .filter-clear:hover {
+    border-color: var(--text-primary);
+}
+
+.filters .filter-radios {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+}
+
+.filters .filter-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.filters .filter-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    background: var(--white);
+    border: 1px solid var(--neutral-light);
+    padding: 16px;
+    border-radius: var(--radius-sm);
+    width: 100%;
+}
+
+.filters .filter-checkboxes legend {
+    width: 100%;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.filters .filter-radios label,
+.filters .filter-checkboxes label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg-off-white);
+    border: 1px solid var(--neutral-light);
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.filters .filter-radios label:hover,
+.filters .filter-checkboxes label:hover {
+    border-color: var(--red-primary);
+}
+
+.filters .filter-radios input,
+.filters .filter-checkboxes input {
+    accent-color: var(--red-primary);
+}

@@ -389,12 +389,11 @@ async function hydrateFromData(block, type, cfg, opts) {
     items = applyFilter(items, cfg.filter);
   }
 
-  const enableFilters = cfg.filters === 'true';
   const pageSize = parseInt(cfg.pagination, 10) || 0;
   const builder = dispatchBuilder(type);
 
   // If no dynamic features, render static grid and exit early
-  if (!enableFilters && !pageSize) {
+  if (!pageSize && !cfg.pagination) {
     if (cfg.limit) items = items.slice(0, parseInt(cfg.limit, 10) || items.length);
     const grid = document.createElement('div');
     grid.className = `cards-grid grid-${type}`;
@@ -408,9 +407,9 @@ async function hydrateFromData(block, type, cfg, opts) {
     return;
   }
 
-  // --- Dynamic Mode (Filters and/or Pagination) ---
-  const filterHost = document.createElement('div');
-  filterHost.className = 'explore-filters';
+  // --- Dynamic Mode (Pagination and/or external Filters block) ---
+  // Filters are no longer injected here — they live in a dedicated filters block
+  // that fires adobesphere:filter events. cards.js just listens and re-renders.
 
   const grid = document.createElement('div');
   grid.className = `cards-grid grid-${type}`;
@@ -419,16 +418,18 @@ async function hydrateFromData(block, type, cfg, opts) {
   const pagiHost = document.createElement('div');
   pagiHost.className = 'explore-pagination';
 
-  if (enableFilters) block.append(filterHost);
   block.append(grid);
   if (pageSize) block.append(pagiHost);
 
+  const urlParams = new URLSearchParams(window.location.search);
   const state = {
     page: 1,
-    q: new URLSearchParams(window.location.search).get('q') || '',
-    f: type === 'events' ? { category: '', location: [], date: 'all' }
-      : type === 'blogs' ? { category: '', author: '', sort: 'newest' }
-        : { designation: [], sort: 'name-asc' }
+    q: urlParams.get('q') || '',
+    f: type === 'events'
+      ? { category: urlParams.get('category') || '', location: [], date: urlParams.get('date') || 'all' }
+      : type === 'blogs'
+        ? { category: urlParams.get('category') || '', author: '', sort: urlParams.get('sort') || 'newest' }
+        : { designation: [], sort: urlParams.get('sort') || 'name-asc' },
   };
 
   function renderGrid() {
@@ -490,104 +491,13 @@ async function hydrateFromData(block, type, cfg, opts) {
     }));
   }
 
-  function renderFilters() {
-    if (!enableFilters) return;
-    let html = '';
-    if (type === 'events') {
-      const cats = uniqueValues(items, (e) => e.category);
-      const cities = uniqueValues(items, (e) => e.location && e.location.city);
-      html += `
-        <div class="explore-filter-row explore-filter-row-full">
-          <select class="form-input" data-filter="category">
-            <option value="">All Categories</option>
-            ${cats.map((c) => `<option value="${escapeHtml(c)}"${state.f.category === c ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('')}
-          </select>
-        </div>
-        <div class="explore-filter-row explore-filter-row-split">
-          <fieldset class="explore-radios" aria-label="Date">
-            <label><input type="radio" name="evt-date-${type}" value="all"${state.f.date === 'all' ? ' checked' : ''}> All</label>
-            <label><input type="radio" name="evt-date-${type}" value="upcoming"${state.f.date === 'upcoming' ? ' checked' : ''}> Upcoming</label>
-            <label><input type="radio" name="evt-date-${type}" value="past"${state.f.date === 'past' ? ' checked' : ''}> Past</label>
-          </fieldset>
-          <button type="button" class="button ghost clear-filters">Clear Filters</button>
-        </div>
-        <div class="explore-filter-row explore-filter-row-full">
-          <fieldset class="explore-checkboxes" aria-label="Location">
-            <legend>Filter by location</legend>
-            <div class="checkbox-grid">
-              ${cities.map((c) => `<label><input type="checkbox" value="${escapeHtml(c)}"${state.f.location.includes(c) ? ' checked' : ''}> ${escapeHtml(c)}</label>`).join('')}
-            </div>
-          </fieldset>
-        </div>`;
-    } else if (type === 'blogs') {
-      const cats = uniqueValues(items, (b) => b.category);
-      html += `
-        <div class="explore-filter-row explore-filter-row-split">
-          <select class="form-input" data-filter="category">
-            <option value="">All Categories</option>
-            ${cats.map((c) => `<option value="${escapeHtml(c)}"${state.f.category === c ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('')}
-          </select>
-          <input type="text" class="form-input" placeholder="Search by author" data-filter="author" value="${escapeHtml(state.f.author)}">
-          <select class="form-input" data-filter="sort">
-            <option value="newest"${state.f.sort === 'newest' ? ' selected' : ''}>Newest</option>
-            <option value="oldest"${state.f.sort === 'oldest' ? ' selected' : ''}>Oldest</option>
-          </select>
-          <button type="button" class="button ghost clear-filters">Clear Filters</button>
-        </div>`;
-    } else {
-      const designations = uniqueValues(items, (c) => c.designation);
-      html += `
-        <div class="explore-filter-row explore-filter-row-split">
-          <select class="form-input" data-filter="sort">
-            <option value="name-asc"${state.f.sort === 'name-asc' ? ' selected' : ''}>Name A–Z</option>
-            <option value="name-desc"${state.f.sort === 'name-desc' ? ' selected' : ''}>Name Z–A</option>
-            <option value="testimonials"${state.f.sort === 'testimonials' ? ' selected' : ''}>Testimonials</option>
-          </select>
-          <button type="button" class="button ghost clear-filters">Clear Filters</button>
-        </div>
-        <div class="explore-filter-row explore-filter-row-full">
-          <fieldset class="explore-checkboxes" aria-label="Designation">
-            <legend>Filter by designation</legend>
-            <div class="checkbox-grid">
-              ${designations.map((d) => `<label><input type="checkbox" value="${escapeHtml(d)}"${state.f.designation.includes(d) ? ' checked' : ''}> ${escapeHtml(d)}</label>`).join('')}
-            </div>
-          </fieldset>
-        </div>`;
-    }
-    filterHost.innerHTML = html;
-
-    // Bind events
-    if (type === 'events') {
-      filterHost.querySelector('[data-filter="category"]').addEventListener('change', (e) => { state.f.category = e.target.value; state.page = 1; renderGrid(); });
-      filterHost.querySelectorAll('[name="evt-date-' + type + '"]').forEach((r) => r.addEventListener('change', (e) => { state.f.date = e.target.value; state.page = 1; renderGrid(); }));
-      filterHost.querySelectorAll('.explore-checkboxes input').forEach((c) => c.addEventListener('change', () => {
-        state.f.location = [...filterHost.querySelectorAll('.explore-checkboxes input:checked')].map((x) => x.value);
-        state.page = 1; renderGrid();
-      }));
-    } else if (type === 'blogs') {
-      filterHost.querySelector('[data-filter="category"]').addEventListener('change', (e) => { state.f.category = e.target.value; state.page = 1; renderGrid(); });
-      filterHost.querySelector('[data-filter="author"]').addEventListener('input', (e) => { state.f.author = e.target.value; state.page = 1; renderGrid(); });
-      filterHost.querySelector('[data-filter="sort"]').addEventListener('change', (e) => { state.f.sort = e.target.value; state.page = 1; renderGrid(); });
-    } else {
-      filterHost.querySelector('[data-filter="sort"]').addEventListener('change', (e) => { state.f.sort = e.target.value; state.page = 1; renderGrid(); });
-      filterHost.querySelectorAll('.explore-checkboxes input').forEach((c) => c.addEventListener('change', () => {
-        state.f.designation = [...filterHost.querySelectorAll('.explore-checkboxes input:checked')].map((x) => x.value);
-        state.page = 1; renderGrid();
-      }));
-    }
-
-    const clearBtn = filterHost.querySelector('.clear-filters');
-    if (clearBtn) {
-      clearBtn.addEventListener('click', () => {
-        state.f = type === 'events' ? { category: '', location: [], date: 'all' }
-          : type === 'blogs' ? { category: '', author: '', sort: 'newest' }
-            : { designation: [], sort: 'name-asc' };
-        state.page = 1;
-        renderFilters();
-        renderGrid();
-      });
-    }
-  }
+  // Listen for filter changes from the dedicated filters block
+  window.addEventListener('adobesphere:filter', (e) => {
+    if (e.detail.source !== type) return;
+    state.f = { ...e.detail.state };
+    state.page = 1;
+    renderGrid();
+  });
 
   let searchDebounce;
   window.addEventListener('adobesphere:search', (e) => {
@@ -599,16 +509,11 @@ async function hydrateFromData(block, type, cfg, opts) {
     }, 50);
   });
 
-  renderFilters();
   renderGrid();
 
   // If page loaded with ?q= in the URL (e.g. /explore?q=arjun),
   // filter immediately without waiting for a hero search event.
-  const initialQ = new URLSearchParams(window.location.search).get('q') || '';
-  if (initialQ) {
-    state.q = initialQ;
-    renderGrid();
-  }
+  if (state.q) renderGrid();
 }
 
 function hydrateStatic(block, opts) {

@@ -136,4 +136,10 @@ export default function decorate(block) {
     cancelAnimationFrame(rafId);
     rafId = requestAnimationFrame(switchToWinningTab);
   });
+
+  // Marquee and direct links fire this to switch tab by id without a search
+  window.addEventListener('adobesphere:switchtab', (e) => {
+    const target = tabs.find((t) => t.id === e.detail);
+    if (target) activateTab(target, true);
+  });
 }
