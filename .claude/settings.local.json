@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(Remove-Item -Recurse -Force \"c:\\\\Users\\\\sudeepa\\\\OneDrive - Adobe\\\\Desktop\\\\adobesphere-eds\\\\blocks\\\\explore\")"
+      "Bash(Remove-Item -Recurse -Force \"c:\\\\Users\\\\sudeepa\\\\OneDrive - Adobe\\\\Desktop\\\\adobesphere-eds\\\\blocks\\\\explore\")",
+      "WebFetch(domain:main--eds-adobesphere--sudeeepaa.aem.page)",
+      "Bash(curl -s \"https://main--eds-adobesphere--sudeeepaa.aem.page/explore.plain.html\")",
+      "Bash(curl -s \"https://main--eds-adobesphere--sudeeepaa.aem.page/explore\")",
+      "Bash(ls \"c:\\\\Users\\\\sudeepa\\\\OneDrive - Adobe\\\\Desktop\\\\\" 2>/dev/null || dir \"c:\\\\Users\\\\sudeepa\\\\OneDrive - Adobe\\\\Desktop\\\\\")",
+      "Read(//c/Users/sudeepa/OneDrive - Adobe/Desktop\" 2>/dev/**)",
+      "Bash(node --check \"/c/Users/sudeepa/OneDrive - Adobe/Desktop/adobesphere-eds/blocks/form/form.js\")"
     ]
   }
 }

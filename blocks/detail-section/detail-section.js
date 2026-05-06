@@ -74,6 +74,94 @@ function renderOverview(block, cfg, entity, headingText) {
     ${body ? `<p class="detail-body">${escapeHtml(body)}</p>` : ''}`;
 }
 
+/* ─── blog-header ─── */
+
+function renderBlogHeader(block, cfg, entity) {
+  const Utils = window.AdobeSphere.Utils;
+  const Storage = window.AdobeSphere.Storage;
+
+  if (!entity) {
+    block.innerHTML = `<p>${escapeHtml(cfg.empty || 'Article not found.')}</p>`;
+    return;
+  }
+
+  const author = entity.author || {};
+  const avatarSrc = Utils.normaliseAsset(author.avatar, '/assets/images/profiles/default-user.jpg');
+  const coverSrc = Utils.normaliseAsset(entity.coverImage, '/assets/images/blogs/blog-card-fallback.jpg');
+  const authorId = author.id || null;
+  const profileUrl = authorId ? `/creator-profile/${encodeURIComponent(authorId)}` : '';
+
+  // Build social links inline
+  const socials = author.socials || {};
+  const socialLinks = Object.entries(socials).filter(([, v]) => v).map(([platform, url]) => {
+    const label = platform.charAt(0).toUpperCase() + platform.slice(1);
+    return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" aria-label="${escapeHtml(label)}">${escapeHtml(label)}</a>`;
+  }).join('');
+
+  const saved = Storage.isLoggedIn() && entity.id ? Storage.isBlogSaved?.(String(entity.id)) : false;
+
+  block.innerHTML = `
+    <div class="blog-header-inner">
+      <div class="article-meta-row">
+        <span class="badge">${escapeHtml(entity.category || 'Article')}</span>
+        <span class="text-muted">${escapeHtml(Utils.formatShortDate(entity.publishedDate) || '')}</span>
+      </div>
+      <h1 class="article-title">${escapeHtml(entity.title || 'Untitled')}</h1>
+
+      <div class="author-row">
+        ${profileUrl
+          ? `<a href="${escapeHtml(profileUrl)}" class="author-avatar-link" aria-label="View author profile"><img class="author-avatar" src="${escapeHtml(avatarSrc)}" alt="${escapeHtml(author.name || 'Author')}"></a>`
+          : `<img class="author-avatar" src="${escapeHtml(avatarSrc)}" alt="${escapeHtml(author.name || 'Author')}">`}
+        <div class="author-row-info">
+          ${profileUrl
+            ? `<a href="${escapeHtml(profileUrl)}" class="author-name-link" aria-label="View author profile"><p class="author-name">${escapeHtml(author.name || 'Adobe Team')}</p></a>`
+            : `<p class="author-name">${escapeHtml(author.name || 'Adobe Team')}</p>`}
+          <p class="author-designation text-muted">${escapeHtml(author.designation || 'Contributor')}</p>
+        </div>
+        ${socialLinks ? `<div class="author-socials">${socialLinks}</div>` : ''}
+      </div>
+
+      <div class="article-actions">
+        <button type="button" class="button ghost blog-save-btn${saved ? ' saved' : ''}" data-id="${escapeHtml(String(entity.id || ''))}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="${saved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M6 3H18C18.55 3 19 3.45 19 4V21L12 17L5 21V4C5 3.45 5.45 3 6 3Z"></path></svg>
+          <span class="blog-save-label">${saved ? 'Saved' : 'Save Article'}</span>
+        </button>
+        <a href="/blog-editor" class="button ghost">Write Your Own Blog →</a>
+      </div>
+    </div>
+
+    <div class="article-cover-wrap">
+      <img class="article-cover" src="${escapeHtml(coverSrc)}" alt="${escapeHtml(entity.title || 'Article cover')}">
+    </div>`;
+
+  // Save button logic
+  const saveBtn = block.querySelector('.blog-save-btn');
+  const saveLabel = block.querySelector('.blog-save-label');
+  const saveSvg = saveBtn.querySelector('svg');
+  saveBtn.addEventListener('click', () => {
+    if (!Storage.isLoggedIn()) {
+      const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = `/sign-in?redirect=${redirect}`;
+      return;
+    }
+    const id = saveBtn.dataset.id;
+    const isSaved = Storage.isBlogSaved?.(id);
+    if (isSaved) {
+      Storage.unsaveBlog?.(id);
+      saveBtn.classList.remove('saved');
+      saveLabel.textContent = 'Save Article';
+      saveSvg.setAttribute('fill', 'none');
+      Utils.toast('Article removed from saved.', 'info');
+    } else {
+      Storage.saveBlog?.(id);
+      saveBtn.classList.add('saved');
+      saveLabel.textContent = 'Saved';
+      saveSvg.setAttribute('fill', 'currentColor');
+      Utils.toast('Article saved to your profile.', 'success');
+    }
+  });
+}
+
 /* ─── agenda ─── */
 
 function renderAgenda(block, cfg, entity) {
@@ -228,7 +316,8 @@ function renderComments(block, cfg) {
   block.querySelector('.detail-comments-post').addEventListener('click', () => {
     errEl.textContent = '';
     if (!Storage.isLoggedIn()) {
-      errEl.textContent = 'Sign in to comment.';
+      const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = `/sign-in?redirect=${redirect}`;
       return;
     }
     const text = input.value.trim();
@@ -309,16 +398,17 @@ export default async function decorate(block) {
   const flatVariants = variants.flatMap((c) => c.split('-'));
 
   // Determine which variant is active.
-  const variant = ['overview', 'agenda', 'people', 'quote', 'comments', 'bio', 'reach-out',
+  const variant = ['blog-header', 'overview', 'agenda', 'people', 'quote', 'comments', 'bio', 'reach-out',
     'presenters', 'speakers', 'hosts', 'article-body'].find((v) =>
     variants.includes(v) || flatVariants.includes(v)
   ) || 'overview';
 
   // Hydrate entity if needed.
   let entity = null;
-  if (['overview', 'agenda', 'people', 'presenters', 'speakers', 'hosts', 'quote', 'bio', 'reach-out', 'article-body'].includes(variant)) {
+  if (['blog-header', 'overview', 'agenda', 'people', 'presenters', 'speakers', 'hosts', 'quote', 'bio', 'reach-out', 'article-body'].includes(variant)) {
     // Source priority: explicit Id Source > variant class hint > URL path > default 'events'.
     const source = cfg.id_source
+      || (variant === 'blog-header' ? 'blogs' : null)
       || (flatVariants.includes('blog') ? 'blogs' : null)
       || (flatVariants.includes('creator') ? 'creators' : null)
       || (() => {
@@ -344,7 +434,8 @@ export default async function decorate(block) {
 
   block.textContent = '';
 
-  if (variant === 'overview') renderOverview(block, cfg, entity, cfg.title || 'Overview');
+  if (variant === 'blog-header') renderBlogHeader(block, cfg, entity);
+  else if (variant === 'overview') renderOverview(block, cfg, entity, cfg.title || 'Overview');
   else if (variant === 'agenda') renderAgenda(block, cfg, entity);
   else if (['people', 'presenters', 'speakers', 'hosts'].includes(variant)) await renderPeople(block, cfg, entity);
   else if (variant === 'quote') renderQuote(block, cfg, entity);

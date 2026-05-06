@@ -184,6 +184,19 @@ const Storage = {
       return Object.keys(JSON.parse(localStorage.getItem('adobesphere_local_creators') || '{}')).length;
     } catch { return 0; }
   },
+
+  // Convenience wrappers for blog save/unsave (delegates to generic toggleSaved).
+  isBlogSaved(id) { return this.isSaved('blogs', String(id)); },
+  saveBlog(id) { if (!this.isBlogSaved(id)) this.toggleSaved('blogs', String(id)); },
+  unsaveBlog(id) { if (this.isBlogSaved(id)) this.toggleSaved('blogs', String(id)); },
+
+  // Contact submissions — stored locally (no server in this demo).
+  addContactSubmission(submission) {
+    const KEY = 'adobesphere_contact_submissions';
+    const list = readJSON(KEY, []);
+    list.push(submission);
+    writeJSON(KEY, list);
+  },
 };
 
 /* ─── Helpers shared across blocks (avatars, dates, escaping, etc.) ─── */
