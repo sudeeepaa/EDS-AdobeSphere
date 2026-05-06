@@ -474,10 +474,20 @@ async function hydrateFromData(block, type, cfg, opts) {
     } else {
       slice.forEach((item) => {
         const card = builder(item, opts);
+        // Pre-reveal: cards rendered by pagination / filter / search are
+        // already inside the visible viewport. Adding 'revealed' BEFORE
+        // appending means the element never enters the DOM in an invisible
+        // state, bypassing any IntersectionObserver timing issues entirely.
         card.classList.add('revealed');
         grid.append(card);
       });
     }
+
+    // Tell the tabs coordinator how many results this dataset has for the
+    // current query so it can auto-switch to the right tab.
+    window.dispatchEvent(new CustomEvent('adobesphere:search:results', {
+      detail: { type, count: filtered.length, q: state.q },
+    }));
   }
 
   function renderFilters() {
@@ -579,14 +589,26 @@ async function hydrateFromData(block, type, cfg, opts) {
     }
   }
 
+  let searchDebounce;
   window.addEventListener('adobesphere:search', (e) => {
-    state.q = e.detail || '';
-    state.page = 1;
-    renderGrid();
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => {
+      state.q = e.detail || '';
+      state.page = 1;
+      renderGrid();
+    }, 50);
   });
 
   renderFilters();
   renderGrid();
+
+  // If page loaded with ?q= in the URL (e.g. /explore?q=arjun),
+  // filter immediately without waiting for a hero search event.
+  const initialQ = new URLSearchParams(window.location.search).get('q') || '';
+  if (initialQ) {
+    state.q = initialQ;
+    renderGrid();
+  }
 }
 
 function hydrateStatic(block, opts) {
