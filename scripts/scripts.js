@@ -379,9 +379,52 @@ async function loadFonts() {
   } catch { /* private mode */ }
 }
 
+/* ─────────────────────────────────────────────────────────────
+ * Dynamic route handler for template-based detail pages.
+ *
+ * EDS requires a real document for every URL. Pages like
+ * /events/event-003 don't exist individually — only the template
+ * at /events/template does. When the URL matches a dynamic pattern,
+ * we fetch the template's .plain.html, inject it into <main>, and
+ * let EDS decorate it normally. The block JS then reads the entity
+ * id from the URL slug as usual.
+ * ─────────────────────────────────────────────────────────────
+ */
+const DYNAMIC_ROUTES = [
+  { pattern: /^\/events\/(?!template\b)[^/]+\/?$/, template: '/events/template' },
+  { pattern: /^\/blog\/(?!template\b)[^/]+\/?$/, template: '/blog/template' },
+  { pattern: /^\/creator-profile\/(?!template\b)[^/]+\/?$/, template: '/creator-profile/template' },
+];
+
+async function applyDynamicRoute(doc) {
+  const { pathname } = window.location;
+  const route = DYNAMIC_ROUTES.find((r) => r.pattern.test(pathname));
+  if (!route) return false;
+
+  try {
+    const resp = await fetch(`${route.template}.plain.html`);
+    if (!resp.ok) return false;
+    const html = await resp.text();
+    const main = doc.querySelector('main');
+    if (main) {
+      main.innerHTML = html;
+      // Remove the error-page flag if the 404 shell set it.
+      window.isErrorPage = false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function loadEager(doc) {
   document.documentElement.lang = 'en';
   decorateTemplateAndTheme();
+
+  // Handle dynamic routes BEFORE decoration — template content must be in
+  // <main> before decorateSections / decorateBlocks runs.
+  await applyDynamicRoute(doc);
+
   const main = doc.querySelector('main');
   if (main) {
     decorateMain(main);

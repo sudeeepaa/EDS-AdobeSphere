@@ -275,11 +275,21 @@ export default async function decorate(block) {
 
   ensureHeading(content);
 
-  // Dynamic hydration when `Id Source | …` is present.
-  if (keyed.id_source) {
-    const source = keyed.id_source.textContent.trim().toLowerCase();
+  // Dynamic hydration when `Id Source | …` is present, or auto-detected from
+  // the URL path for media / compact variants on template-based detail pages.
+  const autoSource = (() => {
+    if (keyed.id_source) return keyed.id_source.textContent.trim().toLowerCase();
+    if (!isMedia && !isCompact) return null;
+    const p = window.location.pathname;
+    if (/^\/events\//.test(p)) return 'events';
+    if (/^\/blog\//.test(p)) return 'blogs';
+    if (/^\/creator-profile\//.test(p)) return 'creators';
+    return null;
+  })();
+
+  if (autoSource) {
     try {
-      const entity = await fetchEntity(source);
+      const entity = await fetchEntity(autoSource);
       if (entity) {
         if (isMedia) media = hydrateMediaFromEntity(entity, content, media);
         else if (isCompact) hydrateCompactFromEntity(entity, content);

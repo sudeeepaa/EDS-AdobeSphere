@@ -292,7 +292,16 @@ export default async function decorate(block) {
   // Hydrate entity if needed.
   let entity = null;
   if (['overview', 'agenda', 'people', 'presenters', 'speakers', 'hosts', 'quote', 'bio', 'reach-out', 'article-body'].includes(variant)) {
-    const source = cfg.id_source || (variants.includes('blog') ? 'blogs' : variants.includes('creator') ? 'creators' : 'events');
+    // Source priority: explicit Id Source > variant class hint > URL path > default 'events'.
+    const source = cfg.id_source
+      || (variants.includes('blog') ? 'blogs' : null)
+      || (variants.includes('creator') ? 'creators' : null)
+      || (() => {
+        const p = window.location.pathname;
+        if (/^\/blog\//.test(p)) return 'blogs';
+        if (/^\/creator-profile\//.test(p)) return 'creators';
+        return 'events';
+      })();
     const id = cfg.id || getEntityId();
     if (id) entity = await loadEntity(source, id);
   }
