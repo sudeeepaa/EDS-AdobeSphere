@@ -1,0 +1,94 @@
+/*
+ * AdobeSphere — event-actions block.
+ * Sticky action bar with Save + Register buttons for event detail pages.
+ */
+
+.event-actions {
+  position: sticky;
+  top: 64px;
+  z-index: 800;
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+  padding: 14px 0;
+}
+
+.event-actions-inner {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── Save button ── */
+.event-actions-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 1px solid var(--neutral-light);
+  background: var(--white);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.event-actions-save:hover {
+  border-color: var(--text-primary);
+}
+
+.event-actions-save.saved {
+  border-color: var(--red-primary);
+  color: var(--red-primary);
+}
+
+/* ── Register button ── */
+.event-actions-register {
+  padding: 10px 24px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: none;
+  background: var(--red-primary);
+  color: var(--white);
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.event-actions-register:hover:not(:disabled) {
+  background: var(--red-dark);
+  transform: translateY(-1px);
+}
+
+.event-actions-register.ended {
+  background: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.event-actions-register.registered {
+  background: #16a34a;
+}
+
+.event-actions-register.registered:hover {
+  background: #15803d;
+}
+
+@media (max-width: 599px) {
+  .event-actions-inner {
+    padding: 0 16px;
+  }
+
+  .event-actions-save span {
+    display: none;
+  }
+
+  .event-actions-register {
+    font-size: 0.82rem;
+    padding: 10px 16px;
+  }
+}

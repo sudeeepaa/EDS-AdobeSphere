@@ -239,89 +239,6 @@ function hydrateMediaFromEntity(entity, content, media) {
   return resolvedMedia;
 }
 
-/* ─── Event action bar (Save + Register) ─── */
-
-function isPastEvent(dateStr) {
-  if (!dateStr) return false;
-  const parts = String(dateStr).split('-').map(Number);
-  if (parts.length !== 3 || parts.some(Number.isNaN)) return false;
-  const eventDate = new Date(parts[0], parts[1] - 1, parts[2]);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return eventDate < today;
-}
-
-function buildEventActionBar(entity) {
-  if (!entity || !entity.id) return null;
-  const { Storage } = window.AdobeSphere;
-  const eventId = entity.id;
-  const past = isPastEvent(entity.date);
-
-  const bar = document.createElement('div');
-  bar.className = 'hero-action-bar';
-  bar.id = 'event-action-bar';
-
-  const inner = document.createElement('div');
-  inner.className = 'hero-action-bar-inner';
-
-  // Save button.
-  const saveBtn = document.createElement('button');
-  saveBtn.type = 'button';
-  saveBtn.className = 'button secondary hero-save-btn';
-  const isSaved = Storage.isSaved('events', eventId);
-  saveBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <path d="M6 3H18C18.55 3 19 3.45 19 4V21L12 17L5 21V4C5 3.45 5.45 3 6 3Z" stroke="currentColor" stroke-width="1.7" fill="${isSaved ? 'currentColor' : 'none'}"/>
-  </svg> <span>${isSaved ? 'Saved' : 'Save Event'}</span>`;
-  if (isSaved) saveBtn.classList.add('saved');
-
-  saveBtn.addEventListener('click', () => {
-    if (!Storage.isLoggedIn()) {
-      window.location.href = '/login';
-      return;
-    }
-    const wasSaved = Storage.isSaved('events', eventId);
-    Storage.toggleSaved('events', eventId);
-    if (wasSaved) {
-      saveBtn.classList.remove('saved');
-      saveBtn.querySelector('span').textContent = 'Save Event';
-      saveBtn.querySelector('path').setAttribute('fill', 'none');
-    } else {
-      saveBtn.classList.add('saved');
-      saveBtn.querySelector('span').textContent = 'Saved';
-      saveBtn.querySelector('path').setAttribute('fill', 'currentColor');
-    }
-  });
-
-  // Register button.
-  const regBtn = document.createElement('button');
-  regBtn.type = 'button';
-  if (past) {
-    regBtn.className = 'button hero-reg-btn is-ended';
-    regBtn.textContent = 'Event Ended';
-    regBtn.disabled = true;
-  } else {
-    const regs = Storage.getRegistrations();
-    const isReg = regs.some((r) => r.eventId === eventId);
-    regBtn.className = `button primary hero-reg-btn${isReg ? ' is-registered' : ''}`;
-    regBtn.textContent = isReg ? 'Registered ✓' : 'Register for this Event';
-    regBtn.addEventListener('click', () => {
-      if (!Storage.isLoggedIn()) {
-        window.location.href = '/login';
-        return;
-      }
-      const alreadyReg = Storage.getRegistrations().some((r) => r.eventId === eventId);
-      if (alreadyReg) return;
-      Storage.registerForEvent(eventId);
-      regBtn.classList.add('is-registered');
-      regBtn.textContent = 'Registered ✓';
-    });
-  }
-
-  inner.append(saveBtn, regBtn);
-  bar.append(inner);
-  return bar;
-}
-
 function hydrateCompactFromEntity(entity, content) {
   const { Utils } = window.AdobeSphere;
 
@@ -442,20 +359,4 @@ export default async function decorate(block) {
   if (isGradient) block.classList.add('hero-gradient-variant');
   if (isCompact) block.classList.add('hero-compact');
   if (variants.length === 0 && !isVideo) block.classList.add('hero-default');
-
-  // Inject the event action bar after the hero's parent section (sticky).
-  if (isMedia && autoSource === 'events') {
-    try {
-      const entity = await fetchEntity('events');
-      if (entity) {
-        const actionBar = buildEventActionBar(entity);
-        if (actionBar) {
-          const section = block.closest('.section') || block.parentElement;
-          if (section && section.parentElement) {
-            section.parentElement.insertBefore(actionBar, section.nextSibling);
-          }
-        }
-      }
-    } catch { /* noop */ }
-  }
 }
