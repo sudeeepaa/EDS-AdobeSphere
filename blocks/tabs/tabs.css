@@ -12,6 +12,7 @@
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none; /* Firefox */
+  padding: 0 16px;
 }
 
 .tabs-list::-webkit-scrollbar {

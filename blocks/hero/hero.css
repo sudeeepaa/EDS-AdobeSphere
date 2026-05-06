@@ -125,21 +125,33 @@
 /* ─── search variant (Explore) ─── */
 .hero.hero-search-variant {
   padding: 80px 0 50px;
-  background: linear-gradient(135deg, var(--bg-off-white) 0%, var(--white) 100%);
+  background: var(--bg-dark);
+}
+
+.hero.hero-search-variant h1,
+.hero.hero-search-variant h2,
+.hero.hero-search-variant h3 {
+  color: var(--white);
+  text-align: left;
+}
+
+.hero.hero-search-variant p {
+  color: var(--text-muted);
+  text-align: left;
 }
 
 .hero .hero-search {
   position: relative;
   display: flex;
   width: 100%;
-  max-width: 540px;
-  margin: 24px auto 0;
+  max-width: 100%;
+  margin: 24px 0 0;
 }
 
 .hero .hero-search-input {
   flex: 1;
   padding-right: 56px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
 }
 
 .hero .hero-search-btn {

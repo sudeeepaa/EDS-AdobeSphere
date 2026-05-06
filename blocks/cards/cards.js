@@ -411,7 +411,7 @@ async function hydrateFromData(block, type, cfg, opts) {
   // --- Dynamic Mode (Filters and/or Pagination) ---
   const filterHost = document.createElement('div');
   filterHost.className = 'explore-filters';
-  
+
   const grid = document.createElement('div');
   grid.className = `cards-grid grid-${type}`;
   if (opts.horizontal) grid.classList.add('horizontal');
@@ -426,14 +426,14 @@ async function hydrateFromData(block, type, cfg, opts) {
   const state = {
     page: 1,
     q: new URLSearchParams(window.location.search).get('q') || '',
-    f: type === 'events' ? { category: '', location: [], date: 'all' } 
-       : type === 'blogs' ? { category: '', author: '', sort: 'newest' }
-       : { designation: [], sort: 'name-asc' }
+    f: type === 'events' ? { category: '', location: [], date: 'all' }
+      : type === 'blogs' ? { category: '', author: '', sort: 'newest' }
+        : { designation: [], sort: 'name-asc' }
   };
 
   function renderGrid() {
     const filtered = getFilteredItems(type, items, { q: state.q, ...state.f });
-    
+
     let slice = filtered;
     if (pageSize) {
       const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
@@ -466,43 +466,62 @@ async function hydrateFromData(block, type, cfg, opts) {
       const cats = uniqueValues(items, (e) => e.category);
       const cities = uniqueValues(items, (e) => e.location && e.location.city);
       html += `
-        <select class="form-input" data-filter="category">
-          <option value="">All Categories</option>
-          ${cats.map((c) => `<option value="${escapeHtml(c)}"${state.f.category === c ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('')}
-        </select>
-        <fieldset class="explore-radios" aria-label="Date">
-          <label><input type="radio" name="evt-date-${type}" value="all"${state.f.date === 'all' ? ' checked' : ''}> All</label>
-          <label><input type="radio" name="evt-date-${type}" value="upcoming"${state.f.date === 'upcoming' ? ' checked' : ''}> Upcoming</label>
-          <label><input type="radio" name="evt-date-${type}" value="past"${state.f.date === 'past' ? ' checked' : ''}> Past</label>
-        </fieldset>
-        <fieldset class="explore-checkboxes" aria-label="Location">
-          <legend>Location</legend>
-          ${cities.map((c) => `<label><input type="checkbox" value="${escapeHtml(c)}"${state.f.location.includes(c) ? ' checked' : ''}> ${escapeHtml(c)}</label>`).join('')}
-        </fieldset>`;
+        <div class="explore-filter-row explore-filter-row-full">
+          <select class="form-input" data-filter="category">
+            <option value="">All Categories</option>
+            ${cats.map((c) => `<option value="${escapeHtml(c)}"${state.f.category === c ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="explore-filter-row explore-filter-row-split">
+          <fieldset class="explore-radios" aria-label="Date">
+            <label><input type="radio" name="evt-date-${type}" value="all"${state.f.date === 'all' ? ' checked' : ''}> All</label>
+            <label><input type="radio" name="evt-date-${type}" value="upcoming"${state.f.date === 'upcoming' ? ' checked' : ''}> Upcoming</label>
+            <label><input type="radio" name="evt-date-${type}" value="past"${state.f.date === 'past' ? ' checked' : ''}> Past</label>
+          </fieldset>
+          <button type="button" class="button ghost clear-filters">Clear Filters</button>
+        </div>
+        <div class="explore-filter-row explore-filter-row-full">
+          <fieldset class="explore-checkboxes" aria-label="Location">
+            <legend>Filter by location</legend>
+            <div class="checkbox-grid">
+              ${cities.map((c) => `<label><input type="checkbox" value="${escapeHtml(c)}"${state.f.location.includes(c) ? ' checked' : ''}> ${escapeHtml(c)}</label>`).join('')}
+            </div>
+          </fieldset>
+        </div>`;
     } else if (type === 'blogs') {
       const cats = uniqueValues(items, (b) => b.category);
       html += `
-        <select class="form-input" data-filter="category">
-          <option value="">All Categories</option>
-          ${cats.map((c) => `<option value="${escapeHtml(c)}"${state.f.category === c ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('')}
-        </select>
-        <input type="text" class="form-input" placeholder="Search by author" data-filter="author" value="${escapeHtml(state.f.author)}">
-        <select class="form-input" data-filter="sort">
-          <option value="newest"${state.f.sort === 'newest' ? ' selected' : ''}>Newest</option>
-          <option value="oldest"${state.f.sort === 'oldest' ? ' selected' : ''}>Oldest</option>
-        </select>`;
+        <div class="explore-filter-row explore-filter-row-split">
+          <select class="form-input" data-filter="category">
+            <option value="">All Categories</option>
+            ${cats.map((c) => `<option value="${escapeHtml(c)}"${state.f.category === c ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('')}
+          </select>
+          <input type="text" class="form-input" placeholder="Search by author" data-filter="author" value="${escapeHtml(state.f.author)}">
+          <select class="form-input" data-filter="sort">
+            <option value="newest"${state.f.sort === 'newest' ? ' selected' : ''}>Newest</option>
+            <option value="oldest"${state.f.sort === 'oldest' ? ' selected' : ''}>Oldest</option>
+          </select>
+          <button type="button" class="button ghost clear-filters">Clear Filters</button>
+        </div>`;
     } else {
       const designations = uniqueValues(items, (c) => c.designation);
       html += `
-        <select class="form-input" data-filter="sort">
-          <option value="name-asc"${state.f.sort === 'name-asc' ? ' selected' : ''}>Name A–Z</option>
-          <option value="name-desc"${state.f.sort === 'name-desc' ? ' selected' : ''}>Name Z–A</option>
-          <option value="testimonials"${state.f.sort === 'testimonials' ? ' selected' : ''}>Testimonials</option>
-        </select>
-        <fieldset class="explore-checkboxes" aria-label="Designation">
-          <legend>Designation</legend>
-          ${designations.map((d) => `<label><input type="checkbox" value="${escapeHtml(d)}"${state.f.designation.includes(d) ? ' checked' : ''}> ${escapeHtml(d)}</label>`).join('')}
-        </fieldset>`;
+        <div class="explore-filter-row explore-filter-row-split">
+          <select class="form-input" data-filter="sort">
+            <option value="name-asc"${state.f.sort === 'name-asc' ? ' selected' : ''}>Name A–Z</option>
+            <option value="name-desc"${state.f.sort === 'name-desc' ? ' selected' : ''}>Name Z–A</option>
+            <option value="testimonials"${state.f.sort === 'testimonials' ? ' selected' : ''}>Testimonials</option>
+          </select>
+          <button type="button" class="button ghost clear-filters">Clear Filters</button>
+        </div>
+        <div class="explore-filter-row explore-filter-row-full">
+          <fieldset class="explore-checkboxes" aria-label="Designation">
+            <legend>Filter by designation</legend>
+            <div class="checkbox-grid">
+              ${designations.map((d) => `<label><input type="checkbox" value="${escapeHtml(d)}"${state.f.designation.includes(d) ? ' checked' : ''}> ${escapeHtml(d)}</label>`).join('')}
+            </div>
+          </fieldset>
+        </div>`;
     }
     filterHost.innerHTML = html;
 
@@ -524,6 +543,18 @@ async function hydrateFromData(block, type, cfg, opts) {
         state.f.designation = [...filterHost.querySelectorAll('.explore-checkboxes input:checked')].map((x) => x.value);
         state.page = 1; renderGrid();
       }));
+    }
+
+    const clearBtn = filterHost.querySelector('.clear-filters');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        state.f = type === 'events' ? { category: '', location: [], date: 'all' } 
+                : type === 'blogs' ? { category: '', author: '', sort: 'newest' }
+                : { designation: [], sort: 'name-asc' };
+        state.page = 1;
+        renderFilters();
+        renderGrid();
+      });
     }
   }
 
