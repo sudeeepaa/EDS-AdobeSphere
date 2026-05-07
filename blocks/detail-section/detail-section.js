@@ -248,8 +248,16 @@ function renderQuote(block, cfg, entity) {
 function renderBio(block, cfg, entity) {
   if (!entity) { block.style.display = 'none'; return; }
   const Utils = window.AdobeSphere.Utils;
-  const avatar = Utils.normaliseAsset(entity.avatar, '/icons/user-default.svg');
   const bio = entity.fullBio || entity.bio || '';
+
+  // `text` modifier: plain paragraphs only — used on creator profile where hero already shows avatar/name.
+  if (block.classList.contains('text')) {
+    if (!bio) { block.style.display = 'none'; return; }
+    block.innerHTML = bio.split(/\n\n+/).map((p) => `<p>${escapeHtml(p)}</p>`).join('');
+    return;
+  }
+
+  const avatar = Utils.normaliseAsset(entity.avatar, '/icons/user-default.svg');
   const paragraphs = bio.split(/\n\n+/).map((p) => `<p>${escapeHtml(p)}</p>`).join('');
 
   block.innerHTML = `
@@ -266,17 +274,26 @@ function renderBio(block, cfg, entity) {
 
 /* ─── reach-out ─── */
 
+const REACH_OUT_ICONS = {
+  email: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M2 7l10 7 10-7"></path></svg>`,
+  linkedin: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>`,
+};
+
 function renderReachOut(block, cfg, entity) {
   if (!entity) { block.style.display = 'none'; return; }
   const links = [];
-  if (entity.email) links.push({ label: 'Email', href: `mailto:${entity.email}` });
-  if (entity.socials && entity.socials.linkedin) links.push({ label: 'LinkedIn', href: entity.socials.linkedin });
+  if (entity.email) links.push({ label: entity.email, href: `mailto:${entity.email}`, type: 'email' });
+  if (entity.socials && entity.socials.linkedin) links.push({ label: 'LinkedIn', href: entity.socials.linkedin, type: 'linkedin' });
   if (!links.length) { block.style.display = 'none'; return; }
 
   block.innerHTML = `
     ${cfg.title ? `<h2 class="section-heading">${escapeHtml(cfg.title)}</h2>` : ''}
     <div class="detail-reach-out">
-      ${links.map((l) => `<a class="button secondary" href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`).join('')}
+      ${links.map((l) => `
+        <a class="reach-out-pill" href="${escapeHtml(l.href)}" target="_blank" rel="noopener">
+          <span class="reach-out-icon">${REACH_OUT_ICONS[l.type] || ''}</span>
+          <span>${escapeHtml(l.label)}</span>
+        </a>`).join('')}
     </div>`;
 }
 
@@ -413,17 +430,11 @@ export default async function decorate(block) {
   // Hydrate entity if needed.
   let entity = null;
   if (['blog-header', 'overview', 'agenda', 'people', 'presenters', 'speakers', 'hosts', 'quote', 'bio', 'reach-out', 'article-body'].includes(variant)) {
-    // Source priority: explicit Id Source > variant class hint > URL path > default 'events'.
+    // Source: explicit "Id Source" field always wins.
+    // blog-header and article-body implicitly target blogs; everything else defaults to events.
     const source = cfg.id_source
-      || (variant === 'blog-header' ? 'blogs' : null)
-      || (flatVariants.includes('blog') ? 'blogs' : null)
-      || (flatVariants.includes('creator') ? 'creators' : null)
-      || (() => {
-        const p = window.location.pathname;
-        if (/^\/blog\//.test(p)) return 'blogs';
-        if (/^\/creator-profile\//.test(p)) return 'creators';
-        return 'events';
-      })();
+      || (['blog-header', 'article-body'].includes(variant) ? 'blogs' : null)
+      || 'events';
     const id = cfg.id || getEntityId();
     if (id) entity = await loadEntity(source, id);
   }

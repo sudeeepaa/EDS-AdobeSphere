@@ -327,6 +327,129 @@
   letter-spacing: 0.05em;
 }
 
+/* ─── creator variant (Creator profile hero) ─── */
+.hero.hero-creator {
+  background: var(--bg-dark);
+  padding: 56px 24px 64px;
+}
+
+.hero.hero-creator .hero-creator-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.hero.hero-creator .hero-creator-hero {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.hero.hero-creator .hero-creator-avatar {
+  width: 160px;
+  height: 160px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 5px solid var(--red-primary);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 15%);
+  flex-shrink: 0;
+}
+
+.hero.hero-creator .hero-creator-text h1 {
+  margin: 0 0 10px;
+  color: var(--white);
+  font-size: clamp(2.2rem, 4vw, 3.5rem);
+  line-height: 1.05;
+}
+
+.hero.hero-creator .hero-creator-text p {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 55%);
+}
+
+.hero.hero-creator .hero-creator-stats {
+  display: flex;
+  width: 100%;
+  max-width: 640px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  justify-content: center;
+}
+
+.hero.hero-creator .hero-creator-stats li {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0 24px;
+  border-right: 1px solid rgba(255, 255, 255, 12%);
+}
+
+.hero.hero-creator .hero-creator-stats li:last-child {
+  border-right: none;
+}
+
+.hero.hero-creator .hero-creator-stats strong {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 400;
+  color: var(--red-primary);
+  line-height: 1;
+}
+
+.hero.hero-creator .hero-creator-stats span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: rgba(255, 255, 255, 50%);
+}
+
+.hero.hero-creator .hero-creator-empty {
+  color: rgba(255, 255, 255, 60%);
+  text-align: center;
+}
+
+@media (max-width: 599px) {
+  .hero.hero-creator {
+    padding: 40px 16px 48px;
+  }
+
+  .hero.hero-creator .hero-creator-inner {
+    gap: 32px;
+  }
+
+  .hero.hero-creator .hero-creator-hero {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .hero.hero-creator .hero-creator-avatar {
+    width: 130px;
+    height: 130px;
+  }
+
+  .hero.hero-creator .hero-creator-stats li {
+    padding: 0 12px;
+  }
+
+  .hero.hero-creator .hero-creator-stats strong {
+    font-size: 2.2rem;
+  }
+
+  .hero.hero-creator .hero-creator-stats span {
+    font-size: 0.65rem;
+  }
+}
+
 /* ─── compact variant (Blog detail title strip) ─── */
 .hero.hero-compact {
   padding: 40px 0 20px;
