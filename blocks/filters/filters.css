@@ -5,9 +5,8 @@
  */
 
 .filters {
-    background: var(--bg-off-white, #f9fafb);
-    border-radius: var(--radius-md);
-    margin-bottom: 32px;
+    padding: 20px 0;
+    margin-bottom: 8px;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -110,4 +109,24 @@
 .filters .filter-radios input,
 .filters .filter-checkboxes input {
     accent-color: var(--red-primary);
+}
+
+@media (max-width: 767px) {
+    .filters .filter-row {
+        align-items: stretch;
+    }
+
+    .filters .form-input {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .filters .filter-clear {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .filters .filter-row.filter-row-split {
+        flex-direction: column;
+    }
 }

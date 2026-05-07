@@ -193,14 +193,14 @@ ol {
 /* sections — EDS wraps each section in `main > .section > div` */
 main>.section {
   margin: 0;
-  padding: 60px 0;
+  padding: 40px 0;
 }
 
 main>.section>div {
   width: 100%;
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 20px;
 }
 
 main>.section:first-of-type {
@@ -436,8 +436,12 @@ blockquote {
 
 /* ─────────── breakpoints ─────────── */
 @media (min-width: 600px) {
+  main>.section {
+    padding: 60px 0;
+  }
+
   main>.section>div {
-    padding: 0 32px;
+    padding: 0 24px;
   }
 }
 
@@ -445,4 +449,23 @@ blockquote {
   :root {
     --body-font-size-m: 17px;
   }
+
+  main>.section {
+    padding: 80px 0;
+  }
+
+  main>.section>div {
+    padding: 0 32px;
+  }
+}
+
+@media (min-width: 1200px) {
+  main>.section>div {
+    padding: 0 40px;
+  }
+}
+
+/* hero blocks manage their own spacing — applied last to win cascade */
+main>.section:has(.hero) {
+  padding: 0;
 }

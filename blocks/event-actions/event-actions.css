@@ -5,7 +5,7 @@
 
 .event-actions {
   position: sticky;
-  top: 64px;
+  top: var(--nav-height);
   z-index: 800;
   background: var(--white);
   box-shadow: var(--shadow-sm);
