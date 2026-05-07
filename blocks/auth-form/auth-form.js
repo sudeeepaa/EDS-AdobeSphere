@@ -14,22 +14,26 @@
  *   Help            | [rich text] Don't have an account? Sign Up → (link to /signup)
  *   After           | /
  *
- * SIGNUP:
- *   Heading                 | Join Adobesphere
- *   Subheading              | Create your account — free, takes 30 seconds
- *   Label Name              | Full Name
- *   Label Designation       | Designation / Role
- *   Placeholder Designation | e.g. Graphic Designer
- *   Label Email             | Email Address
- *   Label Password          | Password
- *   Label Confirm           | Confirm Password
+ * SIGNUP — block header: | auth-form | signup |
+ *   Brand                   | Adobesphere
+ *   Heading                 | Join Adobesphere - Creative Experience Platform
+ *   Subheading              | Create your creator profile and get started
+ *   Label Name              | Full Name*
+ *   Label Designation       | Designation / Role*
+ *   Placeholder Designation | Graphic Designer
+ *   Label Email             | Email Address*
+ *   Label Password          | Password*
+ *   Password Help           | Tip: use a mix of letters, numbers, and symbols for a stronger password.
+ *   Label Confirm           | Confirm Password*
  *   Label Bio               | About / Bio (optional)
- *   Label LinkedIn          | LinkedIn Profile
+ *   Bio Counter             | 0 / 500 characters
+ *   Label LinkedIn          | LinkedIn Profile*
  *   Placeholder LinkedIn    | https://linkedin.com/in/yourprofile
  *   Label Avatar            | Profile Picture (optional)
+ *   Avatar Preview          | Avatar Preview
+ *   Avatar Action           | Choose Photo
  *   Submit                  | Create Account
  *   Help                    | [rich text] Already have an account? Sign In → (link to /login)
- *   After                   | /user-profile
  *
  * JS only handles interaction — all visible text and links come from DA.live.
  */
@@ -68,10 +72,20 @@ function el(tag, cls, text) {
   return e;
 }
 
-function buildWordmark() {
+function buildWordmark(brand) {
   const div = el('div', 'auth-wordmark');
-  const adobe = el('span', 'adobe', 'Adobe');
-  div.append(adobe, document.createTextNode('sphere'));
+  const text = (brand || 'Adobesphere').trim();
+  // Colorize the 'adobe' portion red regardless of capitalisation.
+  const lower = text.toLowerCase();
+  const aIdx = lower.indexOf('adobe');
+  if (aIdx >= 0) {
+    const aEnd = aIdx + 5;
+    if (aIdx > 0) div.append(document.createTextNode(text.slice(0, aIdx)));
+    div.append(el('span', 'adobe', text.slice(aIdx, aEnd)));
+    if (aEnd < text.length) div.append(document.createTextNode(text.slice(aEnd)));
+  } else {
+    div.textContent = text;
+  }
   return div;
 }
 
@@ -183,7 +197,7 @@ function buildSigninDom(cfg) {
   const header = el('div', 'auth-header');
   const h1 = el('h1', '', cfg.heading || 'Welcome Back');
   const sub = el('p', 'auth-subheading', cfg.subheading || '');
-  header.append(buildWordmark(), h1, sub);
+  header.append(buildWordmark(cfg.brand), h1, sub);
 
   const errorBox = buildErrorBox('auth-signin-error');
 
@@ -288,9 +302,9 @@ function buildAvatarField(cfg) {
   const preview = el('img', 'auth-avatar-preview');
   preview.id = 'af-avatar-preview';
   preview.src = DEFAULT;
-  preview.alt = 'Avatar preview';
+  preview.alt = cfg['avatar-preview'] || 'Avatar preview';
 
-  const chooseLabel = el('label', 'avatar-change-btn', 'Choose Photo');
+  const chooseLabel = el('label', 'avatar-change-btn', cfg['avatar-action'] || 'Choose Photo');
   chooseLabel.htmlFor = 'af-avatar-file';
 
   const fileInput = document.createElement('input');
@@ -343,7 +357,7 @@ function buildSignupDom(cfg) {
   const header = el('div', 'auth-header');
   const h1 = el('h1', 'auth-signup-heading', cfg.heading || 'Join Adobesphere');
   const sub = el('p', 'auth-subheading', cfg.subheading || '');
-  header.append(buildWordmark(), h1, sub);
+  header.append(buildWordmark(cfg.brand), h1, sub);
 
   const form = el('form', 'auth-form-inner');
   form.id = 'af-signup-form';
@@ -376,6 +390,7 @@ function buildSignupDom(cfg) {
     autocomplete: 'new-password',
   });
   const { wrap: strengthWrap, bar: strengthBar, lbl: strengthLbl, tip: strengthTip } = buildStrengthMeter();
+  const pwdHelp = cfg['password-help'] || PWD_GUIDANCE;
   pwdInput.addEventListener('input', () => {
     const s = evaluatePasswordStrength(pwdInput.value);
     strengthBar.style.width = s.width;
@@ -383,13 +398,13 @@ function buildSignupDom(cfg) {
     strengthLbl.textContent = s.label;
     strengthLbl.style.color = s.color;
     if (!pwdInput.value.length) {
-      strengthTip.textContent = 'Tip: use a mix of letters, numbers, and symbols.';
+      strengthTip.textContent = pwdHelp;
       strengthTip.style.color = '';
     } else if (s.label === 'Strong') {
       strengthTip.textContent = 'Great password — all conditions met.';
       strengthTip.style.color = '#15803d';
     } else {
-      strengthTip.textContent = PWD_GUIDANCE;
+      strengthTip.textContent = pwdHelp;
       strengthTip.style.color = s.color;
     }
   });
@@ -408,11 +423,13 @@ function buildSignupDom(cfg) {
   const bioInput = el('textarea', 'form-input');
   bioInput.id = 'af-bio';
   bioInput.rows = 4;
-  bioInput.maxLength = 500;
-  const bioCount = el('small', 'form-counter', '0 / 500 characters');
+  const counterText = cfg['bio-counter'] || '0 / 500 characters';
+  const bioMax = parseInt((counterText.match(/\/\s*(\d+)/) || [])[1], 10) || 500;
+  bioInput.maxLength = bioMax;
+  const bioCount = el('small', 'form-counter', counterText);
   bioCount.id = 'af-bio-count';
   bioInput.addEventListener('input', () => {
-    bioCount.textContent = `${bioInput.value.length} / 500 characters`;
+    bioCount.textContent = `${bioInput.value.length} / ${bioMax} characters`;
   });
   const bioErr = el('span', 'form-error');
   bioErr.setAttribute('data-field', 'af-bio');
@@ -512,7 +529,7 @@ function wireSignup(refs, cfg) {
       setFieldErr(form, 'af-password', 'Password is required.'); ok = false;
     } else if (strength.label === 'Weak') {
       setFieldErr(form, 'af-password', 'Password is too weak — please use a fair or strong password.');
-      showErr(PWD_GUIDANCE);
+      showErr(cfg['password-help'] || PWD_GUIDANCE);
       ok = false;
     }
     if (password2 !== password) { setFieldErr(form, 'af-password2', 'Passwords do not match.'); ok = false; }

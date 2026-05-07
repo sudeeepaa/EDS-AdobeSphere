@@ -320,7 +320,3 @@
 body > header {
   height: var(--nav-height);
 }
-
-main {
-  padding-top: var(--nav-height);
-}
