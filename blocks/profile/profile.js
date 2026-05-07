@@ -122,7 +122,7 @@ function renderUser(block, cfg) {
   /* ── avatar ── */
   const avatarWrap = el('div', 'profile-avatar-wrap');
   const avatarImg = el('img', 'profile-avatar');
-  avatarImg.src = user.avatarSrc || user.avatar || '/icons/user-default.svg';
+  avatarImg.src = user.avatarSrc || user.avatar || '/assets/images/profiles/default-user.jpg';
   avatarImg.alt = `${user.name || 'User'} avatar`;
   const avatarOverlay = el('label', 'profile-avatar-overlay', cfg['avatar-label'] || 'Upload Photo');
   avatarOverlay.htmlFor = 'profile-avatar-input';
