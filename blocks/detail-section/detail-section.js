@@ -96,7 +96,7 @@ function renderBlogHeader(block, cfg, entity) {
   const avatarSrc = Utils.normaliseAsset(author.avatar, '/assets/images/profiles/default-user.jpg');
   const coverSrc = Utils.normaliseAsset(entity.coverImage, '/assets/images/blogs/blog-card-fallback.jpg');
   const authorId = author.id || null;
-  const profileUrl = authorId ? `/creator-profile/${encodeURIComponent(authorId)}` : '';
+  const profileUrl = authorId ? `/creator-profile?id=${encodeURIComponent(authorId)}` : '';
 
   // Build social links inline
   const socials = author.socials || {};
@@ -229,7 +229,7 @@ async function renderPeople(block, cfg, entity) {
   grid.innerHTML = people.map((p) => {
     const avatar = Utils.normaliseAsset(p.avatar, '/icons/user-default.svg');
     const creatorId = creatorMap[(p.name || '').toLowerCase()];
-    const href = creatorId ? `/creator-profile/${creatorId}` : '';
+    const href = creatorId ? `/creator-profile?id=${encodeURIComponent(creatorId)}` : '';
     const cardContent = `
       <img src="${escapeHtml(avatar)}" alt="${escapeHtml(p.name || 'Person')}" loading="lazy">
       <div class="detail-person-body">

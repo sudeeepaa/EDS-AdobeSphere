@@ -14,7 +14,8 @@
       "Bash(git -C \"/c/Users/sudeepa/OneDrive - Adobe/Desktop/adobesphere-eds\" ls-files)",
       "Bash(grep -E \"\\\\.html$|\\\\.md$\")",
       "Bash(git commit -m 'Fix auth redirects: /sign-in → /login across detail-section block *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(git commit -m 'Remove My Creator Profile nav link \\(404\\) *)"
     ]
   }
 }
