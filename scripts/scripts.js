@@ -212,6 +212,31 @@ const Storage = {
     };
   },
 
+  // Returns all registered users who have a name as creator-shaped objects.
+  getAllLocalCreators() {
+    const users = readJSON(STORAGE_KEYS.USERS, {});
+    const userBlogs = readJSON(STORAGE_KEYS.USER_BLOGS, {});
+    return Object.entries(users)
+      .filter(([, u]) => u.name)
+      .map(([email, u]) => {
+        const blogs = userBlogs[email] || [];
+        return {
+          id: email,
+          name: u.name || '',
+          email,
+          designation: u.designation || '',
+          bio: u.bio || '',
+          fullBio: u.bio || '',
+          avatar: u.avatarSrc || u.avatar || '/assets/images/profiles/default-user.jpg',
+          socials: u.socials || {},
+          stats: { blogsPublished: blogs.length, eventsHosted: 0, testimonialsGiven: 0 },
+          blogIds: blogs.map((b) => b.id),
+          eventIds: [],
+          featuredQuote: '',
+        };
+      });
+  },
+
   // Returns user-authored blogs for a given email (accessible on their own device).
   getLocalUserBlogs(email) {
     return readJSON(STORAGE_KEYS.USER_BLOGS, {})[email] || [];

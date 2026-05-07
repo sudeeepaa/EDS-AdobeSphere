@@ -59,6 +59,7 @@ function buildAuthZone() {
       </button>
       <div class="nav-user-menu" role="menu">
         <a href="/user-profile" role="menuitem">My Profile</a>
+        <a href="/creator-profile/${encodeURIComponent(user.email)}" role="menuitem">My Creator Profile</a>
         <a href="/user-profile#saved" role="menuitem">My Saved Items</a>
         <a href="/blog-editor" role="menuitem">Write a Blog</a>
         <button type="button" class="nav-signout" role="menuitem">Sign Out</button>

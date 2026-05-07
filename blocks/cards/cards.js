@@ -362,6 +362,13 @@ async function hydrateFromData(block, type, cfg, opts) {
 
   let items = data.slice();
 
+  // Append registered user profiles to the creators listing.
+  if (type === 'creators') {
+    const localCreators = window.AdobeSphere.Storage.getAllLocalCreators?.() || [];
+    const existingIds = new Set(items.map((c) => c.id));
+    localCreators.forEach((lc) => { if (!existingIds.has(lc.id)) items.push(lc); });
+  }
+
   // Resolve Ids From
   let idsFromList = null;
   if (cfg.ids_from) {
