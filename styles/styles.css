@@ -437,7 +437,7 @@ blockquote {
 /* ─────────── breakpoints ─────────── */
 @media (min-width: 600px) {
   main>.section {
-    padding: 60px 0;
+    padding: 30px 0;
   }
 
   main>.section>div {
@@ -451,7 +451,7 @@ blockquote {
   }
 
   main>.section {
-    padding: 80px 0;
+    padding: 30px 0;
   }
 
   main>.section>div {
