@@ -293,6 +293,32 @@ function buildStrengthMeter() {
   return { wrap, bar, lbl, tip };
 }
 
+function compressAvatar(file, callback) {
+  const MAX = 256;
+  const reader = new FileReader();
+  reader.onerror = () => callback(null);
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onerror = () => callback(null);
+    img.onload = () => {
+      try {
+        const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale) || MAX;
+        const h = Math.round(img.height * scale) || MAX;
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        callback(canvas.toDataURL('image/jpeg', 0.85));
+      } catch {
+        callback(null);
+      }
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function buildAvatarField(cfg) {
   const DEFAULT = '/assets/images/profiles/default-user.jpg';
   const group = el('div', 'form-group');
@@ -315,9 +341,7 @@ function buildAvatarField(cfg) {
   fileInput.addEventListener('change', () => {
     const file = fileInput.files && fileInput.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => { if (ev.target?.result) preview.src = String(ev.target.result); };
-    reader.readAsDataURL(file);
+    compressAvatar(file, (src) => { if (src) preview.src = src; });
   });
 
   previewWrap.append(preview, chooseLabel, fileInput);
