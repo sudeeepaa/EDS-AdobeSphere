@@ -20,7 +20,7 @@ function readConfig(block) {
     if (row.children.length !== 2) return;
     const k = row.children[0].textContent.trim().toLowerCase();
     const v = row.children[1].textContent.trim();
-    if (['title', 'id source', 'id', 'empty'].includes(k)) {
+    if (['title', 'id source', 'id', 'empty', 'placeholder'].includes(k)) {
       cfg[k.replace(' ', '_')] = v;
       row.remove();
     }
@@ -301,11 +301,12 @@ function renderReachOut(block, cfg, entity) {
 
 function renderComments(block, cfg) {
   const id = getEntityId();
+  const placeholder = cfg.placeholder || 'Share your thoughts…';
   block.innerHTML = `
-    <h2 class="section-heading">${escapeHtml(cfg.title || 'Discussion')}</h2>
+    ${cfg.title ? `<h2 class="section-heading">${escapeHtml(cfg.title)}</h2>` : ''}
     <p class="detail-comments-count text-muted"></p>
     <div class="detail-comments-composer">
-      <textarea class="form-input detail-comments-input" rows="3" maxlength="500" placeholder="Share your thoughts…"></textarea>
+      <textarea class="form-input detail-comments-input" rows="3" maxlength="500" placeholder="${escapeHtml(placeholder)}"></textarea>
       <small class="text-muted detail-comments-counter">0 / 500</small>
       <button type="button" class="button primary detail-comments-post">Post Comment</button>
       <p class="form-error detail-comments-error"></p>
