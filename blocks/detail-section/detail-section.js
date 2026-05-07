@@ -274,7 +274,7 @@ function renderReachOut(block, cfg, entity) {
   if (!links.length) { block.style.display = 'none'; return; }
 
   block.innerHTML = `
-    <h2 class="section-heading">${escapeHtml(cfg.title || 'Reach Out')}</h2>
+    ${cfg.title ? `<h2 class="section-heading">${escapeHtml(cfg.title)}</h2>` : ''}
     <div class="detail-reach-out">
       ${links.map((l) => `<a class="button secondary" href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`).join('')}
     </div>`;
