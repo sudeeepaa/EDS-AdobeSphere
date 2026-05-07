@@ -12,7 +12,9 @@
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(git commit -m ' *)",
       "Bash(git -C \"/c/Users/sudeepa/OneDrive - Adobe/Desktop/adobesphere-eds\" ls-files)",
-      "Bash(grep -E \"\\\\.html$|\\\\.md$\")"
+      "Bash(grep -E \"\\\\.html$|\\\\.md$\")",
+      "Bash(git commit -m 'Fix auth redirects: /sign-in → /login across detail-section block *)",
+      "Bash(git push *)"
     ]
   }
 }
