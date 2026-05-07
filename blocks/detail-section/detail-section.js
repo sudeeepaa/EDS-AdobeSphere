@@ -133,13 +133,22 @@ function renderBlogHeader(block, cfg, entity) {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="${saved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M6 3H18C18.55 3 19 3.45 19 4V21L12 17L5 21V4C5 3.45 5.45 3 6 3Z"></path></svg>
           <span class="blog-save-label">${saved ? 'Saved' : 'Save Article'}</span>
         </button>
-        <a href="/blog-editor" class="button ghost">Write Your Own Blog →</a>
+        <button type="button" class="button ghost blog-write-btn">Write Your Own Blog →</button>
       </div>
     </div>
 
     <div class="article-cover-wrap">
       <img class="article-cover" src="${escapeHtml(coverSrc)}" alt="${escapeHtml(entity.title || 'Article cover')}">
     </div>`;
+
+  // Write blog button — requires login
+  block.querySelector('.blog-write-btn').addEventListener('click', () => {
+    if (!Storage.isLoggedIn()) {
+      window.location.href = '/sign-in?redirect=/blog-editor';
+      return;
+    }
+    window.location.href = '/blog-editor';
+  });
 
   // Save button logic
   const saveBtn = block.querySelector('.blog-save-btn');
