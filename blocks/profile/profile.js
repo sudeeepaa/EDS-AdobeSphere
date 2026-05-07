@@ -348,15 +348,19 @@ function renderUser(block, cfg) {
 ═══════════════════════════════════ */
 
 async function renderCreator(block, cfg) {
-  const { Utils } = window.AdobeSphere;
+  const { Utils, Storage } = window.AdobeSphere;
   const id = new URLSearchParams(window.location.search).get('id')
     || decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '');
+
+  let creator = null;
   const creators = await Utils.fetchData('creators');
-  const creator = Array.isArray(creators) && creators.find((c) => c.id === id);
+  if (Array.isArray(creators)) creator = creators.find((c) => c.id === id) || null;
+  // Fallback: registered user with a localStorage-backed creator profile
+  if (!creator) creator = Storage.getLocalCreator?.(id) || null;
 
   if (!creator) { block.append(el('p', 'profile-empty', 'Creator not found.')); return; }
 
-  const avatar = Utils.normaliseAsset(creator.avatar, '/icons/user-default.svg');
+  const avatar = Utils.normaliseAsset(creator.avatar, '/assets/images/profiles/default-user.jpg');
   const stats = creator.stats || {};
 
   const wrap = el('div', 'profile-creator');

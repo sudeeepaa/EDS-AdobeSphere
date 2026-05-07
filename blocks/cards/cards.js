@@ -184,8 +184,9 @@ function buildBlogCard(blog, opts) {
       <h3 class="card-title">${escapeHtml(blog.title || 'Untitled Article')}</h3>
       <div class="card-meta">
         <span class="card-author">
-          <img src="${escapeHtml(avatar)}" alt="${escapeHtml(author.name || 'Author')}">
-          ${escapeHtml(author.name || 'Author')}
+          ${author.id
+    ? `<a href="/creator-profile/${escapeHtml(encodeURIComponent(author.id))}" class="card-author-link" aria-label="View author profile"><img src="${escapeHtml(avatar)}" alt="${escapeHtml(author.name || 'Author')}">${escapeHtml(author.name || 'Author')}</a>`
+    : `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(author.name || 'Author')}">${escapeHtml(author.name || 'Author')}`}
         </span>
         <span>${escapeHtml(date)}</span>
       </div>
@@ -367,16 +368,18 @@ async function hydrateFromData(block, type, cfg, opts) {
     const [refSource, refField] = cfg.ids_from.split('.').map((s) => s.trim());
     const refFile = refSource === 'events' ? 'campaigns' : refSource;
     const refData = await Utils.fetchData(refFile);
-    if (Array.isArray(refData)) {
-      const urlId = (() => {
-        const q = new URLSearchParams(window.location.search).get('id');
-        if (q) return q;
-        const seg = window.location.pathname.split('/').filter(Boolean);
-        return seg.length >= 2 ? decodeURIComponent(seg[seg.length - 1]) : null;
-      })();
-      const refEntity = urlId && refData.find((it) => it.id === urlId);
-      if (refEntity && Array.isArray(refEntity[refField])) idsFromList = refEntity[refField];
+    const urlId = (() => {
+      const q = new URLSearchParams(window.location.search).get('id');
+      if (q) return q;
+      const seg = window.location.pathname.split('/').filter(Boolean);
+      return seg.length >= 2 ? decodeURIComponent(seg[seg.length - 1]) : null;
+    })();
+    let refEntity = urlId && Array.isArray(refData) && refData.find((it) => it.id === urlId);
+    // Fallback: registered user creator profile backed by localStorage
+    if (!refEntity && refSource === 'creators' && urlId) {
+      refEntity = window.AdobeSphere.Storage.getLocalCreator?.(urlId) || null;
     }
+    if (refEntity && Array.isArray(refEntity[refField])) idsFromList = refEntity[refField];
   }
 
   // Pre-filter with Explicit IDs or `Filter | featured=true`
@@ -384,7 +387,26 @@ async function hydrateFromData(block, type, cfg, opts) {
     const ids = cfg.ids.split(',').map((s) => s.trim()).filter(Boolean);
     items = ids.map((id) => items.find((it) => it.id === id)).filter(Boolean);
   } else if (idsFromList) {
-    items = idsFromList.map((id) => items.find((it) => it.id === id)).filter(Boolean);
+    // Try matching from remote data first; for remaining IDs check localStorage user blogs
+    const remoteItems = idsFromList.map((id) => items.find((it) => it.id === id)).filter(Boolean);
+    if (type === 'blogs') {
+      const foundIds = new Set(remoteItems.map((b) => b.id));
+      const missing = idsFromList.filter((id) => !foundIds.has(id));
+      if (missing.length) {
+        const urlId2 = (() => {
+          const q = new URLSearchParams(window.location.search).get('id');
+          if (q) return q;
+          const seg = window.location.pathname.split('/').filter(Boolean);
+          return seg.length >= 2 ? decodeURIComponent(seg[seg.length - 1]) : null;
+        })();
+        const localBlogs = window.AdobeSphere.Storage.getLocalUserBlogs?.(urlId2) || [];
+        missing.forEach((id) => {
+          const lb = localBlogs.find((b) => b.id === id);
+          if (lb) remoteItems.push(lb);
+        });
+      }
+    }
+    items = remoteItems;
   } else {
     items = applyFilter(items, cfg.filter);
   }

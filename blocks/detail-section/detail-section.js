@@ -43,8 +43,15 @@ function getEntityId() {
 async function loadEntity(source, id) {
   const file = source === 'events' ? 'campaigns' : source;
   const data = await window.AdobeSphere.Utils.fetchData(file);
-  if (!Array.isArray(data)) return null;
-  return data.find((it) => it.id === id) || null;
+  if (Array.isArray(data)) {
+    const found = data.find((it) => it.id === id);
+    if (found) return found;
+  }
+  // Fallback: registered users have a creator profile backed by localStorage
+  if (source === 'creators') {
+    return window.AdobeSphere.Storage.getLocalCreator?.(id) || null;
+  }
+  return null;
 }
 
 /* ─── overview ─── */
