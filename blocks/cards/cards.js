@@ -569,58 +569,193 @@ function hydrateStatic(block, opts) {
 
 /* ─────────── user-profile card hydrators ─────────── */
 
+const USER_EMPTY = {
+  'user-blogs': "You haven't published any blogs yet.",
+  'saved-blogs': "You haven't saved any blogs yet.",
+  'saved-events': "You haven't saved any events yet.",
+  'registered-events': "You haven't registered for any events yet.",
+};
+
+/* Appends / replaces the .card-actions slot inside a card body. */
+function getOrCreateActions(article) {
+  const body = article.querySelector('.card-body');
+  if (!body) return null;
+  let actions = article.querySelector('.card-actions');
+  if (!actions) {
+    actions = document.createElement('div');
+    actions.className = 'card-actions';
+    body.append(actions);
+  } else {
+    actions.textContent = '';
+  }
+  return actions;
+}
+
+function makeBtn(cls, text) {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = cls;
+  btn.textContent = text;
+  return btn;
+}
+
+function makeLink(cls, href, text) {
+  const a = document.createElement('a');
+  a.className = cls;
+  a.href = href;
+  a.textContent = text;
+  return a;
+}
+
 async function hydrateUserSource(block, source, cfg, opts) {
   const { Storage, Utils } = window.AdobeSphere;
-  const grid = document.createElement('div');
-  grid.className = `cards-grid grid-${source.replace('saved-', '').replace('registered-', '').replace('user-', '')}`;
-  if (opts.horizontal) grid.classList.add('horizontal');
 
+  if (!Storage.isLoggedIn()) {
+    const p = document.createElement('p');
+    p.className = 'cards-empty';
+    p.textContent = 'Please sign in to view this section.';
+    block.append(p);
+    return;
+  }
+
+  const gridClass = { 'user-blogs': 'blogs', 'saved-blogs': 'blogs', 'saved-events': 'events', 'registered-events': 'events' }[source] || 'items';
+  const grid = document.createElement('div');
+  grid.className = `cards-grid grid-${gridClass}`;
+  if (opts.horizontal) grid.classList.add('horizontal');
+  block.append(grid);
+
+  const emptyMsg = cfg.empty || USER_EMPTY[source] || 'Nothing here yet.';
+
+  function showEmpty() {
+    grid.textContent = '';
+    const p = document.createElement('p');
+    p.className = 'cards-empty';
+    p.textContent = emptyMsg;
+    grid.append(p);
+  }
+
+  function checkEmpty() {
+    if (!grid.querySelector('.card')) showEmpty();
+  }
+
+  /* ── Published blogs ── */
   if (source === 'user-blogs') {
     const blogs = Storage.getUserBlogs();
-    if (!blogs.length) {
-      grid.innerHTML = `<p class="cards-empty">${escapeHtml(cfg.empty || 'You haven\'t published any blogs yet.')}</p>`;
-    } else {
-      blogs.forEach((b) => grid.append(buildBlogCard(b, opts)));
-    }
-    block.append(grid);
+    if (!blogs.length) { showEmpty(); return; }
+
+    blogs.forEach((b) => {
+      const article = buildBlogCard(b, { withSave: false, withActions: false });
+      const actions = getOrCreateActions(article);
+      if (actions) {
+        const editLink = makeLink('button ghost', `/blog-editor?id=${encodeURIComponent(b.id)}`, 'Edit');
+        const delBtn = makeBtn('button danger', 'Delete');
+        delBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          // eslint-disable-next-line no-restricted-globals, no-alert
+          if (confirm('Delete this blog? This cannot be undone.')) {
+            Storage.deleteUserBlog(b.id);
+            Utils.toast('Blog deleted.', 'success');
+            article.remove();
+            checkEmpty();
+          }
+        });
+        actions.append(editLink, delBtn);
+      }
+      grid.append(article);
+    });
     return;
   }
 
-  const savedType = source === 'saved-events' ? 'events'
-    : source === 'saved-blogs' ? 'blogs'
-      : source === 'registered-events' ? 'events' : null;
+  /* ── Saved blogs ── */
+  if (source === 'saved-blogs') {
+    const ids = Storage.getSaved('blogs');
+    if (!ids.length) { showEmpty(); return; }
 
-  if (!savedType) {
-    block.innerHTML = `<p class="cards-empty">Unknown user source: ${escapeHtml(source)}</p>`;
+    const data = await Utils.fetchData('blogs').catch(() => []);
+    ids.forEach((id) => {
+      const found = data.find((b) => String(b.id) === String(id))
+        || Storage.getUserBlogs().find((b) => String(b.id) === String(id));
+      if (!found) return;
+      const article = buildBlogCard(found, { withSave: false, withActions: false });
+      const actions = getOrCreateActions(article);
+      if (actions) {
+        const readLink = makeLink('button ghost', `/blog/${encodeURIComponent(id)}`, 'Read');
+        const unsaveBtn = makeBtn('button ghost', 'Unsave');
+        unsaveBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          Storage.toggleSaved('blogs', String(id));
+          Utils.toast('Removed from saved.', 'success');
+          article.remove();
+          checkEmpty();
+        });
+        actions.append(readLink, unsaveBtn);
+      }
+      grid.append(article);
+    });
+    if (!grid.querySelector('.card')) showEmpty();
     return;
   }
 
-  const dataFile = savedType === 'events' ? 'campaigns' : savedType;
-  const data = await Utils.fetchData(dataFile);
-  if (!Array.isArray(data)) {
-    block.innerHTML = `<p class="cards-empty">${escapeHtml(cfg.empty || 'Could not load data.')}</p>`;
+  /* ── Saved events ── */
+  if (source === 'saved-events') {
+    const ids = Storage.getSaved('events');
+    if (!ids.length) { showEmpty(); return; }
+
+    const data = await Utils.fetchData('campaigns').catch(() => []);
+    ids.forEach((id) => {
+      const found = data.find((e) => String(e.id) === String(id));
+      if (!found) return;
+      const article = buildEventCard(found, { withSave: false, withActions: false });
+      const actions = getOrCreateActions(article);
+      if (actions) {
+        const viewLink = makeLink('button ghost', `/events/${encodeURIComponent(id)}`, 'View Event');
+        const unsaveBtn = makeBtn('button ghost', 'Unsave');
+        unsaveBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          Storage.toggleSaved('events', String(id));
+          Utils.toast('Event removed from saved.', 'success');
+          article.remove();
+          checkEmpty();
+        });
+        actions.append(viewLink, unsaveBtn);
+      }
+      grid.append(article);
+    });
+    if (!grid.querySelector('.card')) showEmpty();
     return;
   }
 
-  let ids;
+  /* ── Registered events ── */
   if (source === 'registered-events') {
-    ids = Storage.getRegistrations().map((r) => r.eventId);
-  } else {
-    ids = Storage.getSaved(savedType);
-  }
+    const regs = Storage.getRegistrations();
+    if (!regs.length) { showEmpty(); return; }
 
-  const items = ids.map((id) => data.find((it) => it.id === id)).filter(Boolean);
-
-  if (!items.length) {
-    const msg = source === 'registered-events'
-      ? 'You haven\'t registered for any events yet.'
-      : `You haven't saved any ${savedType} yet.`;
-    grid.innerHTML = `<p class="cards-empty">${escapeHtml(cfg.empty || msg)}</p>`;
-  } else {
-    const builder = savedType === 'events' ? buildEventCard : buildBlogCard;
-    items.forEach((item) => grid.append(builder(item, opts)));
+    const data = await Utils.fetchData('campaigns').catch(() => []);
+    regs.forEach((reg) => {
+      const found = data.find((e) => String(e.id) === String(reg.eventId));
+      if (!found) return;
+      const article = buildEventCard(found, { withSave: false, withActions: false });
+      const actions = getOrCreateActions(article);
+      if (actions) {
+        const viewLink = makeLink('button ghost', `/events/${encodeURIComponent(reg.eventId)}`, 'View Event');
+        const cancelBtn = makeBtn('button ghost', 'Cancel Registration');
+        cancelBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          Storage.cancelRegistration(reg.eventId);
+          Utils.toast('Registration cancelled.', 'success');
+          article.remove();
+          checkEmpty();
+        });
+        actions.append(viewLink, cancelBtn);
+      }
+      grid.append(article);
+    });
+    if (!grid.querySelector('.card')) showEmpty();
   }
-  block.append(grid);
 }
 
 export default async function decorate(block) {
