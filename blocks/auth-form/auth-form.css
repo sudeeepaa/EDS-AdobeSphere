@@ -158,10 +158,18 @@
 }
 
 .auth-form .form-strength-tip {
-  margin-top: 28px;
+  /* 22px = 8px (label offset from bar) + 14px clearance above tip */
+  margin-top: 22px;
   font-size: 0.78rem;
   color: var(--text-secondary);
   line-height: 1.6;
+  min-height: 1.2em;
+}
+
+/* ── textarea ───────────────────────────────────────────── */
+.auth-form textarea.form-input {
+  resize: vertical;
+  min-height: 88px;
 }
 
 /* ── bio counter ────────────────────────────────────────── */
@@ -268,18 +276,41 @@
   margin-top: 24px;
 }
 
+/* ── focus-visible accessibility ────────────────────────── */
+.auth-form .form-input:focus-visible {
+  outline: 2px solid var(--red-primary);
+  outline-offset: 1px;
+}
+
+.auth-form .form-toggle-password:focus-visible,
+.auth-form .auth-submit:focus-visible,
+.auth-form .avatar-change-btn:focus-visible {
+  outline: 2px solid var(--red-primary);
+  outline-offset: 2px;
+}
+
 /* ── responsive ─────────────────────────────────────────── */
 @media (max-width: 599px) {
   .auth-form .auth-wrapper {
-    margin: 24px auto;
-    padding: 24px 20px;
+    margin: 16px auto;
+    padding: 24px 16px;
+    border-radius: var(--radius-md);
   }
 
   .auth-form .auth-wordmark {
-    font-size: 1.8rem;
+    font-size: 1.7rem;
   }
 
   .auth-form .auth-header h1 {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
+  }
+
+  .auth-form .auth-header {
+    margin-bottom: 20px;
+  }
+
+  .auth-form .avatar-preview-wrap {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

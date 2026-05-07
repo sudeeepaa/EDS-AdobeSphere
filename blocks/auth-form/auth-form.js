@@ -28,7 +28,7 @@
  *   Placeholder LinkedIn    | https://linkedin.com/in/yourprofile
  *   Label Avatar            | Profile Picture (optional)
  *   Submit                  | Create Account
- *   Help                    | [rich text] Already have an account? Sign In → (link to /sign-in)
+ *   Help                    | [rich text] Already have an account? Sign In → (link to /login)
  *   After                   | /user-profile
  *
  * JS only handles interaction — all visible text and links come from DA.live.
@@ -47,8 +47,13 @@ function readConfig(block) {
     const key = row.children[0].textContent.trim().toLowerCase().replace(/\s+/g, '-');
     const cell = row.children[1];
     cfg[key] = cell.textContent.trim();
-    // Preserve the authored DOM node for rich-text rows (Help contains a link).
-    if (key === 'help') cfg['help-cell'] = cell;
+    if (key === 'help') {
+      // Store cell reference AND extract the authored link href now, before buildHelpLine
+      // moves the child nodes away. getAttribute gives the raw relative path (/login),
+      // whereas .href gives the absolute URL — we want the relative form.
+      cfg['help-cell'] = cell;
+      cfg['signin-href'] = cell.querySelector('a')?.getAttribute('href') || '/login';
+    }
     row.remove();
   });
   return cfg;
@@ -129,9 +134,11 @@ function buildHelpLine(cfg) {
   const p = el('p', 'auth-help');
   const cell = cfg['help-cell'];
   if (cell) {
-    // Unwrap the EDS-generated div wrapper if present, then move authored child nodes.
-    const source = cell.firstElementChild?.tagName === 'DIV' ? cell.firstElementChild : cell;
-    while (source.firstChild) p.append(source.firstChild);
+    // EDS cell structure: <div(cell)> → <p> → [text nodes + <a>]
+    // We want the inline children of the authored <p>, not the <p> itself
+    // (nesting a <p> inside our <p> is invalid HTML).
+    const authored = cell.querySelector('p') || cell;
+    while (authored.firstChild) p.append(authored.firstChild);
   }
   return p;
 }
@@ -522,7 +529,7 @@ function wireSignup(refs, cfg) {
       })();
       if (users[email]) {
         setFieldErr(form, 'af-email', 'Email already in use.');
-        showErr('An account with this email already exists.', 'Sign in instead →', '/sign-in');
+        showErr('An account with this email already exists.', 'Sign in instead →', cfg['signin-href'] || '/login');
         ok = false;
       }
     }
