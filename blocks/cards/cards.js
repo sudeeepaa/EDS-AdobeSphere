@@ -710,7 +710,6 @@ async function hydrateUserSource(block, source, cfg, opts) {
       const article = buildEventCard(found, { withSave: false, withActions: false });
       const actions = getOrCreateActions(article);
       if (actions) {
-        const viewLink = makeLink('button ghost', `/events/${encodeURIComponent(id)}`, 'View Event');
         const unsaveBtn = makeBtn('button ghost', 'Unsave');
         unsaveBtn.addEventListener('click', (e) => {
           e.preventDefault();
@@ -720,7 +719,7 @@ async function hydrateUserSource(block, source, cfg, opts) {
           article.remove();
           checkEmpty();
         });
-        actions.append(viewLink, unsaveBtn);
+        actions.append(unsaveBtn);
       }
       grid.append(article);
     });
@@ -740,7 +739,6 @@ async function hydrateUserSource(block, source, cfg, opts) {
       const article = buildEventCard(found, { withSave: false, withActions: false });
       const actions = getOrCreateActions(article);
       if (actions) {
-        const viewLink = makeLink('button ghost', `/events/${encodeURIComponent(reg.eventId)}`, 'View Event');
         const cancelBtn = makeBtn('button ghost', 'Cancel Registration');
         cancelBtn.addEventListener('click', (e) => {
           e.preventDefault();
@@ -750,7 +748,7 @@ async function hydrateUserSource(block, source, cfg, opts) {
           article.remove();
           checkEmpty();
         });
-        actions.append(viewLink, cancelBtn);
+        actions.append(cancelBtn);
       }
       grid.append(article);
     });
