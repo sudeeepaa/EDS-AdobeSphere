@@ -31,54 +31,6 @@
   text-align: center;
 }
 
-/* ─── item cards (published / saved / registrations) ─── */
-
-.profile .profile-blog-card,
-.profile .profile-saved-card,
-.profile .profile-reg-card {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 14px 16px;
-  background: var(--white);
-  border: 1px solid var(--neutral-light);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-}
-
-.profile .profile-card-title {
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-.profile .profile-card-meta {
-  margin: 0;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.profile .profile-card-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
-
-.profile .profile-card-actions .button {
-  padding: 6px 14px;
-  font-size: 0.82rem;
-}
-
-/* list variants: cards stack vertically */
-.profile.published,
-.profile.saved-blogs,
-.profile.saved-events,
-.profile.registrations {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
 
 /* ─── default variant — profile card ─── */
 
