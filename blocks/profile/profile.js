@@ -113,14 +113,25 @@ function cardActions(...btns) {
    DEFAULT — profile card
 ═══════════════════════════════════ */
 
+function fieldGroup(labelText, inputEl) {
+  const group = el('div', 'profile-field-group');
+  if (labelText) {
+    const lbl = el('label', 'profile-field-label', labelText);
+    lbl.htmlFor = inputEl.id || '';
+    group.append(lbl);
+  }
+  group.append(inputEl);
+  return group;
+}
+
 function renderUser(block, cfg) {
-  const { Storage } = window.AdobeSphere;
+  const { Storage, Utils } = window.AdobeSphere;
 
   if (!Storage.isLoggedIn()) { showNotLoggedIn(block, cfg); return; }
 
   const user = Storage.getCurrentUser() || {};
 
-  /* avatar */
+  /* ── avatar ── */
   const avatarWrap = el('div', 'profile-avatar-wrap');
   const avatarImg = el('img', 'profile-avatar');
   avatarImg.src = user.avatarSrc || user.avatar || '/icons/user-default.svg';
@@ -134,71 +145,96 @@ function renderUser(block, cfg) {
   avatarInput.hidden = true;
   avatarWrap.append(avatarImg, avatarOverlay, avatarInput);
 
-  /* text fields */
+  /* ── always-editable fields ── */
   const fields = el('div', 'profile-fields');
 
-  const nameDisplay = el('h1', 'profile-name-display', user.name || '');
-  const nameInput = el('input', 'form-input profile-name-input');
+  /* name — h1 display that updates on save, plus editable input below */
+  const nameHeading = el('h1', 'profile-name-display', user.name || '');
+
+  const nameInput = el('input', 'form-input');
+  nameInput.id = 'profile-name';
   nameInput.type = 'text';
   nameInput.value = user.name || '';
   nameInput.placeholder = cfg['name-label'] || 'Full Name';
-  nameInput.hidden = true;
 
-  const emailDisplay = el('p', 'profile-email', user.email || '');
+  /* email — read-only; just displays the account email */
+  const emailEl = el('p', 'profile-email', user.email || '');
+  const emailGroup = el('div', 'profile-field-group');
+  if (cfg['email-label']) emailGroup.append(el('label', 'profile-field-label', cfg['email-label']));
+  emailGroup.append(emailEl);
 
-  const desigDisplay = el('p', 'profile-designation-display', user.designation || '');
-  const desigInput = el('input', 'form-input profile-designation-input');
+  const desigInput = el('input', 'form-input');
+  desigInput.id = 'profile-designation';
   desigInput.type = 'text';
   desigInput.value = user.designation || '';
   desigInput.placeholder = cfg['designation-label'] || 'Role / Designation';
-  desigInput.hidden = true;
 
-  const bioDisplay = el('p', 'profile-bio-display', user.bio || '');
-  const bioInput = el('textarea', 'form-input profile-bio-input');
+  const bioInput = el('textarea', 'form-input');
+  bioInput.id = 'profile-bio';
   bioInput.rows = 4;
   bioInput.value = user.bio || '';
   bioInput.placeholder = cfg['bio-label'] || 'About / Bio';
-  bioInput.hidden = true;
 
-  const socialsWrap = el('div', 'profile-socials');
-  const linkedinLbl = el('label', '', cfg['linkedin-label'] || 'LinkedIn (optional)');
-  linkedinLbl.htmlFor = 'profile-linkedin';
   const linkedinInput = el('input', 'form-input');
-  linkedinInput.type = 'url';
   linkedinInput.id = 'profile-linkedin';
-  linkedinInput.placeholder = 'https://linkedin.com/in/you';
+  linkedinInput.type = 'url';
   linkedinInput.value = (user.socials && user.socials.linkedin) || '';
-  socialsWrap.append(linkedinLbl, linkedinInput);
+  linkedinInput.placeholder = 'https://linkedin.com/in/you';
 
+  /* ── action buttons ── */
   const actionsWrap = el('div', 'profile-actions');
-  const editBtn = el('button', 'button ghost profile-edit', cfg['edit-button'] || 'Edit Profile');
-  editBtn.type = 'button';
-  const saveBtn = el('button', 'button primary profile-save', cfg['save-button'] || 'Save Changes');
-  saveBtn.type = 'button';
-  saveBtn.hidden = true;
-  const cancelBtn = el('button', 'button ghost profile-cancel', cfg['cancel-button'] || 'Cancel');
-  cancelBtn.type = 'button';
-  cancelBtn.hidden = true;
-  actionsWrap.append(editBtn, saveBtn, cancelBtn);
 
-  const dangerWrap = el('div', 'profile-danger');
-  const deleteBtn = el('button', 'button danger', cfg['delete-account-button'] || 'Delete Account');
-  deleteBtn.type = 'button';
-  dangerWrap.append(deleteBtn);
+  const saveBtn = el('button', 'button primary', cfg['save-cta'] || 'Save Changes');
+  saveBtn.type = 'button';
+  actionsWrap.append(saveBtn);
+
+  /* Logout — only rendered when authored */
+  if (cfg['logout-cta']) {
+    const logoutBtn = el('button', 'button ghost', cfg['logout-cta']);
+    logoutBtn.type = 'button';
+    logoutBtn.addEventListener('click', () => {
+      Storage.clearSession();
+      Utils.toast('Signed out.', 'success');
+      setTimeout(() => { window.location.href = '/'; }, 500);
+    });
+    actionsWrap.append(logoutBtn);
+  }
 
   fields.append(
-    nameDisplay, nameInput,
-    emailDisplay,
-    desigDisplay, desigInput,
-    bioDisplay, bioInput,
-    socialsWrap, actionsWrap, dangerWrap,
+    nameHeading,
+    fieldGroup(cfg['name-label'], nameInput),
+    emailGroup,
+    fieldGroup(cfg['designation-label'], desigInput),
+    fieldGroup(cfg['bio-label'], bioInput),
+    fieldGroup(cfg['linkedin-label'], linkedinInput),
+    actionsWrap,
   );
+
+  /* Delete Account — only rendered when authored */
+  if (cfg['delete-account-button']) {
+    const dangerWrap = el('div', 'profile-danger');
+    const deleteBtn = el('button', 'button danger', cfg['delete-account-button']);
+    deleteBtn.type = 'button';
+    deleteBtn.addEventListener('click', () => {
+      openConfirm(
+        cfg['delete-confirm'] || 'Are you sure you want to delete your account? This cannot be undone.',
+        cfg['delete-account-button'],
+        () => {
+          Storage.clearSession();
+          Utils.toast('Account deleted.', 'success');
+          setTimeout(() => { window.location.href = '/'; }, 800);
+        },
+      );
+    });
+    dangerWrap.append(deleteBtn);
+    fields.append(dangerWrap);
+  }
 
   const card = el('div', 'profile-user');
   card.append(avatarWrap, fields);
   block.append(card);
 
-  /* — wiring — */
+  /* ── wiring ── */
 
   avatarInput.addEventListener('change', () => {
     const f = avatarInput.files && avatarInput.files[0];
@@ -208,27 +244,9 @@ function renderUser(block, cfg) {
       const src = String(reader.result);
       avatarImg.src = src;
       Storage.upsertUser({ ...Storage.getCurrentUser(), avatarSrc: src });
-      window.AdobeSphere.Utils.toast('Avatar updated.', 'success');
+      Utils.toast('Avatar updated.', 'success');
     };
     reader.readAsDataURL(f);
-  });
-
-  function setEditing(on) {
-    [nameDisplay, desigDisplay, bioDisplay].forEach((e) => { e.hidden = on; });
-    [nameInput, desigInput, bioInput].forEach((e) => { e.hidden = !on; });
-    editBtn.hidden = on;
-    saveBtn.hidden = !on;
-    cancelBtn.hidden = !on;
-  }
-
-  editBtn.addEventListener('click', () => setEditing(true));
-
-  cancelBtn.addEventListener('click', () => {
-    const cur = Storage.getCurrentUser() || {};
-    nameInput.value = cur.name || '';
-    desigInput.value = cur.designation || '';
-    bioInput.value = cur.bio || '';
-    setEditing(false);
   });
 
   saveBtn.addEventListener('click', () => {
@@ -242,23 +260,8 @@ function renderUser(block, cfg) {
     };
     Storage.upsertUser(updates);
     Storage.setSession({ email: cur.email, name: updates.name });
-    nameDisplay.textContent = updates.name;
-    desigDisplay.textContent = updates.designation;
-    bioDisplay.textContent = updates.bio;
-    setEditing(false);
-    window.AdobeSphere.Utils.toast('Profile saved.', 'success');
-  });
-
-  deleteBtn.addEventListener('click', () => {
-    openConfirm(
-      cfg['delete-confirm'] || 'Are you sure you want to delete your account? This cannot be undone.',
-      cfg['delete-account-button'] || 'Delete Account',
-      () => {
-        Storage.clearSession();
-        window.AdobeSphere.Utils.toast('Account deleted.', 'success');
-        setTimeout(() => { window.location.href = '/'; }, 800);
-      },
-    );
+    nameHeading.textContent = updates.name;
+    Utils.toast('Profile saved.', 'success');
   });
 }
 
