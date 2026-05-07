@@ -185,6 +185,38 @@ const Storage = {
     } catch { return 0; }
   },
 
+  // Build a creator-shaped object for a registered user from their stored profile.
+  // id = the user's email (used as their creator profile URL slug).
+  getLocalCreator(id) {
+    const users = readJSON(STORAGE_KEYS.USERS, {});
+    const user = users[id];
+    if (!user) return null;
+    const userBlogs = readJSON(STORAGE_KEYS.USER_BLOGS, {})[id] || [];
+    return {
+      id,
+      name: user.name || '',
+      email: user.email || id,
+      designation: user.designation || '',
+      bio: user.bio || '',
+      fullBio: user.bio || '',
+      avatar: user.avatarSrc || user.avatar || '/assets/images/profiles/default-user.jpg',
+      socials: user.socials || {},
+      stats: {
+        blogsPublished: userBlogs.length,
+        eventsHosted: 0,
+        testimonialsGiven: 0,
+      },
+      blogIds: userBlogs.map((b) => b.id),
+      eventIds: [],
+      featuredQuote: '',
+    };
+  },
+
+  // Returns user-authored blogs for a given email (accessible on their own device).
+  getLocalUserBlogs(email) {
+    return readJSON(STORAGE_KEYS.USER_BLOGS, {})[email] || [];
+  },
+
   // Convenience wrappers for blog save/unsave (delegates to generic toggleSaved).
   isBlogSaved(id) { return this.isSaved('blogs', String(id)); },
   saveBlog(id) { if (!this.isBlogSaved(id)) this.toggleSaved('blogs', String(id)); },
