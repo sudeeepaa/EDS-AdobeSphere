@@ -1,0 +1,285 @@
+/*
+ * AdobeSphere — auth-form block.
+ * Self-contained styles for signin and signup variants.
+ * Shared utilities (.form-input, .form-error) live in styles/styles.css.
+ */
+
+/* ── wrapper card ───────────────────────────────────────── */
+.auth-form .auth-wrapper {
+  margin: 60px auto;
+  padding: 40px;
+  background: var(--white);
+  border: 1px solid var(--neutral-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.auth-form.signin .auth-wrapper {
+  max-width: 520px;
+}
+
+.auth-form.signup .auth-wrapper {
+  max-width: 640px;
+  padding: 36px;
+}
+
+/* ── brand header ───────────────────────────────────────── */
+.auth-form .auth-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.auth-form .auth-wordmark {
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  letter-spacing: 0.02em;
+}
+
+.auth-form .auth-wordmark .adobe {
+  color: var(--red-primary);
+}
+
+.auth-form .auth-header h1 {
+  margin: 0 0 4px;
+  font-size: 1.6rem;
+}
+
+.auth-form.signup .auth-header h1 {
+  font-size: 1.4rem;
+}
+
+.auth-form .auth-subheading {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ── form layout ────────────────────────────────────────── */
+.auth-form .auth-form-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.auth-form .form-group {
+  margin-bottom: 16px;
+}
+
+.auth-form .auth-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ── error box ──────────────────────────────────────────── */
+.auth-form .auth-error-box {
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  margin-bottom: 16px;
+}
+
+.auth-form .auth-error-box a {
+  color: #b91c1c;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* per-field error spans */
+.auth-form [data-field] {
+  display: block;
+  min-height: 16px;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: #dc2626;
+}
+
+/* ── password field ─────────────────────────────────────── */
+.auth-form .form-password-group {
+  position: relative;
+}
+
+.auth-form .password-input-wrap {
+  position: relative;
+}
+
+.auth-form .password-input-wrap .form-input {
+  padding-right: 48px;
+}
+
+.auth-form .form-toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+
+.auth-form .form-toggle-password:hover {
+  color: var(--red-primary);
+}
+
+/* ── password strength meter ────────────────────────────── */
+.auth-form .form-strength {
+  height: 4px;
+  background: var(--neutral-light);
+  border-radius: var(--radius-full);
+  margin-top: 8px;
+  position: relative;
+  overflow: visible;
+}
+
+.auth-form .form-strength-bar {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  width: 0;
+  transition: width 300ms ease, background 300ms ease;
+}
+
+.auth-form .form-strength-label {
+  font-size: 0.75rem;
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 8px;
+}
+
+.auth-form .form-strength-tip {
+  margin-top: 28px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ── bio counter ────────────────────────────────────────── */
+.auth-form .form-counter {
+  display: block;
+  text-align: right;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ── avatar upload ──────────────────────────────────────── */
+.auth-form .avatar-preview-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.auth-form .auth-avatar-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 2px solid var(--neutral-light);
+}
+
+.auth-form .avatar-change-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--neutral-light);
+  background: var(--white);
+  color: var(--text-primary);
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.auth-form .avatar-change-btn:hover {
+  border-color: var(--red-primary);
+  color: var(--red-primary);
+}
+
+.auth-form .auth-avatar-file {
+  display: none;
+}
+
+/* ── submit button ──────────────────────────────────────── */
+.auth-form .auth-submit {
+  width: 100%;
+  margin-top: 4px;
+}
+
+/* ── help / redirect line ───────────────────────────────── */
+.auth-form .auth-help {
+  margin-top: 18px;
+  font-size: 0.88rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.auth-form .auth-help a {
+  color: var(--red-primary);
+  font-weight: 600;
+}
+
+.auth-form .auth-help a:hover {
+  text-decoration: underline;
+}
+
+/* ── employee modal (signup only) ───────────────────────── */
+.auth-form .modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 50%);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-form .modal-overlay.open {
+  display: flex;
+}
+
+.auth-form .modal-box {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  max-width: 520px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 25%);
+}
+
+.auth-form .modal-box h2 {
+  margin: 0 0 10px;
+}
+
+.auth-form .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+/* ── responsive ─────────────────────────────────────────── */
+@media (max-width: 599px) {
+  .auth-form .auth-wrapper {
+    margin: 24px auto;
+    padding: 24px 20px;
+  }
+
+  .auth-form .auth-wordmark {
+    font-size: 1.8rem;
+  }
+
+  .auth-form .auth-header h1 {
+    font-size: 1.3rem;
+  }
+}
