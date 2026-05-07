@@ -358,6 +358,34 @@ a.detail-person-link:hover h3 {
   gap: 12px;
 }
 
+.detail-section .reach-out-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  border: 1.5px solid var(--neutral-light);
+  border-radius: var(--radius-full);
+  background: var(--white);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: border-color var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.detail-section .reach-out-pill:hover {
+  border-color: var(--red-primary);
+  color: var(--red-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.detail-section .reach-out-icon {
+  display: flex;
+  align-items: center;
+  color: var(--red-primary);
+  flex-shrink: 0;
+}
+
 /* comments */
 .detail-section .detail-comments-composer {
   display: flex;

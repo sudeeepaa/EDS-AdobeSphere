@@ -295,8 +295,101 @@ function hydrateCompactFromEntity(entity, content) {
   }
 }
 
+/* ─── creator variant ─── */
+
+async function renderCreatorVariant(block) {
+  const { Utils, Storage } = window.AdobeSphere;
+
+  // Read all config rows (Id Source, Id, stat labels, etc.).
+  const cfg = {};
+  [...block.children].forEach((row) => {
+    if (row.children.length !== 2) return;
+    const key = row.children[0].textContent.trim().toLowerCase().replace(/\s+/g, '-');
+    cfg[key] = row.children[1].textContent.trim();
+    row.remove();
+  });
+
+  const source = cfg['id-source'] || 'creators';
+  const entityId = cfg['id'] || getUrlId();
+  let entity = null;
+  if (entityId) {
+    try {
+      const file = source === 'events' ? 'campaigns' : source;
+      const data = await Utils.fetchData(file);
+      if (Array.isArray(data)) entity = data.find((c) => c.id === entityId) || null;
+    } catch { /* noop */ }
+    if (!entity && source === 'creators') entity = Storage.getLocalCreator?.(entityId) || null;
+  }
+
+  block.textContent = '';
+  block.classList.add('hero-creator');
+
+  if (!entity) {
+    block.innerHTML = '<p class="hero-creator-empty">Creator not found.</p>';
+    return;
+  }
+
+  if (entity.name) document.title = `${entity.name} — AdobeSphere`;
+
+  const DEFAULT_AVATAR = '/assets/images/profiles/default-user.jpg';
+  const avatar = Utils.normaliseAsset(entity.avatar, DEFAULT_AVATAR);
+  const stats = entity.stats || {};
+
+  const inner = document.createElement('div');
+  inner.className = 'hero-creator-inner';
+
+  // Row 1: avatar + name/designation
+  const heroRow = document.createElement('div');
+  heroRow.className = 'hero-creator-hero';
+
+  const img = document.createElement('img');
+  img.className = 'hero-creator-avatar';
+  img.src = avatar;
+  img.alt = `${entity.name || 'Creator'} avatar`;
+  img.loading = 'eager';
+
+  const textDiv = document.createElement('div');
+  textDiv.className = 'hero-creator-text';
+  const h1 = document.createElement('h1');
+  h1.textContent = entity.name || '';
+  const desig = document.createElement('p');
+  desig.textContent = entity.designation || '';
+  textDiv.append(h1, desig);
+  heroRow.append(img, textDiv);
+
+  // Row 2: stats bar
+  const statItems = [
+    [stats.blogsPublished ?? 0, cfg['stat-blogs'] || 'Blogs Published'],
+    [stats.eventsHosted ?? 0, cfg['stat-events'] || 'Events Hosted'],
+    [stats.testimonialsGiven ?? 0, cfg['stat-testimonials'] || 'Testimonials'],
+  ];
+
+  const ul = document.createElement('ul');
+  ul.className = 'hero-creator-stats';
+  statItems.forEach(([value, label]) => {
+    const li = document.createElement('li');
+    const strong = document.createElement('strong');
+    strong.textContent = String(value);
+    const span = document.createElement('span');
+    span.textContent = label;
+    li.append(strong, span);
+    ul.append(li);
+  });
+
+  inner.append(heroRow, ul);
+  block.append(inner);
+}
+
 export default async function decorate(block) {
   const variants = [...block.classList].filter((c) => c !== 'hero' && c !== 'block');
+  const isCreator = variants.includes('creator');
+
+  // Creator variant: fully dynamic, returns early.
+  if (isCreator) {
+    await renderCreatorVariant(block);
+    return;
+  }
+
   const isSearch = variants.includes('search');
   const isMedia = variants.includes('media');
   const isGradient = variants.includes('gradient');

@@ -231,7 +231,8 @@ main .section.no-pad-bottom {
 
 /* utility: section heading with red underline (used everywhere) */
 .section-heading,
-main h2.section-heading {
+main h2.section-heading,
+main .section .default-content-wrapper h2 {
   display: inline-block;
   margin-bottom: 28px;
   padding-bottom: 12px;
