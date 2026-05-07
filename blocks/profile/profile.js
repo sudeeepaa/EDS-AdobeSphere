@@ -53,21 +53,28 @@ function readConfig(block) {
 
 function compressAvatar(file, callback) {
   const MAX = 256;
-  const url = URL.createObjectURL(file);
-  const img = new Image();
-  img.onload = () => {
-    const scale = Math.min(1, MAX / Math.max(img.width, img.height));
-    const w = Math.round(img.width * scale);
-    const h = Math.round(img.height * scale);
-    const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
-    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-    URL.revokeObjectURL(url);
-    callback(canvas.toDataURL('image/jpeg', 0.85));
+  const reader = new FileReader();
+  reader.onerror = () => callback(null);
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onerror = () => callback(null);
+    img.onload = () => {
+      try {
+        const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale) || MAX;
+        const h = Math.round(img.height * scale) || MAX;
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        callback(canvas.toDataURL('image/jpeg', 0.85));
+      } catch {
+        callback(null);
+      }
+    };
+    img.src = ev.target.result;
   };
-  img.onerror = () => { URL.revokeObjectURL(url); callback(null); };
-  img.src = url;
+  reader.readAsDataURL(file);
 }
 
 /* ─── DOM helpers ─── */
