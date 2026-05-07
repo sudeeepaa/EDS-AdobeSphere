@@ -53,7 +53,7 @@
   height: 100%;
   object-fit: cover;
   border-radius: var(--radius-full);
-  border: 3px solid var(--neutral-light);
+  border: 3px solid var(--red-primary);
 }
 
 .profile .profile-avatar-overlay {
@@ -133,7 +133,7 @@
   height: 120px;
   border-radius: var(--radius-full);
   object-fit: cover;
-  border: 3px solid var(--neutral-light);
+  border: 3px solid var(--red-primary);
 }
 
 .profile .profile-creator-text h1 {

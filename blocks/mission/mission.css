@@ -30,16 +30,16 @@
 /* ── avatar ─────────────────────────────────────────────────────────── */
 .mission .mission-avatar {
   flex-shrink: 0;
-  width: 120px;
-  height: 120px;
+  width: 160px;
+  height: 160px;
 }
 
 .mission .mission-avatar img {
-  width: 120px;
-  height: 120px;
+  width: 160px;
+  height: 160px;
   border-radius: var(--radius-full);
   object-fit: cover;
-  border: 3px solid var(--neutral-light);
+  border: 3px solid var(--red-primary);
   display: block;
 }
 

@@ -144,7 +144,7 @@
 
 /* blog editor */
 .form .form-blog-editor {
-  max-width: 800px;
+  max-width: 760px;
 }
 
 .form .form-content {
@@ -375,25 +375,33 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
 }
 
-/* ── contact two-column layout ─────────────────────── */
+/* ── contact layout — single column centered (matches reference) ─── */
 .form .contact-layout {
   display: grid;
   grid-template-columns: 1fr;
   gap: 36px;
   align-items: start;
-}
-
-@media (min-width: 900px) {
-  .form .contact-layout {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-  }
+  justify-items: center;
 }
 
 .form .contact-form-wrap {
+  width: 100%;
+  max-width: 680px;
   background: var(--white);
   padding: 32px;
   border-radius: var(--radius-lg);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.09);
+  box-shadow: var(--shadow-md);
+}
+
+.form .faq-section {
+  width: 100%;
+  max-width: 900px;
+}
+
+@media (max-width: 599px) {
+  .form .contact-form-wrap {
+    padding: 24px;
+  }
 }
 
 .form .contact-success {
