@@ -118,9 +118,30 @@
   background: rgba(227, 2, 32, 6%);
 }
 
-/* tools (auth zone) */
+/* tools (search + auth zone) */
 .header .nav-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-shrink: 0;
+}
+
+/* search icon button */
+.header .nav-search {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.header .nav-search:hover {
+  color: var(--red-primary);
+  background: rgba(227, 2, 32, 6%);
 }
 
 .header .nav-auth {

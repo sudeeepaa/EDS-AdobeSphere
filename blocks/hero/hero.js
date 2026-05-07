@@ -376,6 +376,21 @@ export default async function decorate(block) {
   block.append(content);
   if (isVideo) block.append(renderScrollChevron());
 
+  // Auto-focus search when arriving from the navbar search icon.
+  if (isSearch) {
+    const focusInput = () => {
+      const inp = block.querySelector('.hero-search-input');
+      if (inp) inp.focus();
+    };
+    // Cross-page: navbar set sessionStorage before navigating here.
+    if (sessionStorage.getItem('adobesphere:focus-search')) {
+      sessionStorage.removeItem('adobesphere:focus-search');
+      requestAnimationFrame(focusInput);
+    }
+    // Same-page: navbar dispatches a custom event when already on /explore.
+    window.addEventListener('adobesphere:focus-search', focusInput, { once: true });
+  }
+
   if (isVideo) block.classList.add('hero-video');
   if (isSearch) block.classList.add('hero-search-variant');
   if (isMedia) block.classList.add('hero-media');
