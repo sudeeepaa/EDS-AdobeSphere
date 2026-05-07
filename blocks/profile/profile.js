@@ -3,7 +3,8 @@
  *
  * Variants (authored as second column in block header row):
  *
- *   (default)  Profile card — avatar, name, bio, socials, save/logout/delete.
+ *   (default)  Profile card — view mode (avatar/name/designation/email/LinkedIn)
+ *              → Edit Profile → edit mode (form fields + Save/Cancel/Delete).
  *   creator    Read-only creator hero with API-fetched stats.
  *
  * Section headings, intro copy, and CTAs are authored in the DA.live document.
@@ -17,12 +18,14 @@
  *     Name Label            | Full Name
  *     Designation Label     | Role / Designation
  *     Bio Label             | About / Bio
- *     LinkedIn Label        | LinkedIn (optional)
+ *     LinkedIn Label        | LinkedIn
  *     Email Label           | Email
+ *     Edit CTA              | Edit Profile
  *     Save CTA              | Save Changes
+ *     Cancel CTA            | Cancel
  *     Logout CTA            | Sign Out
- *     Delete Account Button | Delete Account
- *     Delete Confirm        | Are you sure? This cannot be undone.
+ *     Delete Account Button | Delete My Account
+ *     Delete Confirm        | Delete your account? All your data will be permanently removed.
  *     Not Logged In         | [rich-text link] Please sign in → /login
  *
  *   creator:
@@ -114,7 +117,7 @@ function renderUser(block, cfg) {
 
   if (!Storage.isLoggedIn()) { showNotLoggedIn(block, cfg); return; }
 
-  const user = Storage.getCurrentUser() || {};
+  let user = Storage.getCurrentUser() || {};
 
   /* ── avatar ── */
   const avatarWrap = el('div', 'profile-avatar-wrap');
@@ -130,50 +133,41 @@ function renderUser(block, cfg) {
   avatarInput.hidden = true;
   avatarWrap.append(avatarImg, avatarOverlay, avatarInput);
 
-  /* ── always-editable fields ── */
-  const fields = el('div', 'profile-fields');
+  /* ── VIEW section ── */
+  const viewSection = el('div', 'profile-view');
+  const nameView = el('h2', 'profile-name-display', user.name || '');
+  const desigView = el('p', 'profile-view-designation', user.designation || '');
+  const emailView = el('p', 'profile-email', user.email || '');
 
-  /* name — h1 display that updates on save, plus editable input below */
-  const nameHeading = el('h1', 'profile-name-display', user.name || '');
+  const viewInfo = el('div', 'profile-view-info');
+  viewInfo.append(nameView, desigView, emailView);
 
-  const nameInput = el('input', 'form-input');
-  nameInput.id = 'profile-name';
-  nameInput.type = 'text';
-  nameInput.value = user.name || '';
-  nameInput.placeholder = cfg['name-label'] || 'Full Name';
+  function refreshLinkedin() {
+    const existing = viewInfo.querySelector('.profile-linkedin-link');
+    const linkedin = (Storage.getCurrentUser() || {}).socials?.linkedin || '';
+    if (linkedin) {
+      if (existing) {
+        existing.href = linkedin;
+        existing.textContent = cfg['linkedin-label'] || 'LinkedIn';
+      } else {
+        const a = el('a', 'profile-linkedin-link', cfg['linkedin-label'] || 'LinkedIn');
+        a.href = linkedin;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        viewInfo.append(a);
+      }
+    } else if (existing) {
+      existing.remove();
+    }
+  }
+  refreshLinkedin();
 
-  /* email — read-only; just displays the account email */
-  const emailEl = el('p', 'profile-email', user.email || '');
-  const emailGroup = el('div', 'profile-field-group');
-  if (cfg['email-label']) emailGroup.append(el('label', 'profile-field-label', cfg['email-label']));
-  emailGroup.append(emailEl);
+  const editProfileBtn = el('button', 'button secondary', cfg['edit-cta'] || 'Edit Profile');
+  editProfileBtn.type = 'button';
 
-  const desigInput = el('input', 'form-input');
-  desigInput.id = 'profile-designation';
-  desigInput.type = 'text';
-  desigInput.value = user.designation || '';
-  desigInput.placeholder = cfg['designation-label'] || 'Role / Designation';
+  const viewActions = el('div', 'profile-actions');
+  viewActions.append(editProfileBtn);
 
-  const bioInput = el('textarea', 'form-input');
-  bioInput.id = 'profile-bio';
-  bioInput.rows = 4;
-  bioInput.value = user.bio || '';
-  bioInput.placeholder = cfg['bio-label'] || 'About / Bio';
-
-  const linkedinInput = el('input', 'form-input');
-  linkedinInput.id = 'profile-linkedin';
-  linkedinInput.type = 'url';
-  linkedinInput.value = (user.socials && user.socials.linkedin) || '';
-  linkedinInput.placeholder = 'https://linkedin.com/in/you';
-
-  /* ── action buttons ── */
-  const actionsWrap = el('div', 'profile-actions');
-
-  const saveBtn = el('button', 'button primary', cfg['save-cta'] || 'Save Changes');
-  saveBtn.type = 'button';
-  actionsWrap.append(saveBtn);
-
-  /* Logout — only rendered when authored */
   if (cfg['logout-cta']) {
     const logoutBtn = el('button', 'button ghost', cfg['logout-cta']);
     logoutBtn.type = 'button';
@@ -182,44 +176,85 @@ function renderUser(block, cfg) {
       Utils.toast('Signed out.', 'success');
       setTimeout(() => { window.location.href = '/'; }, 500);
     });
-    actionsWrap.append(logoutBtn);
+    viewActions.append(logoutBtn);
   }
 
-  fields.append(
-    nameHeading,
+  viewSection.append(viewInfo, viewActions);
+
+  /* ── EDIT section ── */
+  const editSection = el('div', 'profile-edit');
+  editSection.hidden = true;
+
+  const nameInput = el('input', 'form-input');
+  nameInput.id = 'profile-name';
+  nameInput.type = 'text';
+  nameInput.placeholder = cfg['name-label'] || 'Full Name';
+
+  const desigInput = el('input', 'form-input');
+  desigInput.id = 'profile-designation';
+  desigInput.type = 'text';
+  desigInput.placeholder = cfg['designation-label'] || 'Role / Designation';
+
+  const bioInput = el('textarea', 'form-input');
+  bioInput.id = 'profile-bio';
+  bioInput.rows = 4;
+  bioInput.placeholder = cfg['bio-label'] || 'About / Bio';
+
+  const linkedinInput = el('input', 'form-input');
+  linkedinInput.id = 'profile-linkedin';
+  linkedinInput.type = 'url';
+  linkedinInput.placeholder = 'https://linkedin.com/in/you';
+
+  const editActions = el('div', 'profile-actions');
+  const saveBtn = el('button', 'button primary', cfg['save-cta'] || 'Save Changes');
+  saveBtn.type = 'button';
+  const cancelBtn = el('button', 'button ghost', cfg['cancel-cta'] || 'Cancel');
+  cancelBtn.type = 'button';
+  editActions.append(saveBtn, cancelBtn);
+
+  const dangerWrap = el('div', 'profile-danger');
+  const deleteBtn = el('button', 'button danger', cfg['delete-account-button'] || 'Delete My Account');
+  deleteBtn.type = 'button';
+  dangerWrap.append(deleteBtn);
+
+  editSection.append(
     fieldGroup(cfg['name-label'], nameInput),
-    emailGroup,
     fieldGroup(cfg['designation-label'], desigInput),
     fieldGroup(cfg['bio-label'], bioInput),
     fieldGroup(cfg['linkedin-label'], linkedinInput),
-    actionsWrap,
+    editActions,
+    dangerWrap,
   );
 
-  /* Delete Account — only rendered when authored */
-  if (cfg['delete-account-button']) {
-    const dangerWrap = el('div', 'profile-danger');
-    const deleteBtn = el('button', 'button danger', cfg['delete-account-button']);
-    deleteBtn.type = 'button';
-    deleteBtn.addEventListener('click', () => {
-      openConfirm(
-        cfg['delete-confirm'] || 'Are you sure you want to delete your account? This cannot be undone.',
-        cfg['delete-account-button'],
-        () => {
-          Storage.clearSession();
-          Utils.toast('Account deleted.', 'success');
-          setTimeout(() => { window.location.href = '/'; }, 800);
-        },
-      );
-    });
-    dangerWrap.append(deleteBtn);
-    fields.append(dangerWrap);
-  }
+  /* ── assemble card ── */
+  const fields = el('div', 'profile-fields');
+  fields.append(viewSection, editSection);
 
   const card = el('div', 'profile-user');
   card.append(avatarWrap, fields);
   block.append(card);
 
+  /* ── toggle helpers ── */
+  function showView() {
+    card.classList.remove('editing');
+    viewSection.hidden = false;
+    editSection.hidden = true;
+  }
+
+  function showEdit() {
+    user = Storage.getCurrentUser() || {};
+    nameInput.value = user.name || '';
+    desigInput.value = user.designation || '';
+    bioInput.value = user.bio || '';
+    linkedinInput.value = (user.socials && user.socials.linkedin) || '';
+    card.classList.add('editing');
+    viewSection.hidden = true;
+    editSection.hidden = false;
+  }
+
   /* ── wiring ── */
+  editProfileBtn.addEventListener('click', showEdit);
+  cancelBtn.addEventListener('click', showView);
 
   avatarInput.addEventListener('change', () => {
     const f = avatarInput.files && avatarInput.files[0];
@@ -245,8 +280,35 @@ function renderUser(block, cfg) {
     };
     Storage.upsertUser(updates);
     Storage.setSession({ email: cur.email, name: updates.name });
-    nameHeading.textContent = updates.name;
+    nameView.textContent = updates.name;
+    desigView.textContent = updates.designation;
+    refreshLinkedin();
     Utils.toast('Profile saved.', 'success');
+    showView();
+  });
+
+  deleteBtn.addEventListener('click', () => {
+    openConfirm(
+      cfg['delete-confirm'] || 'Delete your account? All your data will be permanently removed.',
+      cfg['delete-account-button'] || 'Delete My Account',
+      () => {
+        const email = (Storage.getSession() || {}).email;
+        if (email) {
+          ['adobesphere_users', 'adobesphere_saved', 'adobesphere_registrations',
+            'adobesphere_user_blogs', 'adobesphere_local_creators'].forEach((key) => {
+            try {
+              const data = JSON.parse(localStorage.getItem(key) || '{}');
+              delete data[email];
+              localStorage.setItem(key, JSON.stringify(data));
+            } catch { /* noop */ }
+          });
+          localStorage.removeItem(`adobesphere_profile_${email}`);
+        }
+        Storage.clearSession();
+        Utils.toast('Account deleted.', 'success');
+        setTimeout(() => { window.location.href = '/'; }, 800);
+      },
+    );
   });
 }
 
