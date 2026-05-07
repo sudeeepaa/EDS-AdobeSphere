@@ -50,7 +50,8 @@ function buildAuthZone() {
   }
 
   const user = Storage.getCurrentUser() || {};
-  const avatar = (user.avatar && user.avatar.startsWith('data:')) ? user.avatar : '/icons/user-default.svg';
+  const DEFAULT_AVATAR = '/assets/images/profiles/default-user.jpg';
+  const avatar = user.avatarSrc || user.avatar || DEFAULT_AVATAR;
   wrap.innerHTML = `
     <div class="nav-user">
       <button type="button" class="nav-user-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
@@ -83,6 +84,12 @@ function buildAuthZone() {
   wrap.querySelector('.nav-signout').addEventListener('click', () => {
     Storage.clearSession();
     window.location.href = '/';
+  });
+
+  // Live avatar update when profile page saves a new photo
+  window.addEventListener('adobesphere:avatar-updated', (e) => {
+    const navAvatar = wrap.querySelector('.nav-avatar');
+    if (navAvatar && e.detail) navAvatar.src = e.detail;
   });
 
   return wrap;

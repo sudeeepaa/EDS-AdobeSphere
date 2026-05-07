@@ -49,6 +49,27 @@ function readConfig(block) {
   return cfg;
 }
 
+/* ─── Avatar compression ─── */
+
+function compressAvatar(file, callback) {
+  const MAX = 256;
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+    const w = Math.round(img.width * scale);
+    const h = Math.round(img.height * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    URL.revokeObjectURL(url);
+    callback(canvas.toDataURL('image/jpeg', 0.85));
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); callback(null); };
+  img.src = url;
+}
+
 /* ─── DOM helpers ─── */
 
 function el(tag, cls, text) {
@@ -259,14 +280,17 @@ function renderUser(block, cfg) {
   avatarInput.addEventListener('change', () => {
     const f = avatarInput.files && avatarInput.files[0];
     if (!f) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const src = String(reader.result);
+    if (f.size > 5 * 1024 * 1024) {
+      Utils.toast('Image must be under 5 MB.', 'error');
+      return;
+    }
+    compressAvatar(f, (src) => {
+      if (!src) { Utils.toast('Could not read image.', 'error'); return; }
       avatarImg.src = src;
       Storage.upsertUser({ ...Storage.getCurrentUser(), avatarSrc: src });
-      Utils.toast('Avatar updated.', 'success');
-    };
-    reader.readAsDataURL(f);
+      window.dispatchEvent(new CustomEvent('adobesphere:avatar-updated', { detail: src }));
+      Utils.toast('Photo updated.', 'success');
+    });
   });
 
   saveBtn.addEventListener('click', () => {
