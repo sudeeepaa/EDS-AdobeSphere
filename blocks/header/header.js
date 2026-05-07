@@ -1,7 +1,7 @@
 import { getMetadata } from '../../scripts/aem.js';
 import { loadFragment } from '../fragment/fragment.js';
 
-const isDesktop = window.matchMedia('(min-width: 900px)');
+const isDesktop = window.matchMedia('(min-width: 768px)');
 
 /**
  * AdobeSphere header.
@@ -14,6 +14,26 @@ const isDesktop = window.matchMedia('(min-width: 900px)');
  * The auth zone (Sign In / Sign Up vs. Avatar+dropdown) is rendered by JS based
  * on `window.AdobeSphere.Storage.isLoggedIn()` — it doesn't need authoring.
  */
+
+function buildNavSearch() {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'nav-search';
+  btn.setAttribute('aria-label', 'Search');
+  btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"></circle>
+    <path d="M20 20L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+  </svg>`;
+  btn.addEventListener('click', () => {
+    if (window.location.pathname === '/explore') {
+      window.dispatchEvent(new CustomEvent('adobesphere:focus-search'));
+    } else {
+      sessionStorage.setItem('adobesphere:focus-search', '1');
+      window.location.href = '/explore';
+    }
+  });
+  return btn;
+}
 
 function buildAuthZone() {
   const { Storage } = window.AdobeSphere;
@@ -118,7 +138,21 @@ export default async function decorate(block) {
     tools.className = 'nav-tools';
     nav.append(tools);
   }
+  tools.append(buildNavSearch());
   tools.append(buildAuthZone());
+
+  // Remove "Join Community" link from nav when user is logged in.
+  if (window.AdobeSphere.Storage.isLoggedIn()) {
+    const sections = nav.querySelector('.nav-sections');
+    if (sections) {
+      sections.querySelectorAll('a').forEach((a) => {
+        if (/join community/i.test(a.textContent.trim())) {
+          const li = a.closest('li');
+          (li || a).remove();
+        }
+      });
+    }
+  }
 
   // Hamburger toggle (mobile).
   const hamburger = document.createElement('button');
