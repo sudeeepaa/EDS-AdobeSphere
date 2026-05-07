@@ -345,6 +345,20 @@ button.button.ghost:hover {
   color: var(--red-primary);
 }
 
+a.button.danger,
+button.button.danger {
+  background: transparent;
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+a.button.danger:hover,
+button.button.danger:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: var(--white);
+}
+
 /* form-input — used by form / explore / profile blocks */
 .form-input {
   width: 100%;
