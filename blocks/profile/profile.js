@@ -183,7 +183,7 @@ function renderUser(block, cfg) {
 
   /* ── EDIT section ── */
   const editSection = el('div', 'profile-edit');
-  editSection.hidden = true;
+  editSection.style.display = 'none';
 
   const nameInput = el('input', 'form-input');
   nameInput.id = 'profile-name';
@@ -237,8 +237,8 @@ function renderUser(block, cfg) {
   /* ── toggle helpers ── */
   function showView() {
     card.classList.remove('editing');
-    viewSection.hidden = false;
-    editSection.hidden = true;
+    viewSection.style.display = '';
+    editSection.style.display = 'none';
   }
 
   function showEdit() {
@@ -248,8 +248,8 @@ function renderUser(block, cfg) {
     bioInput.value = user.bio || '';
     linkedinInput.value = (user.socials && user.socials.linkedin) || '';
     card.classList.add('editing');
-    viewSection.hidden = true;
-    editSection.hidden = false;
+    viewSection.style.display = 'none';
+    editSection.style.display = '';
   }
 
   /* ── wiring ── */
