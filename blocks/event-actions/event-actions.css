@@ -61,7 +61,8 @@
 }
 
 .event-actions-register:hover:not(:disabled) {
-  background: var(--red-dark);
+  background: var(--red-deep);
+  color: var(--white);
   transform: translateY(-1px);
 }
 
