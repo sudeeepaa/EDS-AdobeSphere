@@ -196,12 +196,12 @@ main>.section {
   padding: 40px 0;
 }
 
-main>.section>div {
+/*main>.section>div {
   width: 100%;
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 0 20px;
-}
+}*/ 
 
 main>.section:first-of-type {
   margin-top: 0;
