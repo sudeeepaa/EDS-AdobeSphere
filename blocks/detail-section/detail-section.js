@@ -144,7 +144,7 @@ function renderBlogHeader(block, cfg, entity) {
   // Write blog button — requires login
   block.querySelector('.blog-write-btn').addEventListener('click', () => {
     if (!Storage.isLoggedIn()) {
-      window.location.href = '/sign-in?redirect=/blog-editor';
+      window.location.href = '/login?redirect=/blog-editor';
       return;
     }
     window.location.href = '/blog-editor';
@@ -157,7 +157,7 @@ function renderBlogHeader(block, cfg, entity) {
   saveBtn.addEventListener('click', () => {
     if (!Storage.isLoggedIn()) {
       const redirect = encodeURIComponent(window.location.pathname + window.location.search);
-      window.location.href = `/sign-in?redirect=${redirect}`;
+      window.location.href = `/login?redirect=${redirect}`;
       return;
     }
     const id = saveBtn.dataset.id;
@@ -351,7 +351,7 @@ function renderComments(block, cfg) {
     errEl.textContent = '';
     if (!Storage.isLoggedIn()) {
       const redirect = encodeURIComponent(window.location.pathname + window.location.search);
-      window.location.href = `/sign-in?redirect=${redirect}`;
+      window.location.href = `/login?redirect=${redirect}`;
       return;
     }
     const text = input.value.trim();
