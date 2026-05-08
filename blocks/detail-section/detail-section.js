@@ -464,11 +464,63 @@ function renderReachOut(block, cfg, entity) {
   block.append(container);
 }
 
+/* ─── default comment seeds ─── */
+
+const BLOG_COMMENT_SEEDS = [
+  'Really insightful piece — this is exactly the kind of content that keeps me coming back to Adobesphere.',
+  'Great breakdown! I\'ve been looking for a clear explanation of this for a while. Sharing with my team.',
+  'Loved reading this. The perspective here is spot on and the writing makes complex ideas accessible.',
+  'Such a well-structured article. The community needs more content like this — keep it coming!',
+  'This hit close to home. Really appreciated the practical takeaways woven throughout.',
+];
+
+const EVENT_COMMENT_SEEDS = [
+  'Already registered — this is exactly the kind of event I\'ve been waiting for. The agenda looks fantastic.',
+  'The lineup here is incredible. Can\'t wait to connect with everyone and hear these sessions live.',
+  'Love that Adobe keeps bringing the community together like this. Events like this are unmissable.',
+  'Just signed up! The format looks really well thought out — looking forward to the networking too.',
+  'This is going to be one of the highlights of the year. See you all there!',
+];
+
+function detectCommentSource(cfg, id) {
+  if (cfg.id_source) return cfg.id_source;
+  const path = window.location.pathname.toLowerCase();
+  if (path.includes('/blog')) return 'blogs';
+  if (id && id.startsWith('user-blog-')) return 'blogs';
+  return 'events';
+}
+
+async function seedDefaultComments(id, source) {
+  const { Storage, Utils } = window.AdobeSphere;
+  if (!id || Storage.getComments(id).length > 0) return;
+
+  const creators = await Utils.fetchData('creators').catch(() => null);
+  if (!Array.isArray(creators) || !creators.length) return;
+
+  const templates = source === 'blogs' ? BLOG_COMMENT_SEEDS : EVENT_COMMENT_SEEDS;
+  // Shuffle creators so each entity gets a different trio on first load.
+  const picks = creators.slice().sort(() => Math.random() - 0.5).slice(0, 3);
+
+  picks.forEach((creator, i) => {
+    // Stagger timestamps: 12, 8, 3 days ago so they read newest-to-seed order.
+    const daysAgo = [12, 8, 3][i];
+    const ts = new Date(Date.now() - daysAgo * 86_400_000).toISOString();
+    Storage.addComment(id, {
+      author: creator.name || 'Adobe Community',
+      avatar: Utils.normaliseAsset(creator.avatar, '/icons/user-default.svg'),
+      text: templates[i % templates.length],
+      timestamp: ts,
+    });
+  });
+}
+
 /* ─── comments ─── */
 
-function renderComments(block, cfg) {
+async function renderComments(block, cfg, source) {
   const id = getEntityId();
   const { Storage, Utils } = window.AdobeSphere;
+
+  await seedDefaultComments(id, source || detectCommentSource(cfg, id));
 
   if (cfg.title) block.append(sectionH2(cfg.title));
 
@@ -607,11 +659,13 @@ export default async function decorate(block) {
     variants.includes(v) || flatVariants.includes(v)
   ) || 'overview';
 
+  const source = cfg.id_source
+    || (['blog-header', 'article-body'].includes(variant) ? 'blogs' : null)
+    || (variant === 'comments' ? detectCommentSource(cfg, cfg.id || getEntityId()) : null)
+    || 'events';
+
   let entity = null;
   if (['blog-header', 'overview', 'agenda', 'people', 'presenters', 'speakers', 'hosts', 'quote', 'bio', 'reach-out', 'article-body'].includes(variant)) {
-    const source = cfg.id_source
-      || (['blog-header', 'article-body'].includes(variant) ? 'blogs' : null)
-      || 'events';
     const id = cfg.id || getEntityId();
     if (id) entity = await loadEntity(source, id);
   }
@@ -634,6 +688,6 @@ export default async function decorate(block) {
   else if (variant === 'quote') renderQuote(block, cfg, entity);
   else if (variant === 'bio') renderBio(block, cfg, entity);
   else if (variant === 'reach-out') renderReachOut(block, cfg, entity);
-  else if (variant === 'comments') renderComments(block, cfg);
+  else if (variant === 'comments') await renderComments(block, cfg, source);
   else if (variant === 'article-body') renderArticleBody(block, cfg, entity);
 }
