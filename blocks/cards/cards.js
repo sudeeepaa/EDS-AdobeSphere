@@ -331,6 +331,7 @@ function getFilteredItems(type, items, f) {
     return items.filter((c) => {
       if (!matchesText(c, f.q)) return false;
       if (f.designation && f.designation.length && !f.designation.includes(c.designation)) return false;
+      if (f.sort === 'testimonials' && !((c.stats && c.stats.testimonialsGiven) > 0)) return false;
       return true;
     }).sort((a, b) => {
       if (f.sort === 'name-desc') return String(b.name).localeCompare(String(a.name));
