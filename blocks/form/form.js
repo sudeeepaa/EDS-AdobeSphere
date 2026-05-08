@@ -3,23 +3,17 @@
  *
  * Variants (block class): contact | login | signup | event-registration | blog-editor.
  *
- * For `contact` and `event-registration` the author can pass field labels via
- * config rows. For `login`, `signup`, and `blog-editor` the form structure is
- * fixed and the block renders it in JS.
- *
- * Recognised config rows: `Title | …`, `Submit | …`, `Success | …`, `After | /path`.
+ * All two-cell rows are read as config and removed before render.
+ * Keys are lowercased and spaces normalised to hyphens.
  */
 
 function readConfig(block) {
   const cfg = {};
   [...block.children].forEach((row) => {
     if (row.children.length !== 2) return;
-    const k = row.children[0].textContent.trim().toLowerCase();
-    const v = row.children[1].textContent.trim();
-    if (['title', 'subtitle', 'submit', 'success', 'after'].includes(k)) {
-      cfg[k] = v;
-      row.remove();
-    }
+    const k = row.children[0].textContent.trim().toLowerCase().replace(/\s+/g, '-');
+    cfg[k] = row.children[1].textContent.trim();
+    row.remove();
   });
   return cfg;
 }
@@ -151,134 +145,301 @@ function renderEventRegistration(block, cfg) {
 
 /* ─────────── BLOG EDITOR ─────────── */
 
-function renderBlogEditor(block, cfg) {
-  block.innerHTML = `
-    <form class="form form-blog-editor" novalidate>
-      ${cfg.title ? `<h2 class="section-heading">${escapeHtml(cfg.title)}</h2>` : ''}
-      <div class="form-group">
-        <label for="be-title">Title</label>
-        <input id="be-title" class="form-input" type="text" required>
-      </div>
-      <div class="form-group">
-        <label for="be-category">Category</label>
-        <input id="be-category" class="form-input" type="text" placeholder="e.g. Creative Tools & Product Updates" required>
-      </div>
-      <div class="form-group">
-        <label for="be-cover">Cover Image (URL or upload)</label>
-        <input id="be-cover" class="form-input" type="url" placeholder="https://…">
-        <input id="be-cover-file" class="form-input" type="file" accept="image/*">
-      </div>
-      <div class="form-group">
-        <label for="be-excerpt">Short Excerpt</label>
-        <textarea id="be-excerpt" class="form-input" rows="2" maxlength="200" required></textarea>
-      </div>
-      <div class="form-group">
-        <label for="be-content">Content (Markdown-style: ## for headings, blank lines for paragraphs)</label>
-        <textarea id="be-content" class="form-input form-content" rows="14" required></textarea>
-      </div>
-      <p class="form-error form-error-global"></p>
-      <div class="form-actions">
-        <button type="button" class="button ghost form-save-draft">Save Draft</button>
-        <button type="submit" class="button primary">${escapeHtml(cfg.submit || 'Publish Blog')}</button>
-      </div>
-    </form>`;
+const BE_DEFAULT_CATEGORY = 'Community / Events / Creator Programs';
+const BE_OTHER_VALUE = '__other__';
 
-  const form = block.querySelector('form');
-  const titleI = form.querySelector('#be-title');
-  const catI = form.querySelector('#be-category');
-  const coverI = form.querySelector('#be-cover');
-  const fileI = form.querySelector('#be-cover-file');
-  const excerptI = form.querySelector('#be-excerpt');
-  const contentI = form.querySelector('#be-content');
-  const errEl = form.querySelector('.form-error-global');
+function isSafeImageSrc(src) {
+  const v = String(src || '').trim();
+  if (!v) return true; // empty = no image, allowed
+  return /^https?:\/\//i.test(v) || /^(\/|\.{1,2}[/\\]|assets[/\\])/i.test(v);
+}
 
-  // Restore draft.
-  const DRAFT_KEY = 'adobesphere_blog_draft';
-  try {
-    const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
-    if (d) {
-      titleI.value = d.title || '';
-      catI.value = d.category || '';
-      coverI.value = d.cover || '';
-      excerptI.value = d.excerpt || '';
-      contentI.value = d.content || '';
-    }
-  } catch { /* noop */ }
+function makeGroup(labelText, input) {
+  const div = document.createElement('div');
+  div.className = 'form-group';
+  const lbl = document.createElement('label');
+  lbl.textContent = labelText;
+  lbl.htmlFor = input.id;
+  div.append(lbl, input);
+  return div;
+}
 
-  // Auto-save draft.
-  let saveTimer = null;
-  [titleI, catI, coverI, excerptI, contentI].forEach((i) => {
-    i.addEventListener('input', () => {
-      clearTimeout(saveTimer);
-      saveTimer = setTimeout(() => {
-        const data = { title: titleI.value, category: catI.value, cover: coverI.value, excerpt: excerptI.value, content: contentI.value };
-        try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch { /* noop */ }
-      }, 500);
+async function buildCategorySelect(selectEl, otherEl) {
+  const { Storage, Utils } = window.AdobeSphere;
+
+  function setOtherVisible(visible) {
+    otherEl.hidden = !visible;
+    if (!visible) otherEl.value = '';
+  }
+
+  function renderOptions(cats) {
+    const current = selectEl.value;
+    while (selectEl.firstChild) selectEl.removeChild(selectEl.firstChild);
+    cats.forEach((c) => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      selectEl.append(opt);
     });
+    const otherOpt = document.createElement('option');
+    otherOpt.value = BE_OTHER_VALUE;
+    otherOpt.textContent = 'Other…';
+    selectEl.append(otherOpt);
+    const restore = cats.includes(current) ? current : BE_DEFAULT_CATEGORY;
+    selectEl.value = restore;
+    setOtherVisible(selectEl.value === BE_OTHER_VALUE);
+  }
+
+  selectEl.addEventListener('change', () => {
+    setOtherVisible(selectEl.value === BE_OTHER_VALUE);
+    if (selectEl.value === BE_OTHER_VALUE) otherEl.focus();
   });
 
-  // File → data URI.
-  fileI.addEventListener('change', () => {
-    const file = fileI.files && fileI.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => { coverI.value = reader.result; };
-    reader.readAsDataURL(file);
-  });
+  function uniquePush(list, seen, val) {
+    const v = String(val || '').trim();
+    if (!v) return;
+    const k = v.toLowerCase();
+    if (seen[k]) return;
+    seen[k] = true;
+    list.push(v);
+  }
 
-  form.querySelector('.form-save-draft').addEventListener('click', () => {
-    window.AdobeSphere.Utils.toast('Draft saved.', 'success');
-  });
+  try {
+    const blogs = await Utils.fetchData('blogs') || [];
+    const userBlogs = Storage.getUserBlogs() || [];
+    const stored = Storage.getBlogCategories() || [];
+    const list = [];
+    const seen = {};
+    [...blogs, ...userBlogs].forEach((b) => uniquePush(list, seen, b && b.category));
+    stored.forEach((c) => uniquePush(list, seen, c));
+    uniquePush(list, seen, BE_DEFAULT_CATEGORY);
+    list.sort((a, b) => a.localeCompare(b));
+    renderOptions(list);
+  } catch {
+    const stored = Storage.getBlogCategories() || [];
+    const list = [BE_DEFAULT_CATEGORY, ...stored];
+    const seen = {};
+    renderOptions(list.filter((c) => {
+      const k = String(c || '').trim().toLowerCase();
+      if (!k || seen[k]) return false;
+      seen[k] = true;
+      return true;
+    }).sort((a, b) => a.localeCompare(b)));
+  }
+}
+
+function loadBlogForEdit(blogId, fields) {
+  const { Storage } = window.AdobeSphere;
+  const blog = Storage.getUserBlogById(blogId);
+  if (!blog) return false;
+  const { titleI, bodyI, catSel, otherI, imageI, submitBtn } = fields;
+  titleI.value = blog.title || '';
+  bodyI.value = typeof blog.body === 'string' ? blog.body
+    : (blog.content || []).filter((b) => b.type === 'paragraph').map((b) => b.text).join('\n\n');
+  const cat = String(blog.category || '').trim();
+  const optExists = [...catSel.options].some((o) => o.value === cat);
+  if (cat && optExists) {
+    catSel.value = cat;
+    otherI.hidden = true;
+  } else if (cat) {
+    catSel.value = BE_OTHER_VALUE;
+    otherI.hidden = false;
+    otherI.value = cat;
+  }
+  imageI.value = blog.coverImage || '';
+  submitBtn.textContent = 'Update Blog';
+  return true;
+}
+
+async function renderBlogEditor(block, cfg) {
+  const { Storage, Utils } = window.AdobeSphere;
+
+  // All labels and messages authored in DA.live config rows.
+  const lHeading = cfg['label-heading'] || 'Heading';
+  const lBody = cfg['label-body'] || 'Write your blog';
+  const lCategory = cfg['label-category'] || 'Category';
+  const lImage = cfg['label-image'] || 'Image link';
+  const authNotice = cfg['auth-notice'] || 'Please sign in to write a blog post.';
+
+  // Auth gate — show modal and authored notice, don't render the form.
+  if (!Storage.isLoggedIn()) {
+    Utils.showAuthModal({ redirect: window.location.href });
+    const notice = document.createElement('p');
+    notice.className = 'form-auth-notice';
+    notice.textContent = authNotice;
+    block.append(notice);
+    return;
+  }
+
+  // Build form via DOM methods.
+  const form = document.createElement('form');
+  form.className = 'form form-blog-editor';
+  form.noValidate = true;
+
+  // Heading field.
+  const titleI = document.createElement('input');
+  titleI.id = 'be-title';
+  titleI.className = 'form-input';
+  titleI.type = 'text';
+  titleI.required = true;
+
+  // Body textarea.
+  const bodyI = document.createElement('textarea');
+  bodyI.id = 'be-body';
+  bodyI.className = 'form-input be-body';
+  bodyI.required = true;
+
+  // Category select + "Other" input.
+  const catSel = document.createElement('select');
+  catSel.id = 'be-category';
+  catSel.className = 'form-input';
+
+  const otherI = document.createElement('input');
+  otherI.id = 'be-category-other';
+  otherI.className = 'form-input';
+  otherI.type = 'text';
+  otherI.placeholder = 'Enter category name…';
+  otherI.hidden = true;
+
+  const catWrap = document.createElement('div');
+  catWrap.className = 'form-group';
+  const catLabel = document.createElement('label');
+  catLabel.textContent = lCategory;
+  catLabel.htmlFor = 'be-category';
+  catWrap.append(catLabel, catSel, otherI);
+
+  // Image link field.
+  const imageI = document.createElement('input');
+  imageI.id = 'be-image';
+  imageI.className = 'form-input';
+  imageI.type = 'url';
+
+  // Error element.
+  const errEl = document.createElement('p');
+  errEl.className = 'form-error form-error-global';
+
+  // Submit button.
+  const submitBtn = document.createElement('button');
+  submitBtn.type = 'submit';
+  submitBtn.className = 'button primary be-submit';
+  submitBtn.textContent = cfg.submit || 'Publish Blog';
+
+  const actions = document.createElement('div');
+  actions.className = 'form-actions be-actions';
+  actions.append(submitBtn);
+
+  form.append(
+    makeGroup(lHeading, titleI),
+    makeGroup(lBody, bodyI),
+    catWrap,
+    makeGroup(lImage, imageI),
+    errEl,
+    actions,
+  );
+  block.append(form);
+
+  // Build category options (async — needs fetching blogs.json).
+  await buildCategorySelect(catSel, otherI);
+
+  // Edit mode — load existing blog if ?id= is set.
+  const editId = new URLSearchParams(window.location.search).get('id') || '';
+  if (editId) {
+    loadBlogForEdit(editId, { titleI, bodyI, catSel, otherI, imageI, submitBtn });
+  }
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     errEl.textContent = '';
-    [titleI, catI, excerptI, contentI].forEach(clearFieldError);
+    [titleI, bodyI, catSel, imageI].forEach(clearFieldError);
 
-    let valid = true;
-    if (!titleI.value.trim()) { showFieldError(titleI, 'Title required.'); valid = false; }
-    if (!catI.value.trim()) { showFieldError(catI, 'Category required.'); valid = false; }
-    if (!excerptI.value.trim()) { showFieldError(excerptI, 'Excerpt required.'); valid = false; }
-    if (!contentI.value.trim()) { showFieldError(contentI, 'Content required.'); valid = false; }
-    if (!valid) return;
+    const title = titleI.value.trim();
+    const body = bodyI.value.trim();
+    const imageLink = imageI.value.trim();
 
-    const { Storage, Utils } = window.AdobeSphere;
-    if (!Storage.isLoggedIn()) {
-      errEl.textContent = 'Sign in first to publish a blog.';
+    if (!title) { showFieldError(titleI, 'Heading is required.'); return; }
+    if (!body) { showFieldError(bodyI, 'Blog content is required.'); return; }
+    if (!isSafeImageSrc(imageLink)) {
+      showFieldError(imageI, 'Use an https:// link or leave blank.');
       return;
     }
 
+    let category = '';
+    if (catSel.value === BE_OTHER_VALUE) {
+      category = otherI.value.trim();
+      if (!category) { otherI.focus(); showFieldError(otherI, 'Enter a category name.'); return; }
+      Storage.addBlogCategory(category);
+      // Add to select so it persists in the DOM.
+      const hasOpt = [...catSel.options].some((o) => o.value === category);
+      if (!hasOpt) {
+        const newOpt = document.createElement('option');
+        newOpt.value = category;
+        newOpt.textContent = category;
+        const otherIdx = [...catSel.options].findIndex((o) => o.value === BE_OTHER_VALUE);
+        catSel.insertBefore(newOpt, catSel.options[otherIdx >= 0 ? otherIdx : catSel.options.length]);
+      }
+      catSel.value = category;
+      otherI.hidden = true;
+    } else {
+      category = catSel.value;
+    }
+
     const user = Storage.getCurrentUser() || {};
-    const blog = {
-      id: `user-blog-${Date.now()}`,
-      title: titleI.value.trim(),
-      category: catI.value.trim(),
-      coverImage: coverI.value || '',
-      excerpt: excerptI.value.trim(),
-      content: contentI.value.split(/\n\n+/).map((para) => {
-        const trimmed = para.trim();
-        if (trimmed.startsWith('## ')) return { type: 'heading', text: trimmed.slice(3) };
-        return { type: 'paragraph', text: trimmed };
-      }).filter((b) => b.text),
-      author: { id: `user:${user.email}`, name: user.name || 'Author', avatar: user.avatar || '' },
-      publishedDate: new Date().toISOString().slice(0, 10),
+    const ownerIdentity = String(user.email || '').trim().toLowerCase();
+    const existing = editId ? Storage.getUserBlogById(editId) : null;
+    const blogId = editId || `user-blog-${Date.now()}`;
+    const publishedDate = (existing && existing.publishedDate) || new Date().toISOString().slice(0, 10);
+
+    const excerpt = body.replace(/\s+/g, ' ').trim().slice(0, 120);
+    const content = body.split(/\n\n+/).map((para) => {
+      const t = para.trim();
+      if (t.startsWith('## ')) return { type: 'heading', text: t.slice(3) };
+      return { type: 'paragraph', text: t };
+    }).filter((b) => b.text);
+
+    const blogObj = {
+      id: blogId,
+      title,
+      category: category || BE_DEFAULT_CATEGORY,
+      ownerIdentity,
+      author: {
+        id: `user:${ownerIdentity}`,
+        name: user.name || 'Community Author',
+        designation: user.designation || 'Community Contributor',
+        avatar: Utils.normaliseAsset(user.avatarSrc || user.avatar, '/assets/images/profiles/default-user.jpg'),
+        bio: user.bio || 'Adobesphere community member.',
+        socials: user.socials || {},
+      },
+      publishedDate,
+      coverImage: imageLink,
+      excerpt,
+      body,
+      content,
       featured: false,
       userSubmitted: true,
     };
-    Storage.addUserBlog(blog);
-    try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ }
-    Utils.toast('Blog published!', 'success');
-    setTimeout(() => { window.location.href = cfg.after || `/blog/${blog.id}`; }, 700);
+
+    if (editId) {
+      Storage.updateUserBlog(blogObj);
+    } else {
+      Storage.addUserBlog(blogObj);
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = editId ? 'Updated!' : 'Published!';
+    Utils.toast(editId ? 'Blog updated.' : 'Blog published!', 'success');
+    setTimeout(() => {
+      window.location.href = `/creator-profile?id=${encodeURIComponent(ownerIdentity)}`;
+    }, 900);
   });
 }
 
 /* ─────────── dispatcher ─────────── */
 
-export default function decorate(block) {
+export default async function decorate(block) {
   const variants = [...block.classList];
   const cfg = readConfig(block);
   block.textContent = '';
 
   if (variants.includes('event-registration') || variants.includes('registration')) renderEventRegistration(block, cfg);
-  else if (variants.includes('blog-editor')) renderBlogEditor(block, cfg);
+  else if (variants.includes('blog-editor')) await renderBlogEditor(block, cfg);
 }

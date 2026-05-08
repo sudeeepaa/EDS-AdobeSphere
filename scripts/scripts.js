@@ -254,6 +254,40 @@ const Storage = {
     list.push(submission);
     writeJSON(KEY, list);
   },
+
+  getUserBlogById(blogId) {
+    const all = readJSON(STORAGE_KEYS.USER_BLOGS, {});
+    for (const blogs of Object.values(all)) {
+      const found = (blogs || []).find((b) => b.id === blogId);
+      if (found) return found;
+    }
+    return null;
+  },
+
+  updateUserBlog(blog) {
+    const session = this.getSession();
+    if (!session) return false;
+    const all = readJSON(STORAGE_KEYS.USER_BLOGS, {});
+    const list = all[session.email] || [];
+    const idx = list.findIndex((b) => b.id === blog.id);
+    if (idx === -1) { list.push(blog); } else { list[idx] = blog; }
+    all[session.email] = list;
+    return writeJSON(STORAGE_KEYS.USER_BLOGS, all);
+  },
+
+  getBlogCategories() {
+    return readJSON('adobesphere_blog_categories', []);
+  },
+
+  addBlogCategory(name) {
+    const v = String(name || '').trim();
+    if (!v) return;
+    const list = this.getBlogCategories();
+    if (!list.some((c) => String(c).trim().toLowerCase() === v.toLowerCase())) {
+      list.push(v);
+      writeJSON('adobesphere_blog_categories', list);
+    }
+  },
 };
 
 /* ─── Helpers shared across blocks (avatars, dates, escaping, etc.) ─── */
