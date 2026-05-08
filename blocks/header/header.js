@@ -36,7 +36,7 @@ function buildNavSearch() {
 }
 
 function buildAuthZone() {
-  const { Storage } = window.AdobeSphere;
+  const { Storage, Utils } = window.AdobeSphere;
   const wrap = document.createElement('div');
   wrap.className = 'nav-auth';
 
@@ -51,11 +51,12 @@ function buildAuthZone() {
 
   const user = Storage.getCurrentUser() || {};
   const DEFAULT_AVATAR = '/assets/images/profiles/default-user.jpg';
-  const avatar = user.avatarSrc || user.avatar || DEFAULT_AVATAR;
+  const avatar = Utils.escapeHtml(user.avatarSrc || user.avatar || DEFAULT_AVATAR);
+  const displayName = Utils.escapeHtml(user.name || 'User');
   wrap.innerHTML = `
     <div class="nav-user">
       <button type="button" class="nav-user-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
-        <img class="nav-avatar" src="${avatar}" alt="${user.name || 'User'} avatar">
+        <img class="nav-avatar" src="${avatar}" alt="${displayName} avatar">
       </button>
       <div class="nav-user-menu" role="menu">
         <a href="/user-profile" role="menuitem">My Profile</a>

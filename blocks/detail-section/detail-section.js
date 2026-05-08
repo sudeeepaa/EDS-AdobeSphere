@@ -381,7 +381,7 @@ function renderBio(block, cfg, entity) {
 
   if (block.classList.contains('text')) {
     if (!bio) { block.style.display = 'none'; return; }
-    bio.split(/\n\n+/).forEach((para) => {
+    bio.split(/\n\n+/).filter((para) => para.trim()).forEach((para) => {
       const p = document.createElement('p');
       p.textContent = para;
       block.append(p);
@@ -405,7 +405,7 @@ function renderBio(block, cfg, entity) {
   designP.className = 'text-muted';
   designP.textContent = entity.designation || '';
   bioBody.append(h3, designP);
-  bio.split(/\n\n+/).forEach((para) => {
+  bio.split(/\n\n+/).filter((para) => para.trim()).forEach((para) => {
     const p = document.createElement('p');
     p.textContent = para;
     bioBody.append(p);

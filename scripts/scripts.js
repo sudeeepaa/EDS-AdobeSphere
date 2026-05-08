@@ -709,6 +709,15 @@ async function loadLazy(doc) {
 
   // Reveal-on-scroll for any block that opted into the .reveal class.
   Utils.initRevealObserver();
+
+  // Hide any authored "Join Community" buttons/links when the user is logged in.
+  if (Storage.isLoggedIn()) {
+    doc.querySelectorAll('main a, main button').forEach((el) => {
+      if (/join\s+community/i.test(el.textContent.trim())) {
+        el.closest('p, li') ? el.closest('p, li').remove() : el.remove();
+      }
+    });
+  }
 }
 
 function loadDelayed() {
