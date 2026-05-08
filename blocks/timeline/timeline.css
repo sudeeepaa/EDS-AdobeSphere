@@ -1,48 +1,54 @@
 /*
  * AdobeSphere — timeline block (Platform Journey ribbon).
- * Auto-scrolling marquee variant: two identical tracks sit side-by-side
- * inside the overflow-hidden wrapper; animating translateX(-50%) on the
- * wrapper creates a seamless loop. Hover / focus pauses playback.
+ *
+ * JS drives scrollLeft on .timeline-track-wrap each rAF frame.
+ * On loop-reset the wrapper fades out → scrolls to 0 → fades back in.
+ * The red progress bar fills from 0 → 100% across each pass.
  */
 
 .timeline {
-  --timeline-duration: 36s;
-
   position: relative;
-  overflow: hidden;
   padding: 8px 0;
 }
 
-/* ── auto-scroll wrapper ─────────────────────────────────────────────── */
+/* ── Progress bar ────────────────────────────────────────────────────── */
+.timeline-progress-wrap {
+  height: 4px;
+  margin: 0 0 20px;
+  background: rgba(0, 0, 0, 8%);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.timeline-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--red-primary);
+  border-radius: 2px;
+}
+
+/* ── Scrollable wrapper ──────────────────────────────────────────────── */
 .timeline .timeline-track-wrap {
-  display: flex;
-  width: max-content;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  transition: opacity var(--transition-base, 280ms ease);
 }
 
-.timeline .timeline-track-wrap.timeline-auto-scroll {
-  will-change: transform;
-  animation: timeline-scroll var(--timeline-duration) linear infinite;
+.timeline .timeline-track-wrap::-webkit-scrollbar {
+  display: none;
 }
 
-.timeline .timeline-track-wrap.timeline-auto-scroll:hover,
-.timeline .timeline-track-wrap.timeline-auto-scroll:focus-within {
-  animation-play-state: paused;
-}
-
-@keyframes timeline-scroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-
-/* ── inner track — one row of cards ─────────────────────────────────── */
+/* ── Inner track — one row of cards ─────────────────────────────────── */
 .timeline .timeline-track {
   display: flex;
   flex-direction: row;
   gap: 28px;
   padding: 12px 16px;
+  width: max-content;
 }
 
-/* ── individual card ─────────────────────────────────────────────────── */
+/* ── Individual card ─────────────────────────────────────────────────── */
 .timeline .timeline-item {
   flex-shrink: 0;
   width: 300px;
@@ -54,6 +60,7 @@
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   height: 100%;
+  box-sizing: border-box;
 }
 
 .timeline .timeline-header {
@@ -96,14 +103,34 @@
   color: var(--text-muted);
 }
 
-/* ── reduced-motion fallback: static horizontal scroller ────────────── */
-@media (prefers-reduced-motion: reduce) {
-  .timeline {
-    overflow-x: auto;
+/* ── Mobile — narrower cards ─────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .timeline .timeline-item {
+    width: 240px;
   }
 
+  .timeline .timeline-card {
+    padding: 16px;
+  }
+
+  .timeline .timeline-track {
+    gap: 16px;
+    padding: 8px 12px;
+  }
+
+  .timeline-progress-wrap {
+    margin-bottom: 14px;
+  }
+}
+
+/* ── Reduced-motion: static horizontal scroller, no JS animation ─────── */
+@media (prefers-reduced-motion: reduce) {
   .timeline .timeline-track-wrap {
-    animation: none;
-    width: max-content;
+    overflow-x: auto;
+    transition: none;
+  }
+
+  .timeline-progress-wrap {
+    display: none;
   }
 }
