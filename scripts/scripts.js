@@ -352,6 +352,67 @@ const Utils = {
     }, { threshold: 0.1 });
     nodes.forEach((n) => obs.observe(n));
   },
+
+  showAuthModal({ redirect, title, message } = {}) {
+    const redirectUrl = encodeURIComponent(redirect || (window.location.pathname + window.location.search));
+    const LOCK_SVG = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`;
+
+    let overlay = document.getElementById('auth-modal');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'auth-modal';
+      overlay.className = 'modal-overlay';
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.setAttribute('aria-labelledby', 'auth-modal-title');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.append(overlay);
+    }
+
+    overlay.innerHTML = `
+      <div class="modal-box auth-modal-box">
+        <button type="button" class="modal-close" aria-label="Close dialog">&#215;</button>
+        <div class="auth-modal-icon" aria-hidden="true">${LOCK_SVG}</div>
+        <h2 class="auth-modal-heading" id="auth-modal-title">${this.escapeHtml(title || 'Sign in to continue')}</h2>
+        <p class="auth-modal-message">${this.escapeHtml(message || 'Join the AdobeSphere community to participate.')}</p>
+        <div class="auth-modal-actions">
+          <a class="button primary" href="/login?redirect=${redirectUrl}">Sign In</a>
+          <a class="button ghost" href="/signup?redirect=${redirectUrl}">Sign Up</a>
+        </div>
+      </div>`;
+
+    const closeBtn = overlay.querySelector('.modal-close');
+    const prevFocus = document.activeElement;
+
+    const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    const close = () => {
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.removeEventListener('keydown', onKey);
+      if (prevFocus && typeof prevFocus.focus === 'function') prevFocus.focus();
+    };
+
+    const onKey = (e) => {
+      if (e.key === 'Escape') { close(); return; }
+      if (e.key !== 'Tab') return;
+      const els = [...overlay.querySelectorAll(FOCUSABLE)];
+      if (!els.length) return;
+      const first = els[0];
+      const last = els[els.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+
+    closeBtn.addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', onKey);
+
+    overlay.removeAttribute('aria-hidden');
+    overlay.classList.add('open');
+    requestAnimationFrame(() => closeBtn.focus());
+  },
 };
 
 // Expose for blocks that prefer a global handle (legacy parity).

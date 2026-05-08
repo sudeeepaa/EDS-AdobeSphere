@@ -350,8 +350,11 @@ function renderComments(block, cfg) {
   block.querySelector('.detail-comments-post').addEventListener('click', () => {
     errEl.textContent = '';
     if (!Storage.isLoggedIn()) {
-      const redirect = encodeURIComponent(window.location.pathname + window.location.search);
-      window.location.href = `/login?redirect=${redirect}`;
+      Utils.showAuthModal({
+        redirect: window.location.pathname + window.location.search,
+        title: 'Sign in to comment',
+        message: 'Join the AdobeSphere community to share your thoughts and connect with creators.',
+      });
       return;
     }
     const text = input.value.trim();

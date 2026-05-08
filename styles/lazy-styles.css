@@ -73,12 +73,75 @@
   transform: translateY(0);
 }
 
+.modal-box {
+  position: relative;
+}
+
 .modal-close {
   position: absolute;
   top: 16px;
   right: 16px;
   font-size: 1.5rem;
+  line-height: 1;
   color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-base), background var(--transition-base);
+}
+
+.modal-close:hover,
+.modal-close:focus-visible {
+  color: var(--text-dark);
+  background: var(--bg-light);
+  outline: 2px solid var(--brand-red);
+  outline-offset: 2px;
+}
+
+/* ── Auth modal ── */
+
+.auth-modal-box {
+  text-align: center;
+  padding: 48px 40px 40px;
+}
+
+.auth-modal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: #fff0f0;
+  color: var(--brand-red);
+}
+
+.auth-modal-heading {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0 0 10px;
+}
+
+.auth-modal-message {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin: 0 0 28px;
+  line-height: 1.6;
+}
+
+.auth-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.auth-modal-actions .button {
+  min-width: 120px;
 }
 
 @media (max-width: 480px) {
@@ -95,5 +158,17 @@
 
   .modal-box {
     padding: 28px;
+  }
+
+  .auth-modal-box {
+    padding: 40px 24px 28px;
+  }
+
+  .auth-modal-actions {
+    flex-direction: column;
+  }
+
+  .auth-modal-actions .button {
+    width: 100%;
   }
 }
