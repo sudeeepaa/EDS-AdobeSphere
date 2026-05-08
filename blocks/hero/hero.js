@@ -325,7 +325,10 @@ async function renderCreatorVariant(block) {
   block.classList.add('hero-creator');
 
   if (!entity) {
-    block.innerHTML = '<p class="hero-creator-empty">Creator not found.</p>';
+    const p = document.createElement('p');
+    p.className = 'hero-creator-empty';
+    p.textContent = cfg['empty'] || '';
+    block.append(p);
     return;
   }
 

@@ -1,17 +1,9 @@
 /**
- * AdobeSphere detail-section block — the reusable sub-section for detail pages.
+ * AdobeSphere detail-section block — reusable sub-section for detail pages.
+ * All rendering uses DOM methods. All authored copy comes from DA.live config rows.
  *
- * Variants (block class):
- *   • overview  → header + 1-3 fact rows + body paragraph (event/blog overview).
- *   • agenda    → time | activity | description timeline (event schedule).
- *   • people    → presenter/speaker/host avatar grid (event detail).
- *   • quote     → centred blockquote (event closing / creator featured).
- *   • comments  → discussion section with composer + thread (blog detail).
- *   • bio       → author/creator bio strip with avatar + paragraphs.
- *   • reach-out → email + LinkedIn link buttons (creator contact zone).
- *
- * Author writes a minimal table; the block hydrates dynamic fields from the
- * data layer when an `Id Source | events|blogs|creators` row is present.
+ * Variants: overview · agenda · people · quote · comments · bio · reach-out ·
+ *           blog-header · article-body
  */
 
 function readConfig(block) {
@@ -28,9 +20,6 @@ function readConfig(block) {
   return cfg;
 }
 
-function escapeHtml(v) { return window.AdobeSphere.Utils.escapeHtml(v); }
-
-/* Pull the entity id from URL (?id=…), the last URL segment, or a meta tag. */
 function getEntityId() {
   const fromQuery = new URLSearchParams(window.location.search).get('id');
   if (fromQuery) return fromQuery;
@@ -47,117 +36,216 @@ async function loadEntity(source, id) {
     const found = data.find((it) => it.id === id);
     if (found) return found;
   }
-  // Fallback: registered users have a creator profile backed by localStorage
-  if (source === 'creators') {
-    return window.AdobeSphere.Storage.getLocalCreator?.(id) || null;
-  }
+  if (source === 'creators') return window.AdobeSphere.Storage.getLocalCreator?.(id) || null;
   return null;
+}
+
+/* ── SVG helper (no innerHTML) ── */
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function makeSvg(svgAttrs, ...children) {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  Object.entries(svgAttrs).forEach(([k, v]) => svg.setAttribute(k, v));
+  children.forEach(({ tag, attrs }) => {
+    const el = document.createElementNS(SVG_NS, tag);
+    Object.entries(attrs || {}).forEach(([k, v]) => el.setAttribute(k, v));
+    svg.append(el);
+  });
+  return svg;
+}
+
+/* ── Shared DOM helpers ── */
+function emptyP(text) {
+  const p = document.createElement('p');
+  p.textContent = text;
+  return p;
+}
+
+function sectionH2(text) {
+  const h2 = document.createElement('h2');
+  h2.className = 'section-heading';
+  h2.textContent = text;
+  return h2;
 }
 
 /* ─── overview ─── */
 
 function renderOverview(block, cfg, entity, headingText) {
-  block.innerHTML = `
-    <h2 class="section-heading">${escapeHtml(headingText || cfg.title || 'Overview')}</h2>
-    <div class="detail-overview"></div>`;
-  const root = block.querySelector('.detail-overview');
-  if (!entity) { root.innerHTML = `<p>${escapeHtml(cfg.empty || 'Details unavailable.')}</p>`; return; }
+  block.append(sectionH2(headingText || cfg.title || 'Overview'));
+  const root = document.createElement('div');
+  root.className = 'detail-overview';
+  block.append(root);
 
+  if (!entity) { root.append(emptyP(cfg.empty || 'Details unavailable.')); return; }
+
+  const { Utils } = window.AdobeSphere;
   const facts = [];
   if (entity.date || entity.time) {
-    const Utils = window.AdobeSphere.Utils;
-    const date = Utils.formatDate(entity.date);
-    facts.push(['Date & Time', `${date}${entity.time ? ` at ${entity.time}` : ''}`]);
+    facts.push(['Date & Time', `${Utils.formatDate(entity.date)}${entity.time ? ` at ${entity.time}` : ''}`]);
   }
   if (entity.venue) facts.push(['Venue', entity.venue]);
   if (entity.category) facts.push(['Category', entity.category]);
-  if (entity.publishedDate) facts.push(['Published', window.AdobeSphere.Utils.formatDate(entity.publishedDate)]);
+  if (entity.publishedDate) facts.push(['Published', Utils.formatDate(entity.publishedDate)]);
 
-  const factsHtml = facts.map(([k, v]) => `<div class="detail-fact"><dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd></div>`).join('');
+  if (facts.length) {
+    const dl = document.createElement('dl');
+    dl.className = 'detail-facts';
+    facts.forEach(([k, v]) => {
+      const div = document.createElement('div');
+      div.className = 'detail-fact';
+      const dt = document.createElement('dt');
+      dt.textContent = k;
+      const dd = document.createElement('dd');
+      dd.textContent = v;
+      div.append(dt, dd);
+      dl.append(div);
+    });
+    root.append(dl);
+  }
+
   const body = entity.fullDescription || entity.shortDescription || '';
-
-  root.innerHTML = `
-    ${factsHtml ? `<dl class="detail-facts">${factsHtml}</dl>` : ''}
-    ${body ? `<p class="detail-body">${escapeHtml(body)}</p>` : ''}`;
+  if (body) {
+    const p = document.createElement('p');
+    p.className = 'detail-body';
+    p.textContent = body;
+    root.append(p);
+  }
 }
 
 /* ─── blog-header ─── */
 
 function renderBlogHeader(block, cfg, entity) {
-  const Utils = window.AdobeSphere.Utils;
-  const Storage = window.AdobeSphere.Storage;
+  const { Utils, Storage } = window.AdobeSphere;
 
-  if (!entity) {
-    block.innerHTML = `<p>${escapeHtml(cfg.empty || 'Article not found.')}</p>`;
-    return;
-  }
+  if (!entity) { block.append(emptyP(cfg.empty || 'Article not found.')); return; }
 
   const author = entity.author || {};
   const avatarSrc = Utils.normaliseAsset(author.avatar, '/assets/images/profiles/default-user.jpg');
   const coverSrc = Utils.normaliseAsset(entity.coverImage, '/assets/images/blogs/blog-card-fallback.jpg');
-  const authorId = author.id || null;
-  const profileUrl = authorId ? `/creator-profile?id=${encodeURIComponent(authorId)}` : '';
-
-  // Build social links inline
-  const socials = author.socials || {};
-  const socialLinks = Object.entries(socials).filter(([, v]) => v).map(([platform, url]) => {
-    const label = platform.charAt(0).toUpperCase() + platform.slice(1);
-    return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" aria-label="${escapeHtml(label)}">${escapeHtml(label)}</a>`;
-  }).join('');
-
+  const profileUrl = author.id ? `/creator-profile?id=${encodeURIComponent(author.id)}` : '';
   const saved = Storage.isLoggedIn() && entity.id ? Storage.isBlogSaved?.(String(entity.id)) : false;
 
-  block.innerHTML = `
-    <div class="blog-header-inner">
-      <div class="article-meta-row">
-        <span class="badge">${escapeHtml(entity.category || 'Article')}</span>
-        <span class="text-muted">${escapeHtml(Utils.formatShortDate(entity.publishedDate) || '')}</span>
-      </div>
-      <h1 class="article-title">${escapeHtml(entity.title || 'Untitled')}</h1>
+  /* inner wrapper */
+  const inner = document.createElement('div');
+  inner.className = 'blog-header-inner';
 
-      <div class="author-row">
-        ${profileUrl
-          ? `<a href="${escapeHtml(profileUrl)}" class="author-avatar-link" aria-label="View author profile"><img class="author-avatar" src="${escapeHtml(avatarSrc)}" alt="${escapeHtml(author.name || 'Author')}"></a>`
-          : `<img class="author-avatar" src="${escapeHtml(avatarSrc)}" alt="${escapeHtml(author.name || 'Author')}">`}
-        <div class="author-row-info">
-          ${profileUrl
-            ? `<a href="${escapeHtml(profileUrl)}" class="author-name-link" aria-label="View author profile"><p class="author-name">${escapeHtml(author.name || 'Adobe Team')}</p></a>`
-            : `<p class="author-name">${escapeHtml(author.name || 'Adobe Team')}</p>`}
-          <p class="author-designation text-muted">${escapeHtml(author.designation || 'Contributor')}</p>
-        </div>
-        ${socialLinks ? `<div class="author-socials">${socialLinks}</div>` : ''}
-      </div>
+  /* meta row */
+  const metaRow = document.createElement('div');
+  metaRow.className = 'article-meta-row';
+  const badge = document.createElement('span');
+  badge.className = 'badge';
+  badge.textContent = entity.category || 'Article';
+  const dateSpan = document.createElement('span');
+  dateSpan.className = 'text-muted';
+  dateSpan.textContent = Utils.formatShortDate(entity.publishedDate) || '';
+  metaRow.append(badge, dateSpan);
 
-      <div class="article-actions">
-        <button type="button" class="button ghost blog-save-btn${saved ? ' saved' : ''}" data-id="${escapeHtml(String(entity.id || ''))}">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="${saved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M6 3H18C18.55 3 19 3.45 19 4V21L12 17L5 21V4C5 3.45 5.45 3 6 3Z"></path></svg>
-          <span class="blog-save-label">${saved ? 'Saved' : 'Save Article'}</span>
-        </button>
-        <button type="button" class="button ghost blog-write-btn">Write Your Own Blog →</button>
-      </div>
-    </div>
+  /* title */
+  const h1 = document.createElement('h1');
+  h1.className = 'article-title';
+  h1.textContent = entity.title || 'Untitled';
 
-    <div class="article-cover-wrap">
-      <img class="article-cover" src="${escapeHtml(coverSrc)}" alt="${escapeHtml(entity.title || 'Article cover')}">
-    </div>`;
+  /* author row */
+  const authorRow = document.createElement('div');
+  authorRow.className = 'author-row';
 
-  // Write blog button — requires login
-  block.querySelector('.blog-write-btn').addEventListener('click', () => {
-    if (!Storage.isLoggedIn()) {
-      window.location.href = '/login?redirect=/blog-editor';
-      return;
-    }
+  const avatarImg = document.createElement('img');
+  avatarImg.className = 'author-avatar';
+  avatarImg.src = avatarSrc;
+  avatarImg.alt = author.name || 'Author';
+
+  if (profileUrl) {
+    const avatarLink = document.createElement('a');
+    avatarLink.href = profileUrl;
+    avatarLink.className = 'author-avatar-link';
+    avatarLink.setAttribute('aria-label', 'View author profile');
+    avatarLink.append(avatarImg);
+    authorRow.append(avatarLink);
+  } else {
+    authorRow.append(avatarImg);
+  }
+
+  const authorInfo = document.createElement('div');
+  authorInfo.className = 'author-row-info';
+  const nameP = document.createElement('p');
+  nameP.className = 'author-name';
+  nameP.textContent = author.name || 'Adobe Team';
+  if (profileUrl) {
+    const nameLink = document.createElement('a');
+    nameLink.href = profileUrl;
+    nameLink.className = 'author-name-link';
+    nameLink.setAttribute('aria-label', 'View author profile');
+    nameLink.append(nameP);
+    authorInfo.append(nameLink);
+  } else {
+    authorInfo.append(nameP);
+  }
+  const designP = document.createElement('p');
+  designP.className = 'author-designation text-muted';
+  designP.textContent = author.designation || 'Contributor';
+  authorInfo.append(designP);
+  authorRow.append(authorInfo);
+
+  const socials = author.socials || {};
+  const socialEntries = Object.entries(socials).filter(([, v]) => v);
+  if (socialEntries.length) {
+    const socialsDiv = document.createElement('div');
+    socialsDiv.className = 'author-socials';
+    socialEntries.forEach(([platform, url]) => {
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.setAttribute('aria-label', platform.charAt(0).toUpperCase() + platform.slice(1));
+      a.textContent = platform.charAt(0).toUpperCase() + platform.slice(1);
+      socialsDiv.append(a);
+    });
+    authorRow.append(socialsDiv);
+  }
+
+  /* actions */
+  const actions = document.createElement('div');
+  actions.className = 'article-actions';
+
+  const saveBtn = document.createElement('button');
+  saveBtn.type = 'button';
+  saveBtn.className = `button ghost blog-save-btn${saved ? ' saved' : ''}`;
+  saveBtn.dataset.id = String(entity.id || '');
+  const saveSvg = makeSvg(
+    { width: '16', height: '16', viewBox: '0 0 24 24', fill: saved ? 'currentColor' : 'none', stroke: 'currentColor', 'stroke-width': '1.7', 'aria-hidden': 'true' },
+    { tag: 'path', attrs: { d: 'M6 3H18C18.55 3 19 3.45 19 4V21L12 17L5 21V4C5 3.45 5.45 3 6 3Z' } }
+  );
+  const saveLabel = document.createElement('span');
+  saveLabel.className = 'blog-save-label';
+  saveLabel.textContent = saved ? 'Saved' : 'Save Article';
+  saveBtn.append(saveSvg, saveLabel);
+
+  const writeBtn = document.createElement('button');
+  writeBtn.type = 'button';
+  writeBtn.className = 'button ghost blog-write-btn';
+  writeBtn.textContent = 'Write Your Own Blog →';
+
+  actions.append(saveBtn, writeBtn);
+  inner.append(metaRow, h1, authorRow, actions);
+
+  /* cover */
+  const coverWrap = document.createElement('div');
+  coverWrap.className = 'article-cover-wrap';
+  const coverImg = document.createElement('img');
+  coverImg.className = 'article-cover';
+  coverImg.src = coverSrc;
+  coverImg.alt = entity.title || 'Article cover';
+  coverWrap.append(coverImg);
+
+  block.append(inner, coverWrap);
+
+  writeBtn.addEventListener('click', () => {
+    if (!Storage.isLoggedIn()) { window.location.href = '/login?redirect=/blog-editor'; return; }
     window.location.href = '/blog-editor';
   });
 
-  // Save button logic
-  const saveBtn = block.querySelector('.blog-save-btn');
-  const saveLabel = block.querySelector('.blog-save-label');
-  const saveSvg = saveBtn.querySelector('svg');
   saveBtn.addEventListener('click', () => {
     if (!Storage.isLoggedIn()) {
-      const redirect = encodeURIComponent(window.location.pathname + window.location.search);
-      window.location.href = `/login?redirect=${redirect}`;
+      window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
       return;
     }
     const id = saveBtn.dataset.id;
@@ -181,28 +269,35 @@ function renderBlogHeader(block, cfg, entity) {
 /* ─── agenda ─── */
 
 function renderAgenda(block, cfg, entity) {
-  block.innerHTML = `
-    <h2 class="section-heading">${escapeHtml(cfg.title || 'Schedule & Agenda')}</h2>
-    <ol class="detail-agenda"></ol>`;
-  const ol = block.querySelector('.detail-agenda');
-  const items = (entity && entity.agenda) || [];
-  if (!items.length) { ol.innerHTML = `<p>${escapeHtml(cfg.empty || 'Agenda will be published soon.')}</p>`; return; }
+  block.append(sectionH2(cfg.title || 'Schedule & Agenda'));
+  const ol = document.createElement('ol');
+  ol.className = 'detail-agenda';
+  block.append(ol);
 
-  ol.innerHTML = items.map((item) => `
-    <li class="detail-agenda-item reveal">
-      <div class="detail-agenda-time">${escapeHtml(item.time || '')}</div>
-      <div class="detail-agenda-body">
-        <h3>${escapeHtml(item.activity || '')}</h3>
-        <p>${escapeHtml(item.description || '')}</p>
-      </div>
-    </li>`).join('');
+  const items = (entity && entity.agenda) || [];
+  if (!items.length) { ol.append(emptyP(cfg.empty || 'Agenda will be published soon.')); return; }
+
+  items.forEach((item) => {
+    const li = document.createElement('li');
+    li.className = 'detail-agenda-item reveal';
+    const timeDiv = document.createElement('div');
+    timeDiv.className = 'detail-agenda-time';
+    timeDiv.textContent = item.time || '';
+    const bodyDiv = document.createElement('div');
+    bodyDiv.className = 'detail-agenda-body';
+    const h3 = document.createElement('h3');
+    h3.textContent = item.activity || '';
+    const p = document.createElement('p');
+    p.textContent = item.description || '';
+    bodyDiv.append(h3, p);
+    li.append(timeDiv, bodyDiv);
+    ol.append(li);
+  });
 }
 
 /* ─── people (presenters / speakers / hosts) ─── */
 
 async function renderPeople(block, cfg, entity) {
-  // The people variant reads its sub-section (presenters / guestSpeakers / hosts) from
-  // the block's class. da.live may hyphenate: `people-presenters` → split to find group.
   const group = (() => {
     const ids = ['presenters', 'speakers', 'hosts', 'guests', 'authors'];
     const flat = [...block.classList].flatMap((c) => c.split('-'));
@@ -210,83 +305,133 @@ async function renderPeople(block, cfg, entity) {
   })();
   const dataKey = group === 'speakers' ? 'guestSpeakers' : group;
 
-  const people = (entity && entity[dataKey]) || [];
-  block.innerHTML = `<h2 class="section-heading">${escapeHtml(cfg.title || group.charAt(0).toUpperCase() + group.slice(1))}</h2>
-    <div class="detail-people"></div>`;
-  const grid = block.querySelector('.detail-people');
-  if (!people.length) { grid.innerHTML = `<p>${escapeHtml(cfg.empty || 'No people listed yet.')}</p>`; return; }
+  block.append(sectionH2(cfg.title || group.charAt(0).toUpperCase() + group.slice(1)));
+  const grid = document.createElement('div');
+  grid.className = 'detail-people';
+  block.append(grid);
 
-  // Build a name→creatorId map so person cards can link to creator profiles.
+  const people = (entity && entity[dataKey]) || [];
+  if (!people.length) { grid.append(emptyP(cfg.empty || 'No people listed yet.')); return; }
+
   let creatorMap = {};
   try {
     const creators = await window.AdobeSphere.Utils.fetchData('creators');
     if (Array.isArray(creators)) {
       creators.forEach((c) => { if (c.name && c.id) creatorMap[c.name.toLowerCase()] = c.id; });
     }
-  } catch { /* noop — cards simply won't link */ }
+  } catch { /* noop */ }
 
-  const Utils = window.AdobeSphere.Utils;
-  grid.innerHTML = people.map((p) => {
-    const avatar = Utils.normaliseAsset(p.avatar, '/icons/user-default.svg');
-    const creatorId = creatorMap[(p.name || '').toLowerCase()];
+  const { Utils } = window.AdobeSphere;
+  people.forEach((person) => {
+    const avatar = Utils.normaliseAsset(person.avatar, '/icons/user-default.svg');
+    const creatorId = creatorMap[(person.name || '').toLowerCase()];
     const href = creatorId ? `/creator-profile?id=${encodeURIComponent(creatorId)}` : '';
-    const cardContent = `
-      <img src="${escapeHtml(avatar)}" alt="${escapeHtml(p.name || 'Person')}" loading="lazy">
-      <div class="detail-person-body">
-        <h3>${escapeHtml(p.name || '')}</h3>
-        <p class="text-muted">${escapeHtml(p.designation || '')}</p>
-        <p>${escapeHtml(p.bio || '')}</p>
-      </div>`;
+
+    const img = document.createElement('img');
+    img.src = avatar;
+    img.alt = person.name || 'Person';
+    img.loading = 'lazy';
+
+    const bodyDiv = document.createElement('div');
+    bodyDiv.className = 'detail-person-body';
+    const h3 = document.createElement('h3');
+    h3.textContent = person.name || '';
+    const desigP = document.createElement('p');
+    desigP.className = 'text-muted';
+    desigP.textContent = person.designation || '';
+    const bioP = document.createElement('p');
+    bioP.textContent = person.bio || '';
+    bodyDiv.append(h3, desigP, bioP);
+
     if (href) {
-      return `<a href="${escapeHtml(href)}" class="detail-person detail-person-link reveal">${cardContent}</a>`;
+      const a = document.createElement('a');
+      a.href = href;
+      a.className = 'detail-person detail-person-link reveal';
+      a.append(img, bodyDiv);
+      grid.append(a);
+    } else {
+      const article = document.createElement('article');
+      article.className = 'detail-person reveal';
+      article.append(img, bodyDiv);
+      grid.append(article);
     }
-    return `<article class="detail-person reveal">${cardContent}</article>`;
-  }).join('');
+  });
 }
 
 /* ─── quote ─── */
 
 function renderQuote(block, cfg, entity) {
   const text = (entity && (entity.closingQuote || entity.featuredQuote)) || cfg.title || '';
-  block.innerHTML = text ? `<blockquote class="detail-quote">${escapeHtml(text)}</blockquote>` : '';
-  if (!text) block.style.display = 'none';
+  if (!text) { block.style.display = 'none'; return; }
+  const bq = document.createElement('blockquote');
+  bq.className = 'detail-quote';
+  bq.textContent = text;
+  block.append(bq);
 }
 
 /* ─── bio ─── */
 
 function renderBio(block, cfg, entity) {
   if (!entity) { block.style.display = 'none'; return; }
-  const Utils = window.AdobeSphere.Utils;
+  const { Utils } = window.AdobeSphere;
   const bio = entity.fullBio || entity.bio || '';
 
-  // `text` modifier: plain paragraphs only — used on creator profile where hero already shows avatar/name.
   if (block.classList.contains('text')) {
     if (!bio) { block.style.display = 'none'; return; }
-    block.innerHTML = bio.split(/\n\n+/).map((p) => `<p>${escapeHtml(p)}</p>`).join('');
+    bio.split(/\n\n+/).forEach((para) => {
+      const p = document.createElement('p');
+      p.textContent = para;
+      block.append(p);
+    });
     return;
   }
 
-  const avatar = Utils.normaliseAsset(entity.avatar, '/icons/user-default.svg');
-  const paragraphs = bio.split(/\n\n+/).map((p) => `<p>${escapeHtml(p)}</p>`).join('');
-
-  block.innerHTML = `
-    ${cfg.title ? `<h2 class="section-heading">${escapeHtml(cfg.title)}</h2>` : ''}
-    <article class="detail-bio">
-      <img class="detail-bio-avatar" src="${escapeHtml(avatar)}" alt="${escapeHtml(entity.name || 'Author')}" loading="lazy">
-      <div class="detail-bio-body">
-        <h3>${escapeHtml(entity.name || '')}</h3>
-        <p class="text-muted">${escapeHtml(entity.designation || '')}</p>
-        ${paragraphs}
-      </div>
-    </article>`;
+  if (cfg.title) block.append(sectionH2(cfg.title));
+  const article = document.createElement('article');
+  article.className = 'detail-bio';
+  const img = document.createElement('img');
+  img.className = 'detail-bio-avatar';
+  img.src = Utils.normaliseAsset(entity.avatar, '/icons/user-default.svg');
+  img.alt = entity.name || 'Author';
+  img.loading = 'lazy';
+  const bioBody = document.createElement('div');
+  bioBody.className = 'detail-bio-body';
+  const h3 = document.createElement('h3');
+  h3.textContent = entity.name || '';
+  const designP = document.createElement('p');
+  designP.className = 'text-muted';
+  designP.textContent = entity.designation || '';
+  bioBody.append(h3, designP);
+  bio.split(/\n\n+/).forEach((para) => {
+    const p = document.createElement('p');
+    p.textContent = para;
+    bioBody.append(p);
+  });
+  article.append(img, bioBody);
+  block.append(article);
 }
 
 /* ─── reach-out ─── */
 
-const REACH_OUT_ICONS = {
-  email: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M2 7l10 7 10-7"></path></svg>`,
-  linkedin: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>`,
-};
+function makeReachOutIcon(type) {
+  const base = { width: '18', height: '18', 'aria-hidden': 'true' };
+  if (type === 'email') {
+    return makeSvg(
+      { ...base, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' },
+      { tag: 'rect', attrs: { x: '2', y: '4', width: '20', height: '16', rx: '2' } },
+      { tag: 'path', attrs: { d: 'M2 7l10 7 10-7' } }
+    );
+  }
+  if (type === 'linkedin') {
+    return makeSvg(
+      { ...base, viewBox: '0 0 24 24', fill: 'currentColor' },
+      { tag: 'path', attrs: { d: 'M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z' } },
+      { tag: 'rect', attrs: { x: '2', y: '9', width: '4', height: '12' } },
+      { tag: 'circle', attrs: { cx: '4', cy: '4', r: '2' } }
+    );
+  }
+  return null;
+}
 
 function renderReachOut(block, cfg, entity) {
   if (!entity) { block.style.display = 'none'; return; }
@@ -295,71 +440,102 @@ function renderReachOut(block, cfg, entity) {
   if (entity.socials && entity.socials.linkedin) links.push({ label: 'LinkedIn', href: entity.socials.linkedin, type: 'linkedin' });
   if (!links.length) { block.style.display = 'none'; return; }
 
-  block.innerHTML = `
-    ${cfg.title ? `<h2 class="section-heading">${escapeHtml(cfg.title)}</h2>` : ''}
-    <div class="detail-reach-out">
-      ${links.map((l) => `
-        <a class="reach-out-pill" href="${escapeHtml(l.href)}" target="_blank" rel="noopener">
-          <span class="reach-out-icon">${REACH_OUT_ICONS[l.type] || ''}</span>
-          <span>${escapeHtml(l.label)}</span>
-        </a>`).join('')}
-    </div>`;
+  if (cfg.title) block.append(sectionH2(cfg.title));
+  const container = document.createElement('div');
+  container.className = 'detail-reach-out';
+  links.forEach((l) => {
+    const a = document.createElement('a');
+    a.className = 'reach-out-pill';
+    a.href = l.href;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'reach-out-icon';
+    const icon = makeReachOutIcon(l.type);
+    if (icon) iconSpan.append(icon);
+    const textSpan = document.createElement('span');
+    textSpan.textContent = l.label;
+    a.append(iconSpan, textSpan);
+    container.append(a);
+  });
+  block.append(container);
 }
 
 /* ─── comments ─── */
 
 function renderComments(block, cfg) {
   const id = getEntityId();
-  const placeholder = cfg.placeholder || 'Share your thoughts…';
-  block.innerHTML = `
-    ${cfg.title ? `<h2 class="section-heading">${escapeHtml(cfg.title)}</h2>` : ''}
-    <p class="detail-comments-count text-muted"></p>
-    <div class="detail-comments-composer">
-      <textarea class="form-input detail-comments-input" rows="3" maxlength="500" placeholder="${escapeHtml(placeholder)}"></textarea>
-      <small class="text-muted detail-comments-counter">0 / 500</small>
-      <button type="button" class="button primary detail-comments-post">Post Comment</button>
-      <p class="form-error detail-comments-error"></p>
-    </div>
-    <div class="detail-comments-list"></div>`;
+  const { Storage, Utils } = window.AdobeSphere;
 
-  const Storage = window.AdobeSphere.Storage;
-  const Utils = window.AdobeSphere.Utils;
-  const list = block.querySelector('.detail-comments-list');
-  const count = block.querySelector('.detail-comments-count');
-  const input = block.querySelector('.detail-comments-input');
-  const counter = block.querySelector('.detail-comments-counter');
-  const errEl = block.querySelector('.detail-comments-error');
+  if (cfg.title) block.append(sectionH2(cfg.title));
+
+  const countP = document.createElement('p');
+  countP.className = 'detail-comments-count text-muted';
+  block.append(countP);
+
+  const composer = document.createElement('div');
+  composer.className = 'detail-comments-composer';
+
+  const textarea = document.createElement('textarea');
+  textarea.className = 'form-input detail-comments-input';
+  textarea.rows = 3;
+  textarea.maxLength = 500;
+  textarea.placeholder = cfg.placeholder || 'Share your thoughts…';
+
+  const charCounter = document.createElement('small');
+  charCounter.className = 'text-muted detail-comments-counter';
+  charCounter.textContent = '0 / 500';
+
+  const postBtn = document.createElement('button');
+  postBtn.type = 'button';
+  postBtn.className = 'button primary detail-comments-post';
+  postBtn.textContent = 'Post Comment';
+
+  const errP = document.createElement('p');
+  errP.className = 'form-error detail-comments-error';
+
+  composer.append(textarea, charCounter, postBtn, errP);
+  block.append(composer);
+
+  const list = document.createElement('div');
+  list.className = 'detail-comments-list';
+  block.append(list);
 
   function refresh() {
     const comments = id ? Storage.getComments(id) : [];
-    count.textContent = `${comments.length} comment${comments.length === 1 ? '' : 's'}`;
-    list.innerHTML = comments.map((c) => {
-      const avatar = Utils.normaliseAsset(c.avatar, '/icons/user-default.svg');
-      return `<article class="detail-comment">
-        <img src="${escapeHtml(avatar)}" alt="">
-        <div>
-          <p class="detail-comment-meta"><strong>${escapeHtml(c.author || 'Anonymous')}</strong> · ${escapeHtml(Utils.formatShortDate(c.timestamp || ''))}</p>
-          <p>${escapeHtml(c.text || '')}</p>
-        </div>
-      </article>`;
-    }).join('');
+    countP.textContent = `${comments.length} comment${comments.length === 1 ? '' : 's'}`;
+    list.textContent = '';
+    comments.forEach((c) => {
+      const article = document.createElement('article');
+      article.className = 'detail-comment';
+      const img = document.createElement('img');
+      img.src = Utils.normaliseAsset(c.avatar, '/icons/user-default.svg');
+      img.alt = '';
+      const div = document.createElement('div');
+      const metaP = document.createElement('p');
+      metaP.className = 'detail-comment-meta';
+      const strong = document.createElement('strong');
+      strong.textContent = c.author || 'Anonymous';
+      metaP.append(strong, ` · ${Utils.formatShortDate(c.timestamp || '')}`);
+      const textP = document.createElement('p');
+      textP.textContent = c.text || '';
+      div.append(metaP, textP);
+      article.append(img, div);
+      list.append(article);
+    });
   }
 
-  input.addEventListener('input', () => { counter.textContent = `${input.value.length} / 500`; });
+  textarea.addEventListener('input', () => { charCounter.textContent = `${textarea.value.length} / 500`; });
 
-  block.querySelector('.detail-comments-post').addEventListener('click', () => {
-    errEl.textContent = '';
+  postBtn.addEventListener('click', () => {
+    errP.textContent = '';
     if (!Storage.isLoggedIn()) {
-      Utils.showAuthModal({
-        redirect: window.location.pathname + window.location.search,
-        title: 'Sign in to comment',
-        message: 'Join the AdobeSphere community to share your thoughts and connect with creators.',
-      });
+      Utils.showAuthModal({ redirect: window.location.pathname + window.location.search });
       return;
     }
-    const text = input.value.trim();
-    if (!text) { errEl.textContent = 'Comment cannot be empty.'; return; }
-    if (!id) { errEl.textContent = 'Cannot identify the article.'; return; }
+    const text = textarea.value.trim();
+    if (!text) { errP.textContent = 'Comment cannot be empty.'; return; }
+    if (!id) { errP.textContent = 'Cannot identify the article.'; return; }
     const user = Storage.getCurrentUser() || {};
     Storage.addComment(id, {
       author: user.name || 'Anonymous',
@@ -367,8 +543,8 @@ function renderComments(block, cfg) {
       text,
       timestamp: new Date().toISOString(),
     });
-    input.value = '';
-    counter.textContent = '0 / 500';
+    textarea.value = '';
+    charCounter.textContent = '0 / 500';
     refresh();
     Utils.toast('Comment posted!', 'success');
   });
@@ -376,17 +552,15 @@ function renderComments(block, cfg) {
   refresh();
 }
 
-/* ─── article-body (blog content array) ─── */
+/* ─── article-body ─── */
 
 function renderArticleBody(block, cfg, entity) {
   if (!entity || !Array.isArray(entity.content) || !entity.content.length) {
-    block.innerHTML = `<p>${escapeHtml(cfg.empty || 'Article content is unavailable.')}</p>`;
+    block.append(emptyP(cfg.empty || 'Article content is unavailable.'));
     return;
   }
-
   const article = document.createElement('article');
   article.className = 'detail-article';
-
   entity.content.forEach((blk) => {
     if (!blk || !blk.text) return;
     const text = String(blk.text);
@@ -408,7 +582,6 @@ function renderArticleBody(block, cfg, entity) {
       }
       article.append(fig);
     } else {
-      // Default: paragraph. Splits on \n\n to support multi-para text in one block.
       text.split(/\n\n+/).forEach((para) => {
         const p = document.createElement('p');
         p.textContent = para.trim();
@@ -416,7 +589,6 @@ function renderArticleBody(block, cfg, entity) {
       });
     }
   });
-
   block.append(article);
 }
 
@@ -425,26 +597,15 @@ function renderArticleBody(block, cfg, entity) {
 export default async function decorate(block) {
   const cfg = readConfig(block);
   const variants = [...block.classList];
-
-  // da.live may emit hyphenated classes like `people-presenters` (single class)
-  // instead of two separate classes `people` + `presenters`.  Normalise by
-  // checking both the raw classList and a flattened version that splits hyphens.
-  // IMPORTANT: also check `variants` directly — `flatVariants.includes('reach-out')`
-  // will always be false because 'reach-out'.split('-') = ['reach','out'], so
-  // the hyphenated string 'reach-out' is never in the flat array.
   const flatVariants = variants.flatMap((c) => c.split('-'));
 
-  // Determine which variant is active.
   const variant = ['blog-header', 'overview', 'agenda', 'people', 'quote', 'comments', 'bio', 'reach-out',
     'presenters', 'speakers', 'hosts', 'article-body'].find((v) =>
     variants.includes(v) || flatVariants.includes(v)
   ) || 'overview';
 
-  // Hydrate entity if needed.
   let entity = null;
   if (['blog-header', 'overview', 'agenda', 'people', 'presenters', 'speakers', 'hosts', 'quote', 'bio', 'reach-out', 'article-body'].includes(variant)) {
-    // Source: explicit "Id Source" field always wins.
-    // blog-header and article-body implicitly target blogs; everything else defaults to events.
     const source = cfg.id_source
       || (['blog-header', 'article-body'].includes(variant) ? 'blogs' : null)
       || 'events';
@@ -452,13 +613,9 @@ export default async function decorate(block) {
     if (id) entity = await loadEntity(source, id);
   }
 
-  // Bio on a blog page: the loaded entity is the blog, but renderBio expects a
-  // creator-shaped object.  Cross-reference blog.author.id → creators.json so
-  // the bio strip shows the author's full profile (avatar, fullBio, socials).
   if (variant === 'bio' && entity && entity.author && entity.author.id) {
-    const authorId = entity.author.id;
     try {
-      const creator = await loadEntity('creators', authorId);
+      const creator = await loadEntity('creators', entity.author.id);
       if (creator) entity = creator;
     } catch { /* fall back to blog.author inline fields */ }
   }

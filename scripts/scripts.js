@@ -353,44 +353,103 @@ const Utils = {
     nodes.forEach((n) => obs.observe(n));
   },
 
-  showAuthModal({ redirect, title, message } = {}) {
+  async showAuthModal({ redirect } = {}) {
     const redirectUrl = encodeURIComponent(redirect || (window.location.pathname + window.location.search));
-    const LOCK_SVG = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`;
 
-    let overlay = document.getElementById('auth-modal');
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.id = 'auth-modal';
-      overlay.className = 'modal-overlay';
-      overlay.setAttribute('role', 'dialog');
-      overlay.setAttribute('aria-modal', 'true');
-      overlay.setAttribute('aria-labelledby', 'auth-modal-title');
-      overlay.setAttribute('aria-hidden', 'true');
-      document.body.append(overlay);
-    }
+    // Fetch authored heading / message / buttons from DA.live (no hardcoded copy).
+    let heading = 'Sign in to continue';
+    let msgText = 'Join the AdobeSphere community to participate.';
+    const authoredBtns = [];
+    try {
+      const res = await fetch('/modals/auth-prompt.plain.html');
+      if (res.ok) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(await res.text(), 'text/html');
+        const h2 = doc.querySelector('h2');
+        if (h2) heading = h2.textContent.trim();
+        const p = doc.querySelector('p');
+        if (p) msgText = p.textContent.trim();
+        doc.querySelectorAll('a[href]').forEach((a) => {
+          authoredBtns.push({ text: a.textContent.trim(), href: a.getAttribute('href') });
+        });
+      }
+    } catch { /* use fallback strings */ }
 
-    overlay.innerHTML = `
-      <div class="modal-box auth-modal-box">
-        <button type="button" class="modal-close" aria-label="Close dialog">&#215;</button>
-        <div class="auth-modal-icon" aria-hidden="true">${LOCK_SVG}</div>
-        <h2 class="auth-modal-heading" id="auth-modal-title">${this.escapeHtml(title || 'Sign in to continue')}</h2>
-        <p class="auth-modal-message">${this.escapeHtml(message || 'Join the AdobeSphere community to participate.')}</p>
-        <div class="auth-modal-actions">
-          <a class="button primary" href="/login?redirect=${redirectUrl}">Sign In</a>
-          <a class="button ghost" href="/signup?redirect=${redirectUrl}">Sign Up</a>
-        </div>
-      </div>`;
+    // Remove any prior instance so event listeners don't accumulate.
+    document.getElementById('auth-modal')?.remove();
 
-    const closeBtn = overlay.querySelector('.modal-close');
+    const overlay = document.createElement('div');
+    overlay.id = 'auth-modal';
+    overlay.className = 'modal-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'auth-modal-title');
+    overlay.setAttribute('aria-hidden', 'true');
+
+    const box = document.createElement('div');
+    box.className = 'modal-box auth-modal-box';
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'modal-close';
+    closeBtn.setAttribute('aria-label', 'Close dialog');
+    closeBtn.textContent = '×';
+
+    // Lock icon via createElementNS (no innerHTML).
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+    const iconWrap = document.createElement('div');
+    iconWrap.className = 'auth-modal-icon';
+    iconWrap.setAttribute('aria-hidden', 'true');
+    const lockSvg = document.createElementNS(SVG_NS, 'svg');
+    [['width', '40'], ['height', '40'], ['viewBox', '0 0 24 24'], ['fill', 'none'],
+      ['stroke', 'currentColor'], ['stroke-width', '1.5'], ['stroke-linecap', 'round'],
+      ['stroke-linejoin', 'round'], ['aria-hidden', 'true'],
+    ].forEach(([k, v]) => lockSvg.setAttribute(k, v));
+    const lockRect = document.createElementNS(SVG_NS, 'rect');
+    [['x', '3'], ['y', '11'], ['width', '18'], ['height', '11'], ['rx', '2']].forEach(([k, v]) => lockRect.setAttribute(k, v));
+    const lockPath = document.createElementNS(SVG_NS, 'path');
+    lockPath.setAttribute('d', 'M7 11V7a5 5 0 0 1 10 0v4');
+    lockSvg.append(lockRect, lockPath);
+    iconWrap.append(lockSvg);
+
+    const h2El = document.createElement('h2');
+    h2El.className = 'auth-modal-heading';
+    h2El.id = 'auth-modal-title';
+    h2El.textContent = heading;
+
+    const pEl = document.createElement('p');
+    pEl.className = 'auth-modal-message';
+    pEl.textContent = msgText;
+
+    const actions = document.createElement('div');
+    actions.className = 'auth-modal-actions';
+    const defaults = [
+      { text: 'Sign In', href: '/login', cls: 'primary' },
+      { text: 'Sign Up', href: '/signup', cls: 'ghost' },
+    ];
+    const btnDefs = authoredBtns.length >= 2
+      ? authoredBtns.map((b, i) => ({ ...b, cls: defaults[i]?.cls || '' }))
+      : defaults;
+    btnDefs.forEach((btn) => {
+      const a = document.createElement('a');
+      a.className = `button ${btn.cls || ''}`.trim();
+      a.href = btn.href.includes('?') ? `${btn.href}&redirect=${redirectUrl}` : `${btn.href}?redirect=${redirectUrl}`;
+      a.textContent = btn.text;
+      actions.append(a);
+    });
+
+    box.append(closeBtn, iconWrap, h2El, pEl, actions);
+    overlay.append(box);
+    document.body.append(overlay);
+
     const prevFocus = document.activeElement;
-
     const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
     const close = () => {
       overlay.classList.remove('open');
-      overlay.setAttribute('aria-hidden', 'true');
+      overlay.addEventListener('transitionend', () => overlay.remove(), { once: true });
       document.removeEventListener('keydown', onKey);
-      if (prevFocus && typeof prevFocus.focus === 'function') prevFocus.focus();
+      if (prevFocus?.focus) prevFocus.focus();
     };
 
     const onKey = (e) => {
@@ -409,9 +468,11 @@ const Utils = {
     overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
     document.addEventListener('keydown', onKey);
 
-    overlay.removeAttribute('aria-hidden');
-    overlay.classList.add('open');
-    requestAnimationFrame(() => closeBtn.focus());
+    requestAnimationFrame(() => {
+      overlay.removeAttribute('aria-hidden');
+      overlay.classList.add('open');
+      closeBtn.focus();
+    });
   },
 };
 
