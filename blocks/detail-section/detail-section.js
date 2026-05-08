@@ -494,6 +494,9 @@ async function seedDefaultComments(id, source, entity) {
   const { Storage, Utils } = window.AdobeSphere;
   if (!id || Storage.getComments(id).length > 0) return;
 
+  // Only seed curated content — never user-submitted blogs.
+  if ((entity && entity.userSubmitted) || id.startsWith('user-blog-')) return;
+
   const creators = await Utils.fetchData('creators').catch(() => null);
   if (!Array.isArray(creators) || !creators.length) return;
 
@@ -512,9 +515,17 @@ async function seedDefaultComments(id, source, entity) {
     .sort(() => Math.random() - 0.5)
     .slice(0, 3);
 
+  // Anchor timestamps to the content's publish date so comments feel contextual.
+  const publishedAt = entity && (entity.publishedDate || entity.date)
+    ? new Date(entity.publishedDate || entity.date)
+    : new Date(Date.now() - 60 * 86_400_000);
+  const now = new Date();
+
   picks.forEach((creator, i) => {
-    const daysAgo = [12, 8, 3][i];
-    const ts = new Date(Date.now() - daysAgo * 86_400_000).toISOString();
+    // Comments land 3, 7, 14 days after publish — capped at today.
+    const daysAfter = [3, 7, 14][i];
+    const commentDate = new Date(publishedAt.getTime() + daysAfter * 86_400_000);
+    const ts = (commentDate > now ? now : commentDate).toISOString();
     Storage.addComment(id, {
       author: creator.name || 'Adobe Community',
       authorId: creator.id || '',
