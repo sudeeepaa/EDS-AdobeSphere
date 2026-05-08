@@ -1,0 +1,83 @@
+/*
+ * AdobeSphere — faq block (accordion).
+ * Reusable on any page. Heading is authored above the block in DA.live.
+ */
+
+.faq .faq-item {
+  border-bottom: 1px solid var(--neutral-light);
+}
+
+.faq .faq-item:first-child {
+  border-top: 1px solid var(--neutral-light);
+}
+
+.faq .faq-question {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 18px 0;
+  background: none;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.faq .faq-question:hover {
+  color: var(--red-primary);
+}
+
+/* +/× icon */
+.faq .faq-question::after {
+  content: "+";
+  flex-shrink: 0;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--text-muted);
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.faq .faq-item.open .faq-question::after {
+  content: "×";
+  color: var(--red-primary);
+}
+
+/* Collapsed answer panel */
+.faq .faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 320ms ease;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.faq .faq-item.open .faq-answer {
+  max-height: 480px;
+  padding-bottom: 18px;
+}
+
+/* Preserve link styling in authored answers */
+.faq .faq-answer a {
+  color: var(--red-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.faq .faq-answer a:hover {
+  color: var(--red-deep);
+}
+
+/* ── Mobile ──────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .faq .faq-question {
+    font-size: 0.9rem;
+    padding: 16px 0;
+  }
+}
