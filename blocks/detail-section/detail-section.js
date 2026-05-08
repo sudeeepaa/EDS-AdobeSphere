@@ -37,6 +37,7 @@ async function loadEntity(source, id) {
     if (found) return found;
   }
   if (source === 'creators') return window.AdobeSphere.Storage.getLocalCreator?.(id) || null;
+  if (source === 'blogs') return window.AdobeSphere.Storage.getUserBlogById?.(id) || null;
   return null;
 }
 
@@ -121,7 +122,9 @@ function renderBlogHeader(block, cfg, entity) {
   const author = entity.author || {};
   const avatarSrc = Utils.normaliseAsset(author.avatar, '/assets/images/profiles/default-user.jpg');
   const coverSrc = Utils.normaliseAsset(entity.coverImage, '/assets/images/blogs/blog-card-fallback.jpg');
-  const profileUrl = author.id ? `/creator-profile?id=${encodeURIComponent(author.id)}` : '';
+  const rawAuthorId = author.id || '';
+  const profileId = rawAuthorId.startsWith('user:') ? rawAuthorId.slice(5) : rawAuthorId;
+  const profileUrl = profileId ? `/creator-profile?id=${encodeURIComponent(profileId)}` : '';
   const saved = Storage.isLoggedIn() && entity.id ? Storage.isBlogSaved?.(String(entity.id)) : false;
 
   /* inner wrapper */
@@ -615,7 +618,9 @@ export default async function decorate(block) {
 
   if (variant === 'bio' && entity && entity.author && entity.author.id) {
     try {
-      const creator = await loadEntity('creators', entity.author.id);
+      const rawId = entity.author.id;
+      const lookupId = rawId.startsWith('user:') ? rawId.slice(5) : rawId;
+      const creator = await loadEntity('creators', lookupId);
       if (creator) entity = creator;
     } catch { /* fall back to blog.author inline fields */ }
   }
