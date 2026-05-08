@@ -356,18 +356,25 @@ async function hydrateFromData(block, type, cfg, opts) {
   const { Utils } = window.AdobeSphere;
   const data = await Utils.fetchData(type === 'events' ? 'campaigns' : type);
 
-  if (!Array.isArray(data) || !data.length) {
-    block.innerHTML = `<p class="cards-empty">${escapeHtml(cfg.empty || `No ${type} available.`)}</p>`;
-    return;
-  }
-
-  let items = data.slice();
+  let items = Array.isArray(data) ? data.slice() : [];
 
   // Append registered user profiles to the creators listing.
   if (type === 'creators') {
     const localCreators = window.AdobeSphere.Storage.getAllLocalCreators?.() || [];
     const existingIds = new Set(items.map((c) => c.id));
     localCreators.forEach((lc) => { if (!existingIds.has(lc.id)) items.push(lc); });
+  }
+
+  // Merge user-submitted blogs (localStorage) into the public blogs listing.
+  if (type === 'blogs') {
+    const userBlogs = window.AdobeSphere.Storage.getAllUserBlogs?.() || [];
+    const existingIds = new Set(items.map((b) => b.id));
+    userBlogs.forEach((ub) => { if (!existingIds.has(ub.id)) items.push(ub); });
+  }
+
+  if (!items.length) {
+    block.innerHTML = `<p class="cards-empty">${escapeHtml(cfg.empty || `No ${type} available.`)}</p>`;
+    return;
   }
 
   // Resolve Ids From

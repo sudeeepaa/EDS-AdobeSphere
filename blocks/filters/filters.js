@@ -97,7 +97,14 @@ export default async function decorate(block) {
     // Load data to populate dynamic options (categories, locations, designations)
     const dataFile = source === 'events' ? 'campaigns' : source;
     const data = await window.AdobeSphere.Utils.fetchData(dataFile);
-    const items = Array.isArray(data) ? data : [];
+    const items = Array.isArray(data) ? data.slice() : [];
+
+    // Merge user-submitted blogs so their categories appear in filter dropdowns.
+    if (source === 'blogs') {
+      const userBlogs = window.AdobeSphere.Storage.getAllUserBlogs?.() || [];
+      const existingIds = new Set(items.map((b) => b.id));
+      userBlogs.forEach((ub) => { if (!existingIds.has(ub.id)) items.push(ub); });
+    }
 
     // Initial filter state — mirrors what cards.js uses internally
     const state = source === 'events'

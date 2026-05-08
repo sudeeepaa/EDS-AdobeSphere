@@ -275,6 +275,11 @@ const Storage = {
     return writeJSON(STORAGE_KEYS.USER_BLOGS, all);
   },
 
+  getAllUserBlogs() {
+    const all = readJSON(STORAGE_KEYS.USER_BLOGS, {});
+    return Object.values(all).flat();
+  },
+
   getBlogCategories() {
     return readJSON('adobesphere_blog_categories', []);
   },
