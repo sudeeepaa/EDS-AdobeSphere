@@ -360,7 +360,7 @@ function renderComments(block, cfg) {
     const user = Storage.getCurrentUser() || {};
     Storage.addComment(id, {
       author: user.name || 'Anonymous',
-      avatar: user.avatar || '',
+      avatar: user.avatarSrc || user.avatar || '',
       text,
       timestamp: new Date().toISOString(),
     });
