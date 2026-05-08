@@ -485,6 +485,7 @@ const DYNAMIC_ROUTES = [
   { pattern: /^\/events\/(?!template\b)[^/]+\/?$/, template: '/events/template' },
   { pattern: /^\/blog\/(?!template\b)[^/]+\/?$/, template: '/blog/template' },
   { pattern: /^\/creator-profile\/(?!template\b)[^/]+\/?$/, template: '/creator-profile/template' },
+  { pattern: /^\/creator-profile\/?$/, template: '/creator-profile/template' },
 ];
 
 async function applyDynamicRoute(doc) {
