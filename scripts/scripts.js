@@ -714,7 +714,7 @@ async function loadLazy(doc) {
   if (Storage.isLoggedIn()) {
     doc.querySelectorAll('main a, main button').forEach((el) => {
       if (/join\b.*\bcommunity/i.test(el.textContent.trim())) {
-        el.closest('p, li') ? el.closest('p, li').remove() : el.remove();
+        el.remove();
       }
     });
   }
