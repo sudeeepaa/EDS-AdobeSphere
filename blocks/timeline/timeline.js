@@ -6,18 +6,22 @@
  *   col 2 = date   (e.g. "Apr 09, 2026")
  *   col 3 = bullet points authored as a UL — each <li> becomes a separate line.
  *
- * Behaviour:
- *   - Auto-scrolls left at a constant speed via requestAnimationFrame.
- *   - On reaching the last card the track fades out, resets to the first
- *     card, then fades back in — a clean chapter-restart (not an infinite
- *     duplicate-card marquee).
- *   - A red progress bar above the track fills from 0 → 100% each pass.
- *   - Hover / focus / touch pauses the animation.
- *   - prefers-reduced-motion: static horizontal scroller, no animation.
+ * Progress bar:
+ *   - Click anywhere on the bar to jump to that position.
+ *   - Drag (mouse or touch) to scrub through the timeline.
+ *   - Tab to the bar and use ← → arrow keys (10% steps) for keyboard access.
+ *   - Hovering reveals a circular handle at the current position.
+ *
+ * Auto-scroll:
+ *   - rAF-driven scrollLeft on the card wrapper (~90 px/s).
+ *   - Reaches end → fade out → reset to start → fade in.
+ *   - Pauses on hover / focus / touch / scrubbing.
+ *
+ * prefers-reduced-motion: static swipeable list, no animation, bar hidden.
  */
 
-const SPEED = 1.5; // px per requestAnimationFrame tick (~90 px/s at 60 fps)
-const FADE_MS = 280; // opacity transition duration (ms) for loop reset
+const SPEED = 1.5; // px per rAF tick ≈ 90 px/s at 60 fps
+const FADE_MS = 280; // loop-reset opacity transition (ms)
 
 function buildCard(m) {
   const article = document.createElement('article');
@@ -79,15 +83,31 @@ export default function decorate(block) {
   }
 
   // ── Progress bar ──────────────────────────────────────────────────────
+  // Structure: progressWrap (clickable area) > progressTrack > progressBar
+  //                                          > thumb (circle handle)
   const progressWrap = document.createElement('div');
   progressWrap.className = 'timeline-progress-wrap';
-  progressWrap.setAttribute('aria-hidden', 'true');
+  progressWrap.setAttribute('tabindex', '0');
+  progressWrap.setAttribute('role', 'slider');
+  progressWrap.setAttribute('aria-label', 'Journey progress — use arrow keys to seek');
+  progressWrap.setAttribute('aria-valuenow', '0');
+  progressWrap.setAttribute('aria-valuemin', '0');
+  progressWrap.setAttribute('aria-valuemax', '100');
+
+  const progressTrack = document.createElement('div');
+  progressTrack.className = 'timeline-progress-track';
 
   const progressBar = document.createElement('div');
   progressBar.className = 'timeline-progress-bar';
-  progressWrap.append(progressBar);
+  progressTrack.append(progressBar);
 
-  // ── Scrollable track wrapper ──────────────────────────────────────────
+  const thumb = document.createElement('div');
+  thumb.className = 'timeline-progress-thumb';
+  thumb.setAttribute('aria-hidden', 'true');
+
+  progressWrap.append(progressTrack, thumb);
+
+  // ── Scrollable card wrapper ───────────────────────────────────────────
   const wrap = document.createElement('div');
   wrap.className = 'timeline-track-wrap';
 
@@ -100,19 +120,23 @@ export default function decorate(block) {
 
   block.append(progressWrap, wrap);
 
-  // ── Reduced-motion: static list, no JS animation ──────────────────────
+  // ── Reduced-motion: static list, no animation ─────────────────────────
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduceMotion) return;
 
-  // ── Auto-scroll state ─────────────────────────────────────────────────
+  // ── Shared state ──────────────────────────────────────────────────────
   let pos = 0;
   let paused = false;
   let resetting = false;
+  let scrubbing = false;
 
   const getMax = () => Math.max(0, wrap.scrollWidth - wrap.clientWidth);
 
   const setProgress = (p, max) => {
-    progressBar.style.width = `${max > 0 ? Math.min(p / max, 1) * 100 : 0}%`;
+    const pct = max > 0 ? Math.min(p / max, 1) * 100 : 0;
+    progressBar.style.width = `${pct}%`;
+    thumb.style.left = `${pct}%`;
+    progressWrap.setAttribute('aria-valuenow', String(Math.round(pct)));
   };
 
   const resetLoop = () => {
@@ -123,11 +147,11 @@ export default function decorate(block) {
       wrap.scrollLeft = 0;
       setProgress(0, getMax());
       wrap.style.opacity = '1';
-      // Brief buffer so the fade-in starts before we resume ticking.
       setTimeout(() => { resetting = false; }, 50);
     }, FADE_MS);
   };
 
+  // ── rAF tick ──────────────────────────────────────────────────────────
   const tick = () => {
     if (!paused && !resetting) {
       const max = getMax();
@@ -144,22 +168,91 @@ export default function decorate(block) {
     requestAnimationFrame(tick);
   };
 
-  // ── Pause on hover / focus ────────────────────────────────────────────
+  // ── Scrub helpers ─────────────────────────────────────────────────────
+  const scrubTo = (clientX) => {
+    const rect = progressWrap.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const max = getMax();
+    pos = pct * max;
+    wrap.scrollLeft = pos;
+    setProgress(pos, max);
+  };
+
+  const startScrub = (clientX) => {
+    scrubbing = true;
+    paused = true;
+    progressWrap.classList.add('scrubbing');
+    scrubTo(clientX);
+  };
+
+  const endScrub = () => {
+    if (!scrubbing) return;
+    scrubbing = false;
+    progressWrap.classList.remove('scrubbing');
+    setTimeout(() => { paused = false; }, 800);
+  };
+
+  // ── Mouse: click to seek, drag to scrub ──────────────────────────────
+  progressWrap.addEventListener('mousedown', (e) => {
+    e.preventDefault(); // prevent text selection while dragging
+    startScrub(e.clientX);
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (scrubbing) scrubTo(e.clientX);
+  });
+
+  document.addEventListener('mouseup', endScrub);
+
+  // ── Touch: tap to seek, drag to scrub ────────────────────────────────
+  progressWrap.addEventListener('touchstart', (e) => {
+    startScrub(e.touches[0].clientX);
+  }, { passive: true });
+
+  progressWrap.addEventListener('touchmove', (e) => {
+    if (scrubbing) scrubTo(e.touches[0].clientX);
+  }, { passive: true });
+
+  progressWrap.addEventListener('touchend', endScrub, { passive: true });
+
+  // ── Keyboard: ← → arrow keys seek by 10% ─────────────────────────────
+  progressWrap.addEventListener('keydown', (e) => {
+    const max = getMax();
+    if (max <= 0) return;
+    const step = max * 0.1;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      pos = Math.min(pos + step, max);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      pos = Math.max(pos - step, 0);
+    } else {
+      return;
+    }
+    wrap.scrollLeft = pos;
+    setProgress(pos, max);
+  });
+
+  progressWrap.addEventListener('focus', () => { paused = true; });
+  progressWrap.addEventListener('blur', () => {
+    setTimeout(() => { if (!scrubbing) paused = false; }, 500);
+  });
+
+  // ── Card area: hover / focus pauses; touch syncs pos on resume ────────
   wrap.addEventListener('mouseenter', () => { paused = true; });
-  wrap.addEventListener('mouseleave', () => { paused = false; });
+  wrap.addEventListener('mouseleave', () => { if (!scrubbing) paused = false; });
   wrap.addEventListener('focusin', () => { paused = true; });
   wrap.addEventListener('focusout', () => { paused = false; });
 
-  // ── Pause on touch; resume after 1 s of inactivity ───────────────────
   wrap.addEventListener('touchstart', () => { paused = true; }, { passive: true });
   wrap.addEventListener('touchend', () => {
     setTimeout(() => {
-      pos = wrap.scrollLeft; // sync pos with where the user left it
+      pos = wrap.scrollLeft;
       paused = false;
     }, 1000);
   }, { passive: true });
 
-  // Keep progress bar in sync with manual touch-scroll.
+  // Keep progress bar synced when user touch-scrolls the card area.
   wrap.addEventListener('scroll', () => {
     setProgress(wrap.scrollLeft, getMax());
   }, { passive: true });

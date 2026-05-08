@@ -1,9 +1,9 @@
 /*
  * AdobeSphere — timeline block (Platform Journey ribbon).
  *
+ * Progress bar is interactive: click to seek, drag to scrub,
+ * arrow keys for keyboard access. A circular handle appears on hover/focus.
  * JS drives scrollLeft on .timeline-track-wrap each rAF frame.
- * On loop-reset the wrapper fades out → scrolls to 0 → fades back in.
- * The red progress bar fills from 0 → 100% across each pass.
  */
 
 .timeline {
@@ -12,14 +12,41 @@
 }
 
 /* ── Progress bar ────────────────────────────────────────────────────── */
+
+/* Outer wrap: extra padding expands the click/touch target */
 .timeline-progress-wrap {
+  position: relative;
+  padding: 10px 0;
+  margin: 0 0 12px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  outline: none;
+}
+
+/* Keyboard focus ring */
+.timeline-progress-wrap:focus-visible {
+  outline: 2px solid var(--red-primary);
+  outline-offset: 6px;
+  border-radius: 4px;
+}
+
+/* The visible track strip */
+.timeline-progress-track {
   height: 4px;
-  margin: 0 0 20px;
   background: rgba(0, 0, 0, 8%);
   border-radius: 2px;
   overflow: hidden;
+  transition: height 150ms ease;
 }
 
+.timeline-progress-wrap:hover .timeline-progress-track,
+.timeline-progress-wrap:focus-visible .timeline-progress-track,
+.timeline-progress-wrap.scrubbing .timeline-progress-track {
+  height: 6px;
+}
+
+/* Red fill */
 .timeline-progress-bar {
   height: 100%;
   width: 0%;
@@ -27,7 +54,28 @@
   border-radius: 2px;
 }
 
-/* ── Scrollable wrapper ──────────────────────────────────────────────── */
+/* Circular handle — visible on hover / focus / scrub */
+.timeline-progress-thumb {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--red-primary);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 25%);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 150ms ease;
+  pointer-events: none;
+}
+
+.timeline-progress-wrap:hover .timeline-progress-thumb,
+.timeline-progress-wrap:focus-visible .timeline-progress-thumb,
+.timeline-progress-wrap.scrubbing .timeline-progress-thumb {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* ── Scrollable card wrapper ─────────────────────────────────────────── */
 .timeline .timeline-track-wrap {
   overflow-x: auto;
   scrollbar-width: none;
@@ -118,12 +166,13 @@
     padding: 8px 12px;
   }
 
-  .timeline-progress-wrap {
-    margin-bottom: 14px;
+  .timeline-progress-thumb {
+    width: 16px;
+    height: 16px;
   }
 }
 
-/* ── Reduced-motion: static horizontal scroller, no JS animation ─────── */
+/* ── Reduced-motion: static swipeable list, no animation ─────────────── */
 @media (prefers-reduced-motion: reduce) {
   .timeline .timeline-track-wrap {
     overflow-x: auto;
