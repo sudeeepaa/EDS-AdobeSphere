@@ -490,23 +490,34 @@ function detectCommentSource(cfg, id) {
   return 'events';
 }
 
-async function seedDefaultComments(id, source) {
+async function seedDefaultComments(id, source, entity) {
   const { Storage, Utils } = window.AdobeSphere;
   if (!id || Storage.getComments(id).length > 0) return;
 
   const creators = await Utils.fetchData('creators').catch(() => null);
   if (!Array.isArray(creators) || !creators.length) return;
 
+  // Exclude the content author so they don't comment on their own work.
+  const authorName = ((entity && entity.author && entity.author.name) || '').toLowerCase();
+  const authorId = ((entity && (entity.ownerIdentity || (entity.author && entity.author.id))) || '')
+    .replace(/^user:/, '').toLowerCase();
+
   const templates = source === 'blogs' ? BLOG_COMMENT_SEEDS : EVENT_COMMENT_SEEDS;
-  // Shuffle creators so each entity gets a different trio on first load.
-  const picks = creators.slice().sort(() => Math.random() - 0.5).slice(0, 3);
+  const picks = creators.slice()
+    .filter((c) => {
+      if (authorName && (c.name || '').toLowerCase() === authorName) return false;
+      if (authorId && (c.id || '').toLowerCase() === authorId) return false;
+      return true;
+    })
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 3);
 
   picks.forEach((creator, i) => {
-    // Stagger timestamps: 12, 8, 3 days ago so they read newest-to-seed order.
     const daysAgo = [12, 8, 3][i];
     const ts = new Date(Date.now() - daysAgo * 86_400_000).toISOString();
     Storage.addComment(id, {
       author: creator.name || 'Adobe Community',
+      authorId: creator.id || '',
       avatar: Utils.normaliseAsset(creator.avatar, '/icons/user-default.svg'),
       text: templates[i % templates.length],
       timestamp: ts,
@@ -516,11 +527,11 @@ async function seedDefaultComments(id, source) {
 
 /* ─── comments ─── */
 
-async function renderComments(block, cfg, source) {
+async function renderComments(block, cfg, source, entity) {
   const id = getEntityId();
   const { Storage, Utils } = window.AdobeSphere;
 
-  await seedDefaultComments(id, source || detectCommentSource(cfg, id));
+  await seedDefaultComments(id, source || detectCommentSource(cfg, id), entity);
 
   if (cfg.title) block.append(sectionH2(cfg.title));
 
@@ -563,19 +574,47 @@ async function renderComments(block, cfg, source) {
     comments.forEach((c) => {
       const article = document.createElement('article');
       article.className = 'detail-comment';
+
+      const profileUrl = c.authorId
+        ? `/creator-profile?id=${encodeURIComponent(c.authorId)}`
+        : '';
+
       const img = document.createElement('img');
       img.src = Utils.normaliseAsset(c.avatar, '/icons/user-default.svg');
-      img.alt = '';
+      img.alt = c.author || '';
+      img.className = 'detail-comment-avatar';
+
+      if (profileUrl) {
+        const avatarLink = document.createElement('a');
+        avatarLink.href = profileUrl;
+        avatarLink.className = 'detail-comment-avatar-link';
+        avatarLink.setAttribute('aria-label', `View ${c.author || 'commenter'}'s profile`);
+        avatarLink.append(img);
+        article.append(avatarLink);
+      } else {
+        article.append(img);
+      }
+
       const div = document.createElement('div');
       const metaP = document.createElement('p');
       metaP.className = 'detail-comment-meta';
+
       const strong = document.createElement('strong');
-      strong.textContent = c.author || 'Anonymous';
+      if (profileUrl) {
+        const nameLink = document.createElement('a');
+        nameLink.href = profileUrl;
+        nameLink.className = 'detail-comment-name-link';
+        nameLink.textContent = c.author || 'Anonymous';
+        strong.append(nameLink);
+      } else {
+        strong.textContent = c.author || 'Anonymous';
+      }
+
       metaP.append(strong, ` · ${Utils.formatShortDate(c.timestamp || '')}`);
       const textP = document.createElement('p');
       textP.textContent = c.text || '';
       div.append(metaP, textP);
-      article.append(img, div);
+      article.append(div);
       list.append(article);
     });
   }
@@ -594,6 +633,7 @@ async function renderComments(block, cfg, source) {
     const user = Storage.getCurrentUser() || {};
     Storage.addComment(id, {
       author: user.name || 'Anonymous',
+      authorId: user.email || '',
       avatar: user.avatarSrc || user.avatar || '',
       text,
       timestamp: new Date().toISOString(),
@@ -665,7 +705,7 @@ export default async function decorate(block) {
     || 'events';
 
   let entity = null;
-  if (['blog-header', 'overview', 'agenda', 'people', 'presenters', 'speakers', 'hosts', 'quote', 'bio', 'reach-out', 'article-body'].includes(variant)) {
+  if (['blog-header', 'overview', 'agenda', 'people', 'presenters', 'speakers', 'hosts', 'quote', 'bio', 'reach-out', 'article-body', 'comments'].includes(variant)) {
     const id = cfg.id || getEntityId();
     if (id) entity = await loadEntity(source, id);
   }
@@ -688,6 +728,6 @@ export default async function decorate(block) {
   else if (variant === 'quote') renderQuote(block, cfg, entity);
   else if (variant === 'bio') renderBio(block, cfg, entity);
   else if (variant === 'reach-out') renderReachOut(block, cfg, entity);
-  else if (variant === 'comments') await renderComments(block, cfg, source);
+  else if (variant === 'comments') await renderComments(block, cfg, source, entity);
   else if (variant === 'article-body') renderArticleBody(block, cfg, entity);
 }
