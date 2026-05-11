@@ -6,26 +6,26 @@ A complete EDS migration of the AdobeSphere platform (originally a vanilla Netli
 
 ## 1. Block Architecture
 
-| # | Block | Variants | Purpose |
+| # | Block | Variants | Purpose / Used on |
 |---|---|---|---|
-| 1 | `header` | — | Nav bar with auth zone, search button, and mobile hamburger |
-| 2 | `footer` | — | Footer columns loaded from a `/nav` fragment |
-| 3 | `fragment` | — | Boilerplate; reused for `/nav`, `/footer`, and shared modals |
-| 4 | `hero` | `default`, `search`, `media`, `compact`, `creator` | All hero treatments across home / explore / event / blog / creator pages |
-| 5 | `cards` | `events`, `blogs`, `creators`, `testimonials` × `with-save`, `with-actions`, `horizontal`; user sources: `saved-events`, `saved-blogs`, `registered-events`, `user-blogs` | All dynamic and static card grids — public listings, user-profile sections, and testimonials |
-| 6 | `tabs` | — | Tab switcher that coordinates with `filters` and `cards` via custom events |
-| 7 | `filters` | `events`, `blogs`, `creators` | Filter bar that emits `adobesphere:filter` events consumed by `cards` |
-| 8 | `form` | `event-registration`, `blog-editor` | Modal registration form and blog create/edit editor |
-| 9 | `auth-form` | `signin` (default), `signup` | Sign-in and sign-up pages with password strength meter and employee gate |
-| 10 | `contact-form` | — | Contact page form with localStorage submission |
-| 11 | `detail-section` | `overview`, `agenda`, `people`, `quote`, `bio`, `reach-out`, `comments`, `blog-header`, `article-body` | All body sections for event / blog / creator detail pages |
-| 12 | `profile` | `user`, `creator` | Editable user profile card and read-only creator hero |
-| 13 | `event-actions` | — | Save and register/unregister buttons on event detail pages |
-| 14 | `marquee` | — | Auto-scrolling category pill strip |
-| 15 | `stats` | — | Animated count-up stat row |
-| 16 | `timeline` | — | Horizontally scrollable / scrubbable platform journey timeline |
-| 17 | `mission` | — | Mission section with rotating creator avatar row |
-| 18 | `faq` | — | Accordion FAQ |
+| 1 | `header` | — | Global nav on every page; renders the logo, nav links, a search icon, and an auth zone that shows sign-in/up links when logged out or a user avatar dropdown with profile and sign-out options when logged in |
+| 2 | `footer` | — | Global footer on every page; loads the `/footer` fragment and structures its columns |
+| 3 | `fragment` | — | Inlines any authored HTML fragment; used for the `/nav` fragment, `/footer` fragment, and the auth-prompt and employee-only modals |
+| 4 | `hero` | `default`, `search`, `media`, `compact`, `creator` | Page hero used on home (large default), explore (with embedded live search input), every event detail page (full-bleed media banner with overlay text), every blog detail page (compact title strip), and every creator profile page (gradient card with avatar and stats) |
+| 5 | `cards` | `events`, `blogs`, `creators`, `testimonials` × `with-save`, `with-actions`, `horizontal`; user sources: `saved-events`, `saved-blogs`, `registered-events`, `user-blogs` | Universal card grid used on the home page (featured sections), explore page (paginated + filterable grids), user-profile page (saved items / registered events / published blogs), creator-profile page (creator's blog list), and any page with a testimonials row |
+| 6 | `tabs` | — | Tab switcher used on the explore page (Events / Blogs / Creators); wraps paired `filters` + `cards` blocks into switchable tab panels and coordinates them via `adobesphere:switchtab` events; can be reused on any multi-source listing page |
+| 7 | `filters` | `events`, `blogs`, `creators` | Filter controls placed inside each tab panel on the explore page; the source variant determines which filter fields to render (category, date, location for events; category, author, sort for blogs; designation, sort for creators); emits `adobesphere:filter` for `cards` to consume |
+| 8 | `form` | `event-registration`, `blog-editor` | The `event-registration` variant renders as a hidden modal on every event detail page and opens when `event-actions` fires `adobesphere:show-registration`; the `blog-editor` variant renders the create/edit form on `/blog-editor` and pre-populates fields when `?id=` is present |
+| 9 | `auth-form` | `signin` (default), `signup` | The `signin` variant is the full `/login` page; the `signup` variant is the `/signup` account creation page with password strength meter, live bio character counter, avatar upload with preview, LinkedIn validation, and an Adobe employee gate modal |
+| 10 | `contact-form` | — | Contact inquiry form used on `/contact`; validates name, email, and message fields and stores the submission to localStorage; can be dropped on any page that needs a contact form |
+| 11 | `detail-section` | `overview`, `agenda`, `people`, `quote`, `bio`, `reach-out`, `comments`, `blog-header`, `article-body` | Structured content sections reused across all three detail page types — event pages use `overview`, `agenda`, `people`, `quote`, `reach-out`, and `comments`; blog pages use `blog-header`, `article-body`, `bio`, and `comments`; creator profile pages use `bio`, `reach-out`, and `quote` |
+| 12 | `profile` | `user`, `creator` | The `user` variant renders the editable profile card on `/user-profile` (avatar upload, name/designation/bio/LinkedIn edit, account deletion); the `creator` variant renders the read-only hero on `/creator-profile` with stats fetched from `creators.json` or localStorage |
+| 13 | `event-actions` | — | Save toggle and Register / Unregister button rendered on every event detail page; tracks registration state from `Storage`, opens the `form (event-registration)` modal on register, and updates its UI when the modal fires `adobesphere:registration-changed` |
+| 14 | `marquee` | — | Auto-scrolling pill strip used on the home page to show event category links that deep-link into the Events tab on explore; can be reused on any page to display a scrolling set of pills |
+| 15 | `stats` | — | Animated count-up stat row used on the About page for platform-wide numbers |
+| 16 | `timeline` | — | Horizontally scrollable and touch/mouse-scrubbable timeline used on the About page to display platform milestones |
+| 17 | `mission` | — | Brand mission section used on the About page; renders the mission statement alongside a rotating row of creator avatar images pulled from authored block rows |
+| 18 | `faq` | — | Collapsible accordion FAQ used on the About page; each authored row becomes a question/answer pair and can be expanded independently; reusable on any page that needs a Q&A section |
 
 ### Why this architecture works
 
