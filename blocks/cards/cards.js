@@ -46,8 +46,8 @@ function applyFilter(items, filter) {
   if (!k) return items;
   return items.filter((it) => {
     const actual = it && it[k];
-    if (v === 'true') return actual === true;
-    if (v === 'false') return actual === false;
+    if (v === 'true') return actual === true || String(actual).toUpperCase() === 'TRUE';
+    if (v === 'false') return actual === false || String(actual).toUpperCase() === 'FALSE';
     return String(actual) === v;
   });
 }
