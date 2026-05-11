@@ -6,8 +6,8 @@
 
 /* ── wrapper card ───────────────────────────────────────── */
 .auth-form .auth-wrapper {
-  margin: 60px auto;
-  padding: 40px;
+  margin: 16px auto;
+  padding: 32px;
   background: var(--white);
   border: 1px solid var(--neutral-light);
   border-radius: var(--radius-lg);
@@ -15,18 +15,18 @@
 }
 
 .auth-form.signin .auth-wrapper {
-  max-width: 520px;
+  max-width: 480px;
 }
 
 .auth-form.signup .auth-wrapper {
-  max-width: 640px;
-  padding: 36px;
+  max-width: 600px;
+  padding: 28px 32px;
 }
 
 /* ── brand header ───────────────────────────────────────── */
 .auth-form .auth-header {
   text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 
 .auth-form .auth-wordmark {
@@ -292,8 +292,8 @@
 /* ── responsive ─────────────────────────────────────────── */
 @media (max-width: 599px) {
   .auth-form .auth-wrapper {
-    margin: 16px auto;
-    padding: 24px 16px;
+    margin: 8px auto;
+    padding: 20px 16px;
     border-radius: var(--radius-md);
   }
 

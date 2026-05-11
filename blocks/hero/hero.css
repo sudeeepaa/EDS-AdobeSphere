@@ -37,7 +37,7 @@
 
 /* ─── default variant ─── */
 .hero.hero-default {
-  padding: 80px 0 60px;
+  padding: 56px 0 40px;
   background: var(--bg-off-white);
 }
 
@@ -124,7 +124,7 @@
 
 /* ─── search variant (Explore) ─── */
 .hero.hero-search-variant {
-  padding: 70px 0 52px;
+  padding: 44px 0 32px;
   background: var(--bg-dark);
 }
 
@@ -252,7 +252,7 @@
 
 /* ─── gradient variant (Creator profile) ─── */
 .hero.hero-gradient-variant {
-  padding: 80px 24px 60px;
+  padding: 56px 24px 40px;
   background: linear-gradient(140deg, #242024 0%, #2f2830 65%, #242024 100%);
   color: var(--white);
   text-align: center;

@@ -11,7 +11,7 @@
   background: var(--white);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  padding: 36px 40px;
+  padding: 28px 32px;
 }
 
 /* ── Field groups ────────────────────────────────────────────────────── */
@@ -67,9 +67,9 @@
 main .section.contact-split {
   display: flex;
   flex-wrap: nowrap;
-  gap: 48px;
+  gap: 40px;
   align-items: flex-start;
-  padding: 48px 24px;
+  padding: 32px 24px;
 }
 
 main .section.contact-split > .contact-form-wrapper {

@@ -193,7 +193,7 @@ ol {
 /* sections — EDS wraps each section in `main > .section > div` */
 main>.section {
   margin: 0;
-  padding: 24px 0;
+  padding: 16px 0;
 }
 
 /* section inner wrapper — horizontal gutters at every viewport width */
@@ -457,7 +457,7 @@ blockquote {
 /* ─────────── breakpoints ─────────── */
 @media (min-width: 600px) {
   main>.section {
-    padding: 40px 0;
+    padding: 28px 0;
   }
 
   main>.section>div {
@@ -471,7 +471,7 @@ blockquote {
   }
 
   main>.section {
-    padding: 56px 0;
+    padding: 40px 0;
   }
 
   main>.section>div {
