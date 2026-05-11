@@ -106,13 +106,28 @@ export default function decorate(block) {
     });
   });
 
-  const PRIORITY = ['events', 'blogs', 'creators'];
   let pending = {};
   let rafId = null;
 
-  // Switches to the highest-priority tab that has search results.
+  // Switches to the tab whose results best match the query on primary fields.
+  // Tiebreaks on total result count so partial matches still navigate somewhere useful.
   function switchToWinningTab() {
-    const winner = PRIORITY.find((type) => (pending[type] || 0) > 0);
+    let winner = null;
+    let bestQuality = 0;
+    let bestCount = 0;
+
+    Object.keys(pending).forEach((type) => {
+      const { count, quality } = pending[type];
+      if (
+        quality > bestQuality
+        || (quality === bestQuality && count > bestCount)
+      ) {
+        winner = type;
+        bestQuality = quality;
+        bestCount = count;
+      }
+    });
+
     pending = {};
     if (!winner) return;
 
@@ -123,14 +138,16 @@ export default function decorate(block) {
   }
 
   window.addEventListener('adobesphere:search:results', (e) => {
-    const { type, count, q } = e.detail;
+    const {
+      type, count, quality, q,
+    } = e.detail;
 
     if (!q) {
       pending = {};
       return;
     }
 
-    pending[type] = count;
+    pending[type] = { count, quality: quality || 0 };
 
     cancelAnimationFrame(rafId);
     rafId = requestAnimationFrame(switchToWinningTab);

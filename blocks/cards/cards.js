@@ -282,6 +282,30 @@ function matchesText(item, q) {
   return JSON.stringify(item).toLowerCase().includes(q.toLowerCase());
 }
 
+// Counts items that match the query on their primary display fields only.
+function qualityScore(type, filteredItems, q) {
+  if (!q) return 0;
+  const lq = q.toLowerCase();
+  if (type === 'creators') {
+    return filteredItems.filter((c) => (c.name || '').toLowerCase().includes(lq)).length;
+  }
+  if (type === 'blogs') {
+    return filteredItems.filter((b) => {
+      const title = (b.title || '').toLowerCase();
+      const author = ((b.author && b.author.name) || b.author_name || '').toLowerCase();
+      return title.includes(lq) || author.includes(lq);
+    }).length;
+  }
+  if (type === 'events') {
+    return filteredItems.filter((e) => {
+      const title = (e.title || '').toLowerCase();
+      const cat = (e.category || '').toLowerCase();
+      return title.includes(lq) || cat.includes(lq);
+    }).length;
+  }
+  return 0;
+}
+
 // Filters and sorts items by the given filter state for the source type.
 function getFilteredItems(type, items, f) {
   if (type === 'events') {
@@ -526,7 +550,7 @@ async function hydrateFromData(block, type, cfg, opts) {
     }
 
     window.dispatchEvent(new CustomEvent('adobesphere:search:results', {
-      detail: { type, count: filtered.length, q: state.q },
+      detail: { type, count: filtered.length, quality: qualityScore(type, filtered, state.q), q: state.q },
     }));
   }
 
