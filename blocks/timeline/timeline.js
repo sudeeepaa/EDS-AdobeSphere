@@ -20,7 +20,7 @@
  * prefers-reduced-motion: static swipeable list, no animation, bar hidden.
  */
 
-const SPEED = 1.5; // px per rAF tick ≈ 90 px/s at 60 fps
+const SPEED = 0.4; // px per rAF tick ≈ 24 px/s at 60 fps — slow enough to read
 const FADE_MS = 280; // loop-reset opacity transition (ms)
 
 function buildCard(m) {
@@ -129,6 +129,8 @@ export default function decorate(block) {
   let paused = false;
   let resetting = false;
   let scrubbing = false;
+  let rafId = null;
+  let inView = false;
 
   const getMax = () => Math.max(0, wrap.scrollWidth - wrap.clientWidth);
 
@@ -151,7 +153,7 @@ export default function decorate(block) {
     }, FADE_MS);
   };
 
-  // ── rAF tick ──────────────────────────────────────────────────────────
+  // ── rAF tick — only continues scheduling while block is in view ───────
   const tick = () => {
     if (!paused && !resetting) {
       const max = getMax();
@@ -165,7 +167,15 @@ export default function decorate(block) {
         }
       }
     }
-    requestAnimationFrame(tick);
+    if (inView) {
+      rafId = requestAnimationFrame(tick);
+    } else {
+      rafId = null;
+    }
+  };
+
+  const startScroll = () => {
+    if (!rafId) rafId = requestAnimationFrame(tick);
   };
 
   // ── Scrub helpers ─────────────────────────────────────────────────────
@@ -257,5 +267,14 @@ export default function decorate(block) {
     setProgress(wrap.scrollLeft, getMax());
   }, { passive: true });
 
-  requestAnimationFrame(tick);
+  // Start scrolling only when the block scrolls into view (≥25% visible)
+  const observer = new IntersectionObserver(
+    (entries) => {
+      inView = entries[0].isIntersecting;
+      if (inView) startScroll();
+      // when !inView tick stops self-scheduling naturally
+    },
+    { threshold: 0.25 },
+  );
+  observer.observe(block);
 }
