@@ -302,10 +302,17 @@ function qualityScore(type, filteredItems, q) {
   return filteredItems.filter((item) => matchesText(type, item, q)).length;
 }
 
+// Returns a reliable timestamp for a blog item, falling back to 0 if missing/invalid.
+function blogTs(b) {
+  const d = new Date(b.publishedDate || b.date || 0);
+  return Number.isNaN(d.getTime()) ? 0 : d.getTime();
+}
+
 // Filters and sorts items by the given filter state for the source type.
 function getFilteredItems(type, items, f) {
   if (type === 'events') {
-    return items.filter((e) => {
+    const today = new Date();
+    const filtered = items.filter((e) => {
       if (!matchesText('events', e, f.q)) return false;
       if (f.category && e.category !== f.category) return false;
       if (f.location && f.location.length) {
@@ -313,13 +320,18 @@ function getFilteredItems(type, items, f) {
         if (!city || !f.location.includes(city)) return false;
       }
       if (f.date && f.date !== 'all') {
-        const today = new Date();
         const ev = new Date(e.date);
         if (f.date === 'upcoming' && ev < today) return false;
         if (f.date === 'past' && ev >= today) return false;
       }
       return true;
     });
+    if (f.date === 'upcoming') {
+      filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+    } else if (f.date === 'past') {
+      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+    return filtered;
   }
   if (type === 'blogs') {
     return items.filter((b) => {
@@ -330,10 +342,7 @@ function getFilteredItems(type, items, f) {
         if (!name.toLowerCase().includes(f.author.toLowerCase())) return false;
       }
       return true;
-    }).sort((a, b) => {
-      if (f.sort === 'oldest') return new Date(a.publishedDate) - new Date(b.publishedDate);
-      return new Date(b.publishedDate) - new Date(a.publishedDate);
-    });
+    }).sort((a, b) => (f.sort === 'oldest' ? blogTs(a) - blogTs(b) : blogTs(b) - blogTs(a)));
   }
   if (type === 'creators') {
     return items.filter((c) => {
