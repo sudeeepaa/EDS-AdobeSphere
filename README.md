@@ -1,108 +1,85 @@
 # AdobeSphere — Edge Delivery Services
 
-A complete EDS migration of the AdobeSphere platform (originally a vanilla Netlify SPA at https://adobesphere.netlify.app/) built on the [Adobe AEM Boilerplate](https://github.com/adobe/aem-boilerplate) — preserving every feature and behaviour of the original site while collapsing 25+ implicit components into **9 reusable EDS blocks**.
+A complete EDS migration of the AdobeSphere platform (originally a vanilla Netlify SPA) built on the [Adobe AEM Boilerplate](https://github.com/adobe/aem-boilerplate) — preserving every feature of the original site while restructuring it into **18 reusable EDS blocks**.
 
 ---
 
 ## 1. Block Architecture
 
-The original site had effectively 25+ "components" buried in shared CSS classes and per-page JS. By treating cards / heroes / forms / detail sub-sections as a **single block per family with variants** instead of a separate block per page, we get to **9 new blocks plus the 3 boilerplate blocks** (header / footer / fragment) — a 60%+ reduction.
-
-| # | Block | Variants | Replaces from the legacy site |
+| # | Block | Variants | Purpose |
 |---|---|---|---|
-| 1 | `header` | — | `partials/navbar.html` + `js/navbar.js` |
-| 2 | `footer` | — | `partials/footer.html` |
-| 3 | `fragment` | — | (boilerplate) reuse for `/nav`, `/footer`, future shared blocks |
-| 4 | `hero` | `default`, `video`, `search`, `media`, `gradient`, `compact` | All 6 hero sections across home / about / explore / event / blog / creator |
-| 5 | `cards` | `events`, `blogs`, `creators`, `testimonials` ⨯ `with-save`, `with-actions`, `horizontal` | All `buildEventCard / buildBlogCard / buildCreatorCard / testimonials` consumers |
-| 6 | `explore` | (single block) | Entire `explore.html` + `explore.js` (671 lines → 1 block) |
-| 7 | `form` | `contact` (default), `login`, `signup`, `event-registration`, `blog-editor` | All 5 form pages |
-| 8 | `detail-section` | `overview`, `agenda`, `people` (× `presenters / speakers / hosts`), `quote`, `bio`, `reach-out`, `comments` | The body of event / blog / creator detail pages |
-| 9 | `profile` | `user`, `creator` | `user-profile.html` + the creator hero card |
-| 10 | `marquee` | — | Category pills on home |
-| 11 | `stats` | — | Animated counters on About + creator stats |
-| 12 | `timeline` | — | Platform Journey on About |
+| 1 | `header` | — | Nav bar with auth zone, search button, and mobile hamburger |
+| 2 | `footer` | — | Footer columns loaded from a `/nav` fragment |
+| 3 | `fragment` | — | Boilerplate; reused for `/nav`, `/footer`, and shared modals |
+| 4 | `hero` | `default`, `search`, `media`, `compact`, `creator` | All hero treatments across home / explore / event / blog / creator pages |
+| 5 | `cards` | `events`, `blogs`, `creators`, `testimonials` × `with-save`, `with-actions`, `horizontal`; user sources: `saved-events`, `saved-blogs`, `registered-events`, `user-blogs` | All dynamic and static card grids — public listings, user-profile sections, and testimonials |
+| 6 | `tabs` | — | Tab switcher that coordinates with `filters` and `cards` via custom events |
+| 7 | `filters` | `events`, `blogs`, `creators` | Filter bar that emits `adobesphere:filter` events consumed by `cards` |
+| 8 | `form` | `event-registration`, `blog-editor` | Modal registration form and blog create/edit editor |
+| 9 | `auth-form` | `signin` (default), `signup` | Sign-in and sign-up pages with password strength meter and employee gate |
+| 10 | `contact-form` | — | Contact page form with localStorage submission |
+| 11 | `detail-section` | `overview`, `agenda`, `people`, `quote`, `bio`, `reach-out`, `comments`, `blog-header`, `article-body` | All body sections for event / blog / creator detail pages |
+| 12 | `profile` | `user`, `creator` | Editable user profile card and read-only creator hero |
+| 13 | `event-actions` | — | Save and register/unregister buttons on event detail pages |
+| 14 | `marquee` | — | Auto-scrolling category pill strip |
+| 15 | `stats` | — | Animated count-up stat row |
+| 16 | `timeline` | — | Horizontally scrollable / scrubbable platform journey timeline |
+| 17 | `mission` | — | Mission section with rotating creator avatar row |
+| 18 | `faq` | — | Accordion FAQ |
 
-### Why this collapses cleanly
+### Why this architecture works
 
-- **Cards** is the biggest win. Events, blogs, creators, and testimonials all share the same card shell (image / image-less / avatar / blockquote) — they only differ in what fields they read. One block + four card builders + filter/limit/ids config rows replaces 4+ separate components.
-- **Hero** is variant-heavy (6) but each variant adds one well-bounded behaviour (background video, search input, banner image, gradient backdrop, etc.) over a shared content stack.
-- **Detail-section** is the second big win. Every detail page (event / blog / creator) reuses the same set of sub-sections — overview, agenda, people, quote, bio, reach-out, comments — just in different orders and sourced from different JSON files. Authoring a detail page becomes "stack the sections you want and tell each one where to read its id from".
-- **Form** swallows 5 distinct page types because all of them are validation + state + a fixed field list. The block branches on the variant class once.
-- **Explore** stays as one specialised block because its tab/filter/grid/pagination state is too coupled to fragment further; collapsing 671 lines of bespoke explore.js into one EDS block is itself a 10× simplification.
-
-### Block reduction summary
-
-| Legacy component | New EDS path |
-|---|---|
-| Navbar (5 instances) → drawer / desktop / auth-aware | `blocks/header` |
-| Footer | `blocks/footer` |
-| Hero (Home video) | `hero (video)` |
-| Hero (About static) | `hero` |
-| Hero (Explore search) | `hero (search)` |
-| Hero (Event banner) | `hero (media)` |
-| Hero (Creator gradient) | `hero (gradient)` |
-| Hero (Blog title strip) | `hero (compact)` |
-| Featured Events grid | `cards (events)` + `Filter \| featured=true` |
-| Featured Blogs grid | `cards (blogs)` + `Filter \| featured=true` |
-| Featured Creators grid | `cards (creators)` + `Filter \| featured=true` |
-| Saved items grid | `cards (events with-save)` / `cards (blogs with-save)` |
-| My registrations grid | `cards (events with-actions)` |
-| My published blogs grid | `cards (blogs with-actions)` |
-| Testimonials grid | `cards (testimonials)` (statically authored) |
-| Category marquee | `marquee` |
-| Stats counter (4-up) | `stats` |
-| Platform Journey timeline | `timeline` |
-| User profile dashboard | `profile (user)` |
-| Creator profile header | `profile (creator)` |
-| Event Overview / Schedule / Presenters / Speakers / Hosts / Quote | `detail-section` (one block, 7 variants) |
-| Blog author bio + comments | `detail-section (bio)` + `detail-section (comments)` |
-| Creator bio + reach-out + quote | `detail-section (bio / reach-out / quote)` |
-| Tabs + filters + paginated grid | `explore` |
-| Contact / Login / Signup / Registration / Blog editor forms | `form` (5 variants) |
+- **`cards`** is the biggest win. Events, blogs, creators, testimonials, and all four user-profile sub-sections (saved/registered/published) share the same card shell and one block. A `Source | blogs` config row plus optional `Filter | featured=true` and `Limit | 6` rows cover every listing on the site.
+- **`detail-section`** covers every detail page body. Authors stack the sub-sections they want (`overview`, `agenda`, `people`, `quote`, `bio`, `reach-out`, `comments`, `article-body`) and point each one at the right entity id. Events, blogs, and creator pages all reuse the same block in different orders.
+- **`tabs` + `filters` + `cards`** replace the old monolithic explore block. Each block is independently authored and they coordinate via `adobesphere:filter`, `adobesphere:switchtab`, and `adobesphere:search` custom events — no shared state in JS.
+- **`auth-form`** is a clean split from `form`. Sign-in and sign-up have enough distinct fields (password strength, avatar upload, LinkedIn, bio, employee modal) that they warrant their own block.
 
 ---
 
 ## 2. Project Structure
 
 ```
-AdobeSphere-eds/
+adobesphere-eds/
 ├── 404.html
 ├── head.html
 ├── package.json
-├── README.md                  # this file
-├── AUTHORING.md               # da.live tables for every block
+├── README.md
 │
 ├── blocks/
-│   ├── cards/                 cards.js + cards.css
-│   ├── detail-section/
-│   ├── explore/
+│   ├── auth-form/          signin + signup forms
+│   ├── cards/              all card grids (events / blogs / creators / testimonials / user sources)
+│   ├── contact-form/       contact page form
+│   ├── detail-section/     event / blog / creator detail page body sections
+│   ├── event-actions/      save + register buttons on event detail pages
+│   ├── faq/                accordion FAQ
+│   ├── filters/            filter bar for explore-style pages
 │   ├── footer/
-│   ├── form/
-│   ├── fragment/              (boilerplate, unmodified)
+│   ├── form/               event-registration modal + blog editor
+│   ├── fragment/           (boilerplate, unmodified)
 │   ├── header/
-│   ├── hero/
-│   ├── marquee/
-│   ├── profile/
-│   ├── stats/
-│   └── timeline/
+│   ├── hero/               5 variants: default / search / media / compact / creator
+│   ├── marquee/            category pill scroll strip
+│   ├── mission/            mission section with avatar row
+│   ├── profile/            user dashboard + creator hero card
+│   ├── stats/              animated stat counters
+│   ├── tabs/               tab switcher
+│   └── timeline/           platform journey timeline
 │
 ├── scripts/
-│   ├── aem.js                 (boilerplate, do not modify)
-│   ├── delayed.js             (boilerplate)
-│   └── scripts.js             AdobeSphere orchestrator + Storage + Utils + auto-blocking
+│   ├── aem.js              (boilerplate — do not modify)
+│   ├── delayed.js          (boilerplate)
+│   └── scripts.js          AdobeSphere orchestrator + Storage + Utils + auto-blocking
 │
 ├── styles/
 │   ├── fonts.css
 │   ├── lazy-styles.css
-│   └── styles.css             design tokens + buttons + sections
+│   └── styles.css          design tokens + buttons + layout utilities
 │
-├── fonts/                     (boilerplate Roboto woff2 files)
-├── icons/                     SVG icons (search, user-default, card-fallback)
+├── fonts/                  Roboto woff2 files (boilerplate)
+├── icons/                  SVG icons (search, user-default, card-fallback)
 │
-└── drafts/                    Local HTML/JSON for offline development
-    ├── index.html             home
-    ├── nav.html, footer.html  not used; fragments live in fragments/
+└── drafts/                 Local HTML + JSON for offline development
+    ├── index.html
     ├── explore.html
     ├── about.html
     ├── contact.html
@@ -130,99 +107,106 @@ Every block follows the same shape:
 
 ```
 blocks/<name>/
-├── <name>.js     # exports default async function decorate(block) { … }
-└── <name>.css    # all selectors scoped under .<name>
+├── <name>.js     exports default async function decorate(block)
+└── <name>.css    all selectors scoped under .<name>
 ```
 
-The pattern inside `<name>.js`:
+The pattern inside every `<name>.js`:
 
 1. **Read variant classes** off `block.classList` to pick a code path.
-2. **Read config rows** off `block.children` — each row of the form `Key | Value` is consumed and removed from the DOM. Anything left over is treated as authored content.
-3. **Hydrate from `/data/*.json`** when the variant needs dynamic data. All data fetching goes through `window.AdobeSphere.Utils.fetchData(name)`, which transparently tries `/drafts/data/{name}.json` first (local dev) then `/data/{name}.json` (production).
-4. **Render** by replacing `block.textContent = ''` and appending DOM. Hand-rolled HTML strings use `Utils.escapeHtml()` everywhere user data is interpolated.
+2. **Read config rows** — each two-cell row (`Key | Value`) is consumed and removed from the DOM before render. Remaining rows are treated as authored content.
+3. **Hydrate from `/data/*.json`** when the variant needs dynamic data. All fetches go through `window.AdobeSphere.Utils.fetchData(name)`, which transparently tries `/drafts/data/{name}.json` first (local dev) then `/data/{name}.json` (production).
+4. **Render** by clearing `block.textContent` and appending DOM. Any user-data string interpolated into HTML goes through `Utils.escapeHtml()`.
 5. **Bind events** with `addEventListener`. Cards register their save / register / delete handlers per-card.
 
-`scripts/scripts.js` exposes the shared modules at `window.AdobeSphere`:
+### Shared globals
 
-- `Storage` — localStorage abstraction (sessions, saved items, registrations, user blogs, comments)
-- `Utils` — `escapeHtml`, `formatDate`, `formatShortDate`, `truncate`, `validateEmail`, `normaliseAsset`, `toast`, `fetchData`, `initRevealObserver`
+`scripts/scripts.js` exposes two modules at `window.AdobeSphere`:
 
-All blocks reach for these instead of duplicating helpers.
+**`Storage`** — localStorage abstraction:
+- Session: `getSession`, `setSession`, `clearSession`, `isLoggedIn`, `getCurrentUser`, `upsertUser`
+- Saved items: `getSaved`, `toggleSaved`, `isSaved`
+- Registrations: `getRegistrations`, `registerForEvent`, `cancelRegistration`
+- User blogs: `getUserBlogs`, `addUserBlog`, `deleteUserBlog`, `updateUserBlog`, `getAllUserBlogs`, `getUserBlogById`
+- Comments: `getComments`, `addComment`
+- Creator profiles: `getLocalCreator`, `getAllLocalCreators`, `upsertLocalCreator`
+- Categories: `getBlogCategories`, `addBlogCategory`
 
-### Auto-blocking
+**`Utils`** — shared helpers:
+- `escapeHtml`, `formatDate`, `formatShortDate`, `truncate`, `validateEmail`
+- `normaliseAsset` — resolves legacy `assets/images/...` paths and data URIs
+- `toast` — transient notification overlay
+- `fetchData` — JSON fetcher with drafts fallback
+- `initRevealObserver` — IntersectionObserver for `.reveal` scroll-in animation
+- `showAuthModal` — sign-in prompt modal with authored content from `/modals/auth-prompt.plain.html`
 
-`scripts.js` keeps the boilerplate's hero auto-block: if a page authors an `<h1>` followed by a `<picture>` with no explicit hero block, a default hero is synthesised. This means simple pages can be authored with just a heading and an image and still get a hero treatment.
+### Custom events
+
+Blocks communicate via `window.dispatchEvent` / `window.addEventListener`:
+
+| Event | Payload | Flow |
+|---|---|---|
+| `adobesphere:filter` | `{ source, state }` | `filters` → `cards` |
+| `adobesphere:switchtab` | tab id string | `tabs` → `filters`, `cards` |
+| `adobesphere:search` | query string | `hero (search)` → `cards` |
+| `adobesphere:search:results` | `{ type, count, q }` | `cards` → `tabs` (auto-switch) |
+| `adobesphere:show-registration` | — | `event-actions` → `form (event-registration)` |
+| `adobesphere:registration-changed` | event id | `form` → `event-actions` |
+| `adobesphere:focus-search` | — | header search button → `hero (search)` |
+| `adobesphere:avatar-updated` | data URL | `profile` → `header` |
+
+### Dynamic routes
+
+`scripts.js` handles `/events/{id}`, `/blog/{id}`, and `/creator-profile?id={id}` without requiring a real HTML document per entity. When the URL matches a dynamic pattern, the template's `.plain.html` is fetched and injected into `<main>` before EDS decoration runs. The block JS then reads the entity id from `?id=` or the last URL segment.
 
 ---
 
 ## 4. Setup & Local Development
 
 ```bash
-# install dev tooling (just AEM CLI for the local server)
+# install dev tooling
 npm install -g @adobe/aem-cli
 
 # from the project root
 aem up
-# or, equivalently, the no-install variant:
-npx -y @adobe/aem-cli up --no-open --forward-browser-logs
 ```
 
 The dev server runs at `http://localhost:3000` and serves:
 
-- code files from your local working copy (live-reload on change)
-- HTML / JSON from `/drafts/` (so `localhost:3000/index` reads `drafts/index.html`)
-
-### Adding new authored content
-
-Two paths:
-
-1. **Static (drafts)** — drop an HTML file into `/drafts/` matching the URL (e.g. `/drafts/about-team.html` → `localhost:3000/about-team`). Useful for prototyping.
-2. **Production (da.live)** — author the page in da.live following the tables in [`AUTHORING.md`](./AUTHORING.md), preview it, and the server picks it up automatically once published.
+- Code files from your local working copy (live-reload on save)
+- Pages from `/drafts/` (e.g. `localhost:3000/explore` reads `drafts/explore.html`)
+- Data from `/drafts/data/` (e.g. `Utils.fetchData('blogs')` reads `drafts/data/blogs.json`)
 
 ---
 
 ## 5. Deployment
 
-This project is set up to deploy via the standard EDS / aem.live workflow:
+Standard EDS / aem.live workflow:
 
 - **Feature preview**: `https://{branch}--{repo}--{owner}.aem.page/`
 - **Production preview**: `https://main--{repo}--{owner}.aem.page/`
 - **Production live**: `https://main--{repo}--{owner}.aem.live/`
 
-Push your branch → AEM Code Sync processes it → preview URL is available within a minute → open a PR → reviewer + PageSpeed → merge to main.
+Push branch → AEM Code Sync processes it → preview URL available within a minute → PR → merge to main.
 
 ---
 
-## 6. Assumptions & Improvements over the Original
+## 6. Key Design Decisions
 
-### Assumptions made during the migration
+1. **Data layer stays JSON-first.** `campaigns.json`, `blogs.json`, `creators.json` keep the same schema as the original site. A future migration could move these to AEM Content Fragments without changing block code.
 
-1. **Data layer stays JSON-first.** The original used four JSON files in `/data/`; we kept the same schema verbatim so authored detail pages can hydrate from `campaigns.json`, `blogs.json`, `creators.json` unchanged. A future migration could move these to AEM Content Fragments.
-2. **Asset paths from the legacy data are preserved.** The data references `assets/images/...` paths from the legacy site. Authors are expected to copy the `assets/` folder to the EDS repo root (or re-author the images in da.live and update the JSON). The `Utils.normaliseAsset()` helper handles backslashed Windows-style paths in the legacy JSON so you don't have to clean the data first.
-3. **localStorage-based sessions** — auth, saved items, and registrations are still client-side. EDS doesn't change that. The `Storage` module is now pure ES modules but the keys (`adobesphere_users`, `adobesphere_session`, …) are stable so existing user data carries over if you re-host.
-4. **Event id resolution.** The block reads the entity id from `?id=…` first, then the last URL segment, then a `<meta name="entity-id">` tag. This means `/events/event-001` and `/events/template?id=event-001` both work. Authors building per-event landing pages don't have to do anything special.
-5. **EDS button decoration.** The legacy site used `.btn .btn-primary` etc. EDS auto-decorates `<strong><a>` as `.button.primary` and `<em><a>` as `.button.secondary`. Authors get button styling for free by emphasising links.
-6. **Section variants via section metadata.** Instead of per-section `id`s with bespoke CSS, authors set `style | light` / `style | dark` / `style | flush` on a Section Metadata block at the top of any section to swap the background. Cleaner and EDS-native.
+2. **localStorage-only persistence.** Auth, saved items, registrations, and user-authored blogs are all client-side. The `Storage` module is the single source of truth; keys are stable (`adobesphere_users`, `adobesphere_session`, etc.) so existing user data carries over if the domain changes.
 
-### Improvements over the original
+3. **No build step.** Blocks ship as plain ES modules. The EDS CDN processes them; no bundler is involved.
 
-1. **9 EDS blocks instead of ~25 implicit components.** Cards in particular went from 4 distinct builders + 4 saved/action variants (effectively 8 components) to one block with config rows.
-2. **Authoring is no longer per-page HTML.** Marketers can edit copy in da.live without touching code, and the block contracts make it impossible to break the layout — drop in a row, change the limit from 6 to 8, and you're done.
-3. **Three-phase loading** built in. The original site loaded everything synchronously; EDS gives us eager / lazy / delayed for free, which means the home hero can be visible before any cards JS has even loaded.
-4. **Reveal-on-scroll is now opt-in via `.reveal`** and shared across all blocks. The original ran it from `Utils.initRevealObserver()` after each fetch; we register it once in lazy phase.
-5. **Reduced motion is honoured** by both the marquee block and the global `.reveal` utility.
-6. **No build step.** The original needed Netlify; this runs on `aem up` and ships unprocessed to the CDN.
-7. **Mobile-first CSS.** The legacy stylesheet was desktop-first with `max-width` queries; the new CSS is mobile-first with `min-width` at 600 / 900 / 1200 — better for the cellular-first audience and aligned with the EDS boilerplate convention.
+4. **Mobile-first CSS.** All stylesheets use `min-width` breakpoints at 600 / 900 / 1200 px, aligned with the EDS boilerplate convention.
 
-### Things deferred (good follow-ups)
+5. **EDS button decoration.** `<strong><a>` → `.button.primary`, `<em><a>` → `.button.secondary`. Authors get button styling by emphasising links in da.live — no extra markup needed.
 
-- **Server-side comments / sessions.** Move off localStorage when the project grows beyond a single-browser demo.
-- **Image optimisation pipeline.** All the images in `/drafts/` are currently raw JPGs. In production, authors uploading via da.live get this automatically; static images committed to git should be hand-optimised first.
-- **Per-blog standalone pages.** Right now `/blog/{id}` serves the same template for every blog. Long-form blogs that want unique authored content alongside the JSON can be authored as separate da.live pages with the same blocks; the template is just the default.
-- **A11y audit.** Quick sweep done; a deeper pass with real screen readers is recommended before launch.
+6. **Reveal-on-scroll via `.reveal`.** Any block can opt individual cards or sections into the scroll-in animation by adding the `reveal` class. `Utils.initRevealObserver()` registers one shared `IntersectionObserver` in the lazy phase.
 
 ---
 
 ## 7. License
 
-Same as the boilerplate (Apache-2.0). The data and copy belong to AdobeSphere; the code is yours to fork.
+Apache-2.0 (same as the AEM boilerplate). Data and copy belong to AdobeSphere; the block code is yours to fork.
