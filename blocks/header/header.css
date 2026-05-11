@@ -316,9 +316,21 @@
     display: none;
   }
 
+  .header #nav {
+    position: relative;
+  }
+
   .header .nav-sections {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    flex: none;
     display: flex;
-    flex: 1;
+    pointer-events: none;
+  }
+
+  .header .nav-sections ul {
+    pointer-events: auto;
   }
 }
 
