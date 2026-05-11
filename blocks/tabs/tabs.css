@@ -1,7 +1,13 @@
 /* AdobeSphere tabs block */
 
 .tabs {
-  margin-top: 20px;
+  margin-top: 0;
+}
+
+/* tighten the section that hosts the tabs bar */
+main>.section:has(.tabs) {
+  padding-top: 8px;
+  padding-bottom: 0;
 }
 
 .tabs-list {
