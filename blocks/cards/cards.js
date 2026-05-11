@@ -285,8 +285,11 @@ function matchesText(type, item, q) {
       || (item.category || '').toLowerCase().includes(lq);
   }
   if (type === 'blogs') {
+    const authorName = item.author_name || (item.author && item.author.name) || '';
     return (item.title || '').toLowerCase().includes(lq)
-      || (item.category || '').toLowerCase().includes(lq);
+      || (item.category || '').toLowerCase().includes(lq)
+      || authorName.toLowerCase().includes(lq)
+      || (item.excerpt || '').toLowerCase().includes(lq);
   }
   if (type === 'creators') {
     return (item.name || '').toLowerCase().includes(lq)
@@ -338,8 +341,8 @@ function getFilteredItems(type, items, f) {
       if (!matchesText('blogs', b, f.q)) return false;
       if (f.category && b.category !== f.category) return false;
       if (f.author) {
-        const name = b.author_name || (b.author && b.author.name) || '';
-        if (name.toLowerCase() !== f.author.toLowerCase()) return false;
+        const name = (b.author && b.author.name) || b.author_name || '';
+        if (!name.toLowerCase().includes(f.author.toLowerCase())) return false;
       }
       return true;
     }).sort((a, b) => (f.sort === 'oldest' ? blogTs(a) - blogTs(b) : blogTs(b) - blogTs(a)));
