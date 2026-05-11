@@ -669,6 +669,11 @@ async function loadEager(doc) {
   const main = doc.querySelector('main');
   if (main) {
     decorateMain(main);
+    if (Storage.isLoggedIn()) {
+      main.querySelectorAll('a, button').forEach((node) => {
+        if (/join\b.*\bcommunity/i.test(node.textContent.trim())) node.remove();
+      });
+    }
     document.body.classList.add('appear');
     await loadSection(main.querySelector('.section'), waitForFirstImage);
   }
@@ -702,13 +707,6 @@ async function loadLazy(doc) {
 
   Utils.initRevealObserver();
 
-  if (Storage.isLoggedIn()) {
-    doc.querySelectorAll('main a, main button').forEach((el) => {
-      if (/join\b.*\bcommunity/i.test(el.textContent.trim())) {
-        el.remove();
-      }
-    });
-  }
 }
 
 // Schedules the delayed.js import after 3 seconds.

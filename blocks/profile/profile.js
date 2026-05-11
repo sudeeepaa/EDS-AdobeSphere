@@ -255,13 +255,28 @@ function renderUser(block, cfg) {
   });
 
   saveBtn.addEventListener('click', () => {
+    const linkedinRaw = linkedinInput.value.trim();
+    if (linkedinRaw) {
+      let valid = false;
+      try {
+        const url = new URL(linkedinRaw);
+        const validHost = url.hostname === 'linkedin.com' || url.hostname === 'www.linkedin.com';
+        const validPath = /^\/in\/[A-Za-z0-9\-_%]{2,}(\/)?$/.test(url.pathname);
+        valid = url.protocol === 'https:' && validHost && validPath;
+      } catch { valid = false; }
+      if (!valid) {
+        linkedinInput.focus();
+        Utils.toast('Please enter a valid LinkedIn profile URL (e.g. https://www.linkedin.com/in/your-name/).', 'error');
+        return;
+      }
+    }
     const cur = Storage.getCurrentUser() || {};
     const updates = {
       ...cur,
       name: nameInput.value.trim(),
       designation: desigInput.value.trim(),
       bio: bioInput.value.trim(),
-      socials: { ...(cur.socials || {}), linkedin: linkedinInput.value.trim() },
+      socials: { ...(cur.socials || {}), linkedin: linkedinRaw },
     };
     Storage.upsertUser(updates);
     Storage.setSession({ email: cur.email, name: updates.name });
