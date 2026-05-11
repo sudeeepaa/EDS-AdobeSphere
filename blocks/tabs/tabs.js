@@ -107,30 +107,27 @@ export default function decorate(block) {
   });
 
   let pending = {};
-  let rafId = null;
+  let switchTimer = null;
 
   // Switches to the tab whose results best match the query on primary fields.
-  // Tiebreaks on total result count so partial matches still navigate somewhere useful.
+  // Tabs with any quality score beat tabs with zero quality; tiebreaks on count.
   function switchToWinningTab() {
-    let winner = null;
-    let bestQuality = 0;
-    let bestCount = 0;
+    const entries = Object.entries(pending);
+    pending = {};
+    if (!entries.length) return;
 
-    Object.keys(pending).forEach((type) => {
-      const { count, quality } = pending[type];
-      if (
-        quality > bestQuality
-        || (quality === bestQuality && count > bestCount)
-      ) {
-        winner = type;
-        bestQuality = quality;
-        bestCount = count;
-      }
+    const maxQuality = Math.max(...entries.map(([, v]) => v.quality));
+    const candidates = maxQuality > 0
+      ? entries.filter(([, v]) => v.quality === maxQuality)
+      : entries.filter(([, v]) => v.count > 0);
+
+    let winner = null;
+    let bestCount = 0;
+    candidates.forEach(([type, { count }]) => {
+      if (count > bestCount) { winner = type; bestCount = count; }
     });
 
-    pending = {};
     if (!winner) return;
-
     const target = tabs.find((t) => t.id === winner);
     if (target && !target.button.classList.contains('active')) {
       activateTab(target, true);
@@ -149,8 +146,9 @@ export default function decorate(block) {
 
     pending[type] = { count, quality: quality || 0 };
 
-    cancelAnimationFrame(rafId);
-    rafId = requestAnimationFrame(switchToWinningTab);
+    // Wait 80ms after the last result so all tabs have reported before deciding.
+    clearTimeout(switchTimer);
+    switchTimer = setTimeout(switchToWinningTab, 80);
   });
 
   window.addEventListener('adobesphere:switchtab', (e) => {

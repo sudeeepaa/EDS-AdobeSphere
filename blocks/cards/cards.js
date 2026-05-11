@@ -276,41 +276,37 @@ function uniqueValues(items, picker) {
   return [...seen].sort((a, b) => String(a).localeCompare(String(b)));
 }
 
-// Returns true if the item's JSON representation contains the query string.
-function matchesText(item, q) {
+// Returns true if the item matches the query against the allowed fields only.
+function matchesText(type, item, q) {
   if (!q) return true;
-  return JSON.stringify(item).toLowerCase().includes(q.toLowerCase());
-}
-
-// Counts items that match the query on their primary display fields only.
-function qualityScore(type, filteredItems, q) {
-  if (!q) return 0;
   const lq = q.toLowerCase();
-  if (type === 'creators') {
-    return filteredItems.filter((c) => (c.name || '').toLowerCase().includes(lq)).length;
+  if (type === 'events') {
+    return (item.title || '').toLowerCase().includes(lq)
+      || (item.category || '').toLowerCase().includes(lq);
   }
   if (type === 'blogs') {
-    return filteredItems.filter((b) => {
-      const title = (b.title || '').toLowerCase();
-      const author = ((b.author && b.author.name) || b.author_name || '').toLowerCase();
-      return title.includes(lq) || author.includes(lq);
-    }).length;
+    return (item.title || '').toLowerCase().includes(lq)
+      || (item.category || '').toLowerCase().includes(lq);
   }
-  if (type === 'events') {
-    return filteredItems.filter((e) => {
-      const title = (e.title || '').toLowerCase();
-      const cat = (e.category || '').toLowerCase();
-      return title.includes(lq) || cat.includes(lq);
-    }).length;
+  if (type === 'creators') {
+    return (item.name || '').toLowerCase().includes(lq)
+      || (item.designation || '').toLowerCase().includes(lq);
   }
-  return 0;
+  return false;
+}
+
+// Counts how many filtered items match on primary fields (same as matchesText — kept
+// as a named helper so tabs.js can use quality vs count separately if needed).
+function qualityScore(type, filteredItems, q) {
+  if (!q) return 0;
+  return filteredItems.filter((item) => matchesText(type, item, q)).length;
 }
 
 // Filters and sorts items by the given filter state for the source type.
 function getFilteredItems(type, items, f) {
   if (type === 'events') {
     return items.filter((e) => {
-      if (!matchesText(e, f.q)) return false;
+      if (!matchesText('events', e, f.q)) return false;
       if (f.category && e.category !== f.category) return false;
       if (f.location && f.location.length) {
         const city = e.location && e.location.city;
@@ -327,7 +323,7 @@ function getFilteredItems(type, items, f) {
   }
   if (type === 'blogs') {
     return items.filter((b) => {
-      if (!matchesText(b, f.q)) return false;
+      if (!matchesText('blogs', b, f.q)) return false;
       if (f.category && b.category !== f.category) return false;
       if (f.author) {
         const name = (b.author && b.author.name) || '';
@@ -341,7 +337,7 @@ function getFilteredItems(type, items, f) {
   }
   if (type === 'creators') {
     return items.filter((c) => {
-      if (!matchesText(c, f.q)) return false;
+      if (!matchesText('creators', c, f.q)) return false;
       if (f.designation && f.designation.length && !f.designation.includes(c.designation)) return false;
       return true;
     }).sort((a, b) => {
