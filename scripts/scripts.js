@@ -376,16 +376,12 @@ const Utils = {
     }, duration);
   },
 
-  // Fetches JSON data, trying /drafts/data first then /data.
   async fetchData(name) {
-    const candidates = [`/drafts/data/${name}.json`, `/data/${name}.json`];
-    for (const url of candidates) {
-      try {
-        const res = await fetch(url); // eslint-disable-line no-await-in-loop
-        if (res.ok) return res.json();
-      } catch {
-        // try next
-      }
+    try {
+      const res = await fetch(`/data/${name}.json`);
+      if (res.ok) return res.json();
+    } catch {
+      // fetch failed
     }
     return null;
   },
