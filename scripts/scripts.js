@@ -699,9 +699,19 @@ async function loadLazy(doc) {
   const main = doc.querySelector('main');
   await loadSections(main);
 
+  // Assign section IDs from heading keywords so hash links like #saved work
+  doc.querySelectorAll('main > .section:not([id])').forEach((section) => {
+    const heading = section.querySelector('h2, h3, h4');
+    if (!heading) return;
+    const text = heading.textContent.trim().toLowerCase();
+    if (text.includes('saved')) section.id = 'saved';
+    else if (text.includes('published')) section.id = 'published';
+    else if (text.includes('register')) section.id = 'registrations';
+  });
+
   const { hash } = window.location;
   const el = hash ? doc.getElementById(hash.substring(1)) : false;
-  if (hash && el) el.scrollIntoView();
+  if (hash && el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   loadFooter(doc.querySelector('footer'));
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);

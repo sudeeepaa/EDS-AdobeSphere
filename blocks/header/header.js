@@ -88,6 +88,22 @@ function buildAuthZone() {
     window.location.href = '/';
   });
 
+  // Same-page hash navigation — scroll smoothly if already on the target page
+  wrap.querySelectorAll('.nav-user-menu a[href*="#"]').forEach((link) => {
+    link.addEventListener('click', (e) => {
+      const url = new URL(link.href, window.location.origin);
+      if (url.pathname === window.location.pathname && url.hash) {
+        const target = document.getElementById(url.hash.slice(1));
+        if (target) {
+          e.preventDefault();
+          menu.classList.remove('open');
+          toggle.setAttribute('aria-expanded', 'false');
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    });
+  });
+
   // Live avatar update when profile page saves a new photo
   window.addEventListener('adobesphere:avatar-updated', (e) => {
     const navAvatar = wrap.querySelector('.nav-avatar');
