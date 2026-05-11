@@ -231,7 +231,7 @@ export default async function decorate(block) {
         sel.innerHTML = `
           <option value="name-asc"${state.sort === 'name-asc' ? ' selected' : ''}>Name A–Z</option>
           <option value="name-desc"${state.sort === 'name-desc' ? ' selected' : ''}>Name Z–A</option>
-          <option value="testimonials"${state.sort === 'testimonials' ? ' selected' : ''}>Testimonials</option>`;
+          <option value="testimonials"${state.sort === 'testimonials' ? ' selected' : ''}>Has Testimonials</option>`;
         sel.addEventListener('change', (e) => { state.sort = e.target.value; dispatchFilter(source, { ...state }); });
         row.append(sel);
       }
