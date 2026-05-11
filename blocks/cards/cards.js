@@ -152,7 +152,12 @@ function buildBlogCard(blog, opts) {
   const id = blog.id || '';
   const href = `/blog/${encodeURIComponent(id)}`;
   const cover = asAsset(blog.coverImage, FALLBACK_THUMB);
-  const author = blog.author || {};
+  const author = blog.author || {
+    id: blog.author_id || '',
+    name: blog.author_name || '',
+    avatar: blog.author_avatar || '',
+    designation: blog.author_designation || '',
+  };
   const avatar = asAsset(author.avatar, FALLBACK_AVATAR);
   const date = window.AdobeSphere.Utils.formatShortDate(blog.publishedDate || '');
 

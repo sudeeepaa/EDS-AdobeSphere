@@ -354,7 +354,8 @@ const Utils = {
     const v = src.trim().replace(/\\/g, '/');
     if (!v) return fallback || '';
     if (v.startsWith('data:') || v.startsWith('http')) return v;
-    return v.startsWith('/') ? v : `/${v}`;
+    const abs = v.startsWith('/') ? v : `/${v}`;
+    return abs.replace(/^\/media\/images\//, '/assets/images/');
   },
 
   // Shows a transient toast notification in the bottom-right corner.
