@@ -317,6 +317,9 @@ async function renderCreatorVariant(block) {
   const DEFAULT_AVATAR = '/assets/images/profiles/default-user.jpg';
   const avatar = Utils.normaliseAsset(entity.avatar, DEFAULT_AVATAR);
   const stats = entity.stats || {};
+  const blogCount = Array.isArray(entity.blogIds) ? entity.blogIds.length : (stats.blogsPublished || 0);
+  const eventCount = Array.isArray(entity.eventIds) ? entity.eventIds.length : (stats.eventsHosted || 0);
+  const testimonialCount = stats.testimonialsGiven || 0;
 
   const inner = document.createElement('div');
   inner.className = 'hero-creator-inner';
@@ -340,9 +343,9 @@ async function renderCreatorVariant(block) {
   heroRow.append(img, textDiv);
 
   const statItems = [
-    [stats.blogsPublished ?? 0, cfg['stat-blogs'] || 'Blogs Published'],
-    [stats.eventsHosted ?? 0, cfg['stat-events'] || 'Events Hosted'],
-    [stats.testimonialsGiven ?? 0, cfg['stat-testimonials'] || 'Testimonials'],
+    [blogCount, cfg['stat-blogs'] || 'Blogs Published'],
+    [eventCount, cfg['stat-events'] || 'Events Hosted'],
+    [testimonialCount, cfg['stat-testimonials'] || 'Testimonials'],
   ];
 
   const ul = document.createElement('ul');
