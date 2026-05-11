@@ -8,6 +8,8 @@
 
 /* ── Form wrapper ────────────────────────────────────────────────────── */
 .contact-form {
+  max-width: 680px;
+  margin: 0 auto;
   background: var(--white);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
