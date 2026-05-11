@@ -314,6 +314,32 @@ const Storage = {
 
 const dataCache = {};
 
+// Parses an AEM.live spreadsheet array string "[a,b,c]" into a real array.
+function parseSheetArray(v) {
+  if (Array.isArray(v)) return v;
+  if (typeof v === 'string' && v.startsWith('[') && v.endsWith(']')) {
+    return v.slice(1, -1).split(',').map((s) => s.trim()).filter(Boolean);
+  }
+  return [];
+}
+
+// Normalises a creator row from AEM.live sheet format to the canonical object shape.
+function normaliseCreator(c) {
+  const toInt = (v) => (parseInt(v, 10) || 0);
+  const result = { ...c };
+  result.blogIds = parseSheetArray(c.blogIds);
+  result.eventIds = parseSheetArray(c.eventIds);
+  result.featured = c.featured === true || String(c.featured).toUpperCase() === 'TRUE';
+  if (!result.stats || typeof result.stats !== 'object') {
+    result.stats = {
+      blogsPublished: toInt(c.stats_blogsPublished),
+      eventsHosted: toInt(c.stats_eventsHosted),
+      testimonialsGiven: toInt(c.stats_testimonialsGiven),
+    };
+  }
+  return result;
+}
+
 const Utils = {
   // Escapes HTML special characters to prevent XSS.
   escapeHtml(value) {
@@ -386,7 +412,11 @@ const Utils = {
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           return res.json();
         })
-        .then((json) => (Array.isArray(json) ? json : (json.data ?? null)))
+        .then((json) => {
+          const arr = Array.isArray(json) ? json : (json.data ?? null);
+          if (name === 'creators' && Array.isArray(arr)) return arr.map(normaliseCreator);
+          return arr;
+        })
         .catch(() => null);
     }
     return dataCache[name];
