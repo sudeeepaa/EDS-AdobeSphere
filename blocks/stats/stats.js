@@ -36,6 +36,16 @@ async function resolveTarget(source) {
     return jsonCount + localCount;
   }
 
+  if (source === 'testimonials') {
+    const urlId = new URLSearchParams(window.location.search).get('id')
+      || decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '');
+    if (!urlId) return 0;
+    const data = await window.AdobeSphere.Utils.fetchData('creators');
+    if (!Array.isArray(data)) return 0;
+    const creator = data.find((c) => c.id === urlId);
+    return (creator && creator.stats && creator.stats.testimonialsGiven) || 0;
+  }
+
   const file = source === 'events' ? 'campaigns' : source;
   const data = await window.AdobeSphere.Utils.fetchData(file);
   return Array.isArray(data) ? data.length : 0;
