@@ -359,21 +359,36 @@ function buildEmployeeModal(cfg = {}) {
   overlay.setAttribute('aria-modal', 'true');
 
   const box = el('div', 'modal-box');
-  const title = el('h2', '', cfg['modal-title'] || 'Adobe Employees Only');
-  const body = el('p', 'text-muted');
-  body.textContent = cfg['modal-body'] || 'This application is only for Adobe-registered employees. Please sign up using your @adobe.com email address.';
+  const titleEl = el('h2', '', cfg['modal-title'] || 'Adobe Employees Only');
+  const bodyEl = el('p', 'text-muted', cfg['modal-body'] || 'This application is only for Adobe-registered employees. Please sign up using your @adobe.com email address.');
 
   const footer = el('div', 'modal-footer');
   const okBtn = el('button', 'button primary', cfg['modal-button'] || 'Okay');
   okBtn.type = 'button';
   footer.append(okBtn);
-  box.append(title, body, footer);
+  box.append(titleEl, bodyEl, footer);
   overlay.append(box);
 
   const open = () => { overlay.classList.add('open'); overlay.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; };
   const close = () => { overlay.classList.remove('open'); overlay.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; };
   okBtn.addEventListener('click', close);
   overlay.addEventListener('click', (ev) => { if (ev.target === overlay) close(); });
+
+  // Fetch content from DA.live fragment and update modal in place
+  const src = cfg['modal-source'] || '/modals/employee-only';
+  fetch(`${src}.plain.html`)
+    .then((r) => (r.ok ? r.text() : null))
+    .then((html) => {
+      if (!html) return;
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const heading = doc.querySelector('h1, h2, h3');
+      const para = doc.querySelector('p');
+      const btn = doc.querySelector('strong, em, b');
+      if (heading) titleEl.textContent = heading.textContent.trim();
+      if (para) bodyEl.textContent = para.textContent.trim();
+      if (btn) okBtn.textContent = btn.textContent.trim();
+    })
+    .catch(() => { /* keep defaults on network error */ });
 
   return { overlay, open };
 }
