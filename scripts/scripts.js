@@ -379,7 +379,10 @@ const Utils = {
   async fetchData(name) {
     try {
       const res = await fetch(`/data/${name}.json`);
-      if (res.ok) return res.json();
+      if (res.ok) {
+        const json = await res.json();
+        return Array.isArray(json) ? json : (json.data ?? null);
+      }
     } catch {
       // fetch failed
     }
