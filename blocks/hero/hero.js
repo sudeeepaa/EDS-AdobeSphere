@@ -131,11 +131,16 @@ function renderSearch(placeholder) {
 function renderScrollChevron() {
   const a = document.createElement('a');
   a.className = 'hero-scroll';
-  a.href = '#main-content';
+  a.href = '#';
   a.setAttribute('aria-label', 'Scroll to next section');
   a.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
     <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
   </svg>`;
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const next = a.closest('.section')?.nextElementSibling;
+    if (next) next.scrollIntoView({ behavior: 'smooth' });
+  });
   return a;
 }
 
