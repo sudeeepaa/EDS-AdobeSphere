@@ -4,7 +4,7 @@ AdobeSphere is a community platform for Adobe employees — a place to discover 
 
 ---
 
-## How This Project Works (For Non-EDS Users)
+## How This Project Works
 
 This project is built on **Adobe Edge Delivery Services (EDS)**, which is a CDN-first publishing system. Here is what that means in practice:
 
