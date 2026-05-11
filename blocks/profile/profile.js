@@ -328,6 +328,11 @@ async function renderCreator(block, cfg) {
   const avatar = Utils.normaliseAsset(creator.avatar, '/assets/images/profiles/default-user.jpg');
   const stats = creator.stats || {};
 
+  // Derive counts from ID arrays (always accurate; stats field may be stale on the CDN).
+  const blogCount = Array.isArray(creator.blogIds) ? creator.blogIds.length : (stats.blogsPublished || 0);
+  const eventCount = Array.isArray(creator.eventIds) ? creator.eventIds.length : (stats.eventsHosted || 0);
+  const testimonialCount = stats.testimonialsGiven || 0;
+
   const wrap = el('div', 'profile-creator');
 
   const img = el('img', 'profile-creator-avatar');
@@ -339,9 +344,9 @@ async function renderCreator(block, cfg) {
 
   const statList = el('ul', 'profile-creator-stats');
   [
-    [stats.blogsPublished || 0, cfg['stat-blogs'] || 'Blogs Published'],
-    [stats.eventsHosted || 0, cfg['stat-events'] || 'Events Hosted'],
-    [stats.testimonialsGiven || 0, cfg['stat-testimonials'] || 'Testimonials'],
+    [blogCount, cfg['stat-blogs'] || 'Blogs Published'],
+    [eventCount, cfg['stat-events'] || 'Events Hosted'],
+    [testimonialCount, cfg['stat-testimonials'] || 'Testimonials'],
   ].forEach(([value, label]) => {
     const li = el('li', '');
     li.append(el('strong', '', String(value)), el('span', '', label));
