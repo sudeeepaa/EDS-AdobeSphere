@@ -126,7 +126,7 @@ export default function decorate(block) {
 
   // Message
   const msgGrp = makeGroup('cf-message', cfg['label-message'] || 'Message');
-  const msgI = makeTextarea('cf-message', 6, 500);
+  const msgI = makeTextarea('cf-message', 4, 500);
 
   const counter = document.createElement('small');
   counter.className = 'cf-counter';
