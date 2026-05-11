@@ -13,10 +13,6 @@ import {
   getMetadata,
 } from './aem.js';
 
-/* ─────────────────────────────────────────────────────────────
- * AdobeSphere global app state — initialised on first import.
- * ─────────────────────────────────────────────────────────────
- */
 const STORAGE_KEYS = {
   USERS: 'adobesphere_users',
   SESSION: 'adobesphere_session',
@@ -27,6 +23,7 @@ const STORAGE_KEYS = {
   PROFILE: 'adobesphere_profile_',
 };
 
+// Safely reads and parses a JSON value from localStorage.
 function readJSON(key, fallback) {
   try {
     const raw = localStorage.getItem(key);
@@ -36,6 +33,7 @@ function readJSON(key, fallback) {
   }
 }
 
+// Safely serialises and writes a value to localStorage.
 function writeJSON(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
@@ -45,20 +43,21 @@ function writeJSON(key, value) {
   }
 }
 
-/**
- * Storage — thin localStorage wrapper used by every block that needs persistence.
- * Exposed at `window.AdobeSphere.Storage`.
- */
 const Storage = {
+  // Returns the current session object from localStorage.
   getSession() { return readJSON(STORAGE_KEYS.SESSION, null); },
+  // Saves the session object to localStorage.
   setSession(session) { return writeJSON(STORAGE_KEYS.SESSION, session); },
+  // Removes the session from localStorage.
   clearSession() { localStorage.removeItem(STORAGE_KEYS.SESSION); },
 
+  // Returns true if a valid session with an email exists.
   isLoggedIn() {
     const s = this.getSession();
     return !!(s && s.email);
   },
 
+  // Returns the full user object for the current session.
   getCurrentUser() {
     const s = this.getSession();
     if (!s || !s.email) return null;
@@ -66,6 +65,7 @@ const Storage = {
     return users[s.email] || null;
   },
 
+  // Creates or updates a user record in localStorage.
   upsertUser(user) {
     if (!user || !user.email) return false;
     const users = readJSON(STORAGE_KEYS.USERS, {});
@@ -73,6 +73,7 @@ const Storage = {
     return writeJSON(STORAGE_KEYS.USERS, users);
   },
 
+  // Returns the saved item IDs of the given type for the current user.
   getSaved(type) {
     const session = this.getSession();
     if (!session) return [];
@@ -81,6 +82,7 @@ const Storage = {
     return userSaved[type] || [];
   },
 
+  // Toggles a saved item and returns true if it is now saved.
   toggleSaved(type, id) {
     const session = this.getSession();
     if (!session) return false;
@@ -92,13 +94,15 @@ const Storage = {
     userSaved[type] = list;
     all[session.email] = userSaved;
     writeJSON(STORAGE_KEYS.SAVED, all);
-    return idx === -1; // true = saved, false = removed
+    return idx === -1;
   },
 
+  // Returns true if the given item is in the current user's saved list.
   isSaved(type, id) {
     return this.getSaved(type).indexOf(id) !== -1;
   },
 
+  // Returns the current user's event registrations.
   getRegistrations() {
     const session = this.getSession();
     if (!session) return [];
@@ -106,6 +110,7 @@ const Storage = {
     return all[session.email] || [];
   },
 
+  // Registers the current user for an event with the given details.
   registerForEvent(eventId, details) {
     const session = this.getSession();
     if (!session) return false;
@@ -117,6 +122,7 @@ const Storage = {
     return writeJSON(STORAGE_KEYS.REGISTRATIONS, all);
   },
 
+  // Cancels the current user's registration for the given event.
   cancelRegistration(eventId) {
     const session = this.getSession();
     if (!session) return false;
@@ -126,6 +132,7 @@ const Storage = {
     return writeJSON(STORAGE_KEYS.REGISTRATIONS, all);
   },
 
+  // Returns all user-authored blog posts for the current session.
   getUserBlogs() {
     const session = this.getSession();
     if (!session) return [];
@@ -133,6 +140,7 @@ const Storage = {
     return all[session.email] || [];
   },
 
+  // Appends a new blog post for the current session user.
   addUserBlog(blog) {
     const session = this.getSession();
     if (!session) return false;
@@ -143,6 +151,7 @@ const Storage = {
     return writeJSON(STORAGE_KEYS.USER_BLOGS, all);
   },
 
+  // Removes a blog post by id from the current session user's list.
   deleteUserBlog(blogId) {
     const session = this.getSession();
     if (!session) return false;
@@ -151,11 +160,13 @@ const Storage = {
     return writeJSON(STORAGE_KEYS.USER_BLOGS, all);
   },
 
+  // Returns all comments for the given blog id.
   getComments(blogId) {
     const all = readJSON(STORAGE_KEYS.COMMENTS, {});
     return all[blogId] || [];
   },
 
+  // Appends a comment to the given blog's comment list.
   addComment(blogId, comment) {
     const all = readJSON(STORAGE_KEYS.COMMENTS, {});
     const list = all[blogId] || [];
@@ -164,8 +175,7 @@ const Storage = {
     return writeJSON(STORAGE_KEYS.COMMENTS, all);
   },
 
-  // Every new sign-up creates a matching local creator entry so that the
-  // "Creators" stat counter equals the "Registered Users" counter.
+  // Creates or updates a local creator entry for newly registered users.
   upsertLocalCreator(user) {
     if (!user || !user.email) return false;
     const key = 'adobesphere_local_creators';
@@ -179,14 +189,14 @@ const Storage = {
     return writeJSON(key, creators);
   },
 
+  // Returns the count of locally registered creator accounts.
   getLocalCreatorsCount() {
     try {
       return Object.keys(JSON.parse(localStorage.getItem('adobesphere_local_creators') || '{}')).length;
     } catch { return 0; }
   },
 
-  // Build a creator-shaped object for a registered user from their stored profile.
-  // id = the user's email (used as their creator profile URL slug).
+  // Returns a creator-shaped object built from a registered user's stored profile.
   getLocalCreator(id) {
     const users = readJSON(STORAGE_KEYS.USERS, {});
     const user = users[id];
@@ -212,7 +222,7 @@ const Storage = {
     };
   },
 
-  // Returns all registered users who have a name as creator-shaped objects.
+  // Returns all registered users with a name as creator-shaped objects.
   getAllLocalCreators() {
     const users = readJSON(STORAGE_KEYS.USERS, {});
     const userBlogs = readJSON(STORAGE_KEYS.USER_BLOGS, {});
@@ -237,17 +247,19 @@ const Storage = {
       });
   },
 
-  // Returns user-authored blogs for a given email (accessible on their own device).
+  // Returns user-authored blogs stored under the given email address.
   getLocalUserBlogs(email) {
     return readJSON(STORAGE_KEYS.USER_BLOGS, {})[email] || [];
   },
 
-  // Convenience wrappers for blog save/unsave (delegates to generic toggleSaved).
+  // Returns true if the given blog id is in the current user's saved list.
   isBlogSaved(id) { return this.isSaved('blogs', String(id)); },
+  // Saves the given blog id if not already saved.
   saveBlog(id) { if (!this.isBlogSaved(id)) this.toggleSaved('blogs', String(id)); },
+  // Removes the given blog id from the saved list.
   unsaveBlog(id) { if (this.isBlogSaved(id)) this.toggleSaved('blogs', String(id)); },
 
-  // Contact submissions — stored locally (no server in this demo).
+  // Stores a contact form submission in localStorage.
   addContactSubmission(submission) {
     const KEY = 'adobesphere_contact_submissions';
     const list = readJSON(KEY, []);
@@ -255,6 +267,7 @@ const Storage = {
     writeJSON(KEY, list);
   },
 
+  // Finds and returns a user blog by id across all users' blog lists.
   getUserBlogById(blogId) {
     const all = readJSON(STORAGE_KEYS.USER_BLOGS, {});
     for (const blogs of Object.values(all)) {
@@ -264,6 +277,7 @@ const Storage = {
     return null;
   },
 
+  // Updates an existing user blog or appends it if not found.
   updateUserBlog(blog) {
     const session = this.getSession();
     if (!session) return false;
@@ -275,15 +289,18 @@ const Storage = {
     return writeJSON(STORAGE_KEYS.USER_BLOGS, all);
   },
 
+  // Returns all user-authored blogs across all users as a flat array.
   getAllUserBlogs() {
     const all = readJSON(STORAGE_KEYS.USER_BLOGS, {});
     return Object.values(all).flat();
   },
 
+  // Returns the stored list of custom blog category names.
   getBlogCategories() {
     return readJSON('adobesphere_blog_categories', []);
   },
 
+  // Adds a new category name to the stored list if not already present.
   addBlogCategory(name) {
     const v = String(name || '').trim();
     if (!v) return;
@@ -295,8 +312,8 @@ const Storage = {
   },
 };
 
-/* ─── Helpers shared across blocks (avatars, dates, escaping, etc.) ─── */
 const Utils = {
+  // Escapes HTML special characters to prevent XSS.
   escapeHtml(value) {
     return String(value ?? '')
       .replace(/&/g, '&amp;')
@@ -306,6 +323,7 @@ const Utils = {
       .replace(/'/g, '&#39;');
   },
 
+  // Formats an ISO date string using the given Intl options or a default long format.
   formatDate(iso, opts) {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '';
@@ -314,26 +332,23 @@ const Utils = {
     }).format(d);
   },
 
+  // Formats an ISO date string as a short locale date.
   formatShortDate(iso) {
     return Utils.formatDate(iso, { month: 'short', day: 'numeric', year: 'numeric' });
   },
 
+  // Truncates a string to max characters with an ellipsis.
   truncate(text, max) {
     const s = String(text ?? '');
     return s.length <= max ? s : `${s.slice(0, max)}…`;
   },
 
+  // Returns true if the string is a valid email address format.
   validateEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
   },
 
-  /**
-   * Resolves an asset path. Supports:
-   *  - data: URIs (returned as-is)
-   *  - absolute http(s) URLs (returned as-is)
-   *  - paths from the legacy site like "assets/images/..." (left alone — author copies the assets folder)
-   *  - paths with backslashes (normalised to forward slashes)
-   */
+  // Normalises an asset path to an absolute URL or returns the fallback.
   normaliseAsset(src, fallback) {
     if (!src || typeof src !== 'string') return fallback || '';
     const v = src.trim().replace(/\\/g, '/');
@@ -342,6 +357,7 @@ const Utils = {
     return v.startsWith('/') ? v : `/${v}`;
   },
 
+  // Shows a transient toast notification in the bottom-right corner.
   toast(message, type = 'info', duration = 3000) {
     let container = document.getElementById('toast-container');
     if (!container) {
@@ -360,24 +376,21 @@ const Utils = {
     }, duration);
   },
 
-  /**
-   * Loads JSON data files. Searches /drafts/data first (local dev) then /data.
-   * The author publishes JSON in da.live → /data/{name}.json.
-   */
+  // Fetches JSON data, trying /drafts/data first then /data.
   async fetchData(name) {
     const candidates = [`/drafts/data/${name}.json`, `/data/${name}.json`];
     for (const url of candidates) {
       try {
-        // eslint-disable-next-line no-await-in-loop
-        const res = await fetch(url);
+        const res = await fetch(url); // eslint-disable-line no-await-in-loop
         if (res.ok) return res.json();
       } catch {
-        /* try next */
+        // try next
       }
     }
     return null;
   },
 
+  // Attaches an IntersectionObserver to all .reveal elements to animate them into view.
   initRevealObserver() {
     const nodes = document.querySelectorAll('.reveal:not(.visible)');
     if (!nodes.length) return;
@@ -392,10 +405,10 @@ const Utils = {
     nodes.forEach((n) => obs.observe(n));
   },
 
+  // Shows a modal dialog prompting the user to sign in or sign up.
   async showAuthModal({ redirect } = {}) {
     const redirectUrl = encodeURIComponent(redirect || (window.location.pathname + window.location.search));
 
-    // Fetch authored heading / message / buttons from DA.live (no hardcoded copy).
     let heading = 'Sign in to continue';
     let msgText = 'Join the AdobeSphere community to participate.';
     const authoredBtns = [];
@@ -412,9 +425,8 @@ const Utils = {
           authoredBtns.push({ text: a.textContent.trim(), href: a.getAttribute('href') });
         });
       }
-    } catch { /* use fallback strings */ }
+    } catch {}
 
-    // Remove any prior instance so event listeners don't accumulate.
     document.getElementById('auth-modal')?.remove();
 
     const overlay = document.createElement('div');
@@ -434,7 +446,6 @@ const Utils = {
     closeBtn.setAttribute('aria-label', 'Close dialog');
     closeBtn.textContent = '×';
 
-    // Lock icon via createElementNS (no innerHTML).
     const SVG_NS = 'http://www.w3.org/2000/svg';
     const iconWrap = document.createElement('div');
     iconWrap.className = 'auth-modal-icon';
@@ -484,6 +495,7 @@ const Utils = {
     const prevFocus = document.activeElement;
     const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+    // Closes the modal and restores focus to the previously focused element.
     const close = () => {
       overlay.classList.remove('open');
       overlay.addEventListener('transitionend', () => overlay.remove(), { once: true });
@@ -491,6 +503,7 @@ const Utils = {
       if (prevFocus?.focus) prevFocus.focus();
     };
 
+    // Traps focus within the modal and closes it on Escape.
     const onKey = (e) => {
       if (e.key === 'Escape') { close(); return; }
       if (e.key !== 'Tab') return;
@@ -515,19 +528,13 @@ const Utils = {
   },
 };
 
-// Expose for blocks that prefer a global handle (legacy parity).
 window.AdobeSphere = { Storage, Utils };
 
-/* ─────────────────────────────────────────────────────────────
- * Auto-blocking — promote the first H1+picture pair into a hero
- * UNLESS the page already authors an explicit hero block.
- * ─────────────────────────────────────────────────────────────
- */
+// Auto-builds a hero block from the first H1 preceded by a picture.
 function buildHeroBlock(main) {
   const h1 = main.querySelector('h1');
   const picture = main.querySelector('picture');
-  // eslint-disable-next-line no-bitwise
-  if (h1 && picture && (h1.compareDocumentPosition(picture) & Node.DOCUMENT_POSITION_PRECEDING)) {
+  if (h1 && picture && (h1.compareDocumentPosition(picture) & Node.DOCUMENT_POSITION_PRECEDING)) { // eslint-disable-line no-bitwise
     if (h1.closest('.hero') || picture.closest('.hero')) return;
     const section = document.createElement('div');
     section.append(buildBlock('hero', { elems: [picture, h1] }));
@@ -535,46 +542,36 @@ function buildHeroBlock(main) {
   }
 }
 
+// Promotes inline fragment links and runs the hero auto-block builder.
 function buildAutoBlocks(main) {
   try {
     const fragments = [...main.querySelectorAll('a[href*="/fragments/"]')]
       .filter((a) => !a.closest('.fragment'));
     if (fragments.length) {
-      // eslint-disable-next-line import/no-cycle
-      import('../blocks/fragment/fragment.js').then(({ loadFragment }) => {
+      import('../blocks/fragment/fragment.js').then(({ loadFragment }) => { // eslint-disable-line import/no-cycle
         fragments.forEach(async (link) => {
           try {
             const { pathname } = new URL(link.href);
             const frag = await loadFragment(pathname);
             link.parentElement.replaceWith(...frag.children);
-          } catch (e) { /* noop */ }
+          } catch (e) {}
         });
       });
     }
     buildHeroBlock(main);
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Auto-blocking failed', error);
+    console.error('Auto-blocking failed', error); // eslint-disable-line no-console
   }
 }
 
-/**
- * Button decoration. Three rules:
- *   1. <strong><a/></strong>            → .button.primary
- *   2. <em><a/></em>                    → .button.secondary
- *   3. <strong><em><a/></em></strong>   → .button.accent (and the reverse)
- *
- * Unlike the boilerplate, this version permits multiple buttons inside one
- * paragraph. Authoring `**Explore All** *Join the Community*` on a single
- * line gives you two side-by-side buttons.
- */
+// Applies .button class and a variant to a single anchor element based on its wrapper.
 function decorateOneButton(a) {
   a.title = a.title || a.textContent;
   if (a.querySelector('img')) return false;
   const text = a.textContent.trim();
   try {
     if (new URL(a.href).href === new URL(text, window.location).href) return false;
-  } catch { /* relative link — continue */ }
+  } catch {}
 
   const strong = a.closest('strong');
   const em = a.closest('em');
@@ -595,18 +592,16 @@ function decorateOneButton(a) {
   return true;
 }
 
+// Decorates all eligible button-links in paragraphs within main.
 function decorateButtons(main) {
-  // Process one paragraph at a time so we can detect button-only paragraphs.
   main.querySelectorAll('p').forEach((p) => {
     const links = [...p.querySelectorAll('a[href]')];
     if (!links.length) return;
 
-    // Decorate each eligible link.
     let decoratedCount = 0;
     links.forEach((a) => { if (decorateOneButton(a)) decoratedCount += 1; });
     if (!decoratedCount) return;
 
-    // If the paragraph now contains only buttons (and whitespace), tag it.
     const stripped = p.textContent.replace(/\s+/g, ' ').trim();
     const buttonText = [...p.querySelectorAll('a.button')]
       .map((a) => a.textContent.trim()).join(' ').replace(/\s+/g, ' ').trim();
@@ -614,6 +609,7 @@ function decorateButtons(main) {
   });
 }
 
+// Runs all decoration passes on the main element.
 export function decorateMain(main) {
   decorateIcons(main);
   buildAutoBlocks(main);
@@ -622,26 +618,16 @@ export function decorateMain(main) {
   decorateButtons(main);
 }
 
+// Loads the fonts stylesheet and marks fonts as loaded in sessionStorage.
 async function loadFonts() {
   await loadCSS(`${window.hlx.codeBasePath}/styles/fonts.css`);
   try {
     if (!window.location.hostname.includes('localhost')) {
       sessionStorage.setItem('fonts-loaded', 'true');
     }
-  } catch { /* private mode */ }
+  } catch {}
 }
 
-/* ─────────────────────────────────────────────────────────────
- * Dynamic route handler for template-based detail pages.
- *
- * EDS requires a real document for every URL. Pages like
- * /events/event-003 don't exist individually — only the template
- * at /events/template does. When the URL matches a dynamic pattern,
- * we fetch the template's .plain.html, inject it into <main>, and
- * let EDS decorate it normally. The block JS then reads the entity
- * id from the URL slug as usual.
- * ─────────────────────────────────────────────────────────────
- */
 const DYNAMIC_ROUTES = [
   { pattern: /^\/events\/(?!template\b)[^/]+\/?$/, template: '/events/template' },
   { pattern: /^\/blog\/(?!template\b)[^/]+\/?$/, template: '/blog/template' },
@@ -649,6 +635,7 @@ const DYNAMIC_ROUTES = [
   { pattern: /^\/creator-profile\/?$/, template: '/creator-profile/template' },
 ];
 
+// Fetches a template and injects it into main for dynamic-route URLs.
 async function applyDynamicRoute(doc) {
   const { pathname } = window.location;
   const route = DYNAMIC_ROUTES.find((r) => r.pattern.test(pathname));
@@ -661,10 +648,7 @@ async function applyDynamicRoute(doc) {
     const main = doc.querySelector('main');
     if (main) {
       main.innerHTML = html;
-      // Remove the error-page flag if the 404 shell set it.
       window.isErrorPage = false;
-      // Fix the page title — replace "Page not found" with something reasonable.
-      // The actual entity title will be set later by the hero block once it hydrates.
       const slug = decodeURIComponent(pathname.split('/').filter(Boolean).pop() || '');
       const label = slug.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
       document.title = `${label} — AdobeSphere`;
@@ -675,12 +659,11 @@ async function applyDynamicRoute(doc) {
   }
 }
 
+// Runs the eager decoration and first-section load.
 async function loadEager(doc) {
   document.documentElement.lang = 'en';
   decorateTemplateAndTheme();
 
-  // Handle dynamic routes BEFORE decoration — template content must be in
-  // <main> before decorateSections / decorateBlocks runs.
   await applyDynamicRoute(doc);
 
   const main = doc.querySelector('main');
@@ -691,15 +674,15 @@ async function loadEager(doc) {
   }
   try {
     if (window.innerWidth >= 900 || sessionStorage.getItem('fonts-loaded')) loadFonts();
-  } catch { /* noop */ }
+  } catch {}
 }
 
+// Loads header, remaining sections, footer, fonts, and scroll-reveal.
 async function loadLazy(doc) {
   loadHeader(doc.querySelector('header'));
   const main = doc.querySelector('main');
   await loadSections(main);
 
-  // Assign section IDs from heading keywords so hash links like #saved work
   doc.querySelectorAll('main > .section:not([id])').forEach((section) => {
     const heading = section.querySelector('h2, h3, h4');
     if (!heading) return;
@@ -717,10 +700,8 @@ async function loadLazy(doc) {
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
   loadFonts();
 
-  // Reveal-on-scroll for any block that opted into the .reveal class.
   Utils.initRevealObserver();
 
-  // Hide any authored "Join Community" buttons/links when the user is logged in.
   if (Storage.isLoggedIn()) {
     doc.querySelectorAll('main a, main button').forEach((el) => {
       if (/join\b.*\bcommunity/i.test(el.textContent.trim())) {
@@ -730,11 +711,12 @@ async function loadLazy(doc) {
   }
 }
 
+// Schedules the delayed.js import after 3 seconds.
 function loadDelayed() {
-  // eslint-disable-next-line import/no-cycle
-  window.setTimeout(() => import('./delayed.js'), 3000);
+  window.setTimeout(() => import('./delayed.js'), 3000); // eslint-disable-line import/no-cycle
 }
 
+// Runs the full page load sequence: eager, lazy, then delayed.
 async function loadPage() {
   await loadEager(document);
   await loadLazy(document);
@@ -743,5 +725,4 @@ async function loadPage() {
 
 loadPage();
 
-// Re-export getMetadata for blocks that need page-level metadata (e.g. event id).
 export { getMetadata };

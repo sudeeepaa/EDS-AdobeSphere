@@ -1,41 +1,4 @@
-/**
- * AdobeSphere — profile block.
- *
- * Variants (authored as second column in block header row):
- *
- *   (default)  Profile card — view mode (avatar/name/designation/email/LinkedIn)
- *              → Edit Profile → edit mode (form fields + Save/Cancel/Delete).
- *   creator    Read-only creator hero with API-fetched stats.
- *
- * Section headings, intro copy, and CTAs are authored in the DA.live document.
- * Dashboard sections (published, saved, registrations) use the `cards` block
- * with Source | user-blogs / saved-blogs / saved-events / registered-events.
- *
- * Config rows (key | value):
- *
- *   default:
- *     Avatar Label          | Upload Photo
- *     Name Label            | Full Name
- *     Designation Label     | Role / Designation
- *     Bio Label             | About / Bio
- *     LinkedIn Label        | LinkedIn
- *     Email Label           | Email
- *     Edit CTA              | Edit Profile
- *     Save CTA              | Save Changes
- *     Cancel CTA            | Cancel
- *     Logout CTA            | Sign Out
- *     Delete Account Button | Delete My Account
- *     Delete Confirm        | Delete your account? All your data will be permanently removed.
- *     Not Logged In         | [rich-text link] Please sign in → /login
- *
- *   creator:
- *     Stat Blogs        | Blogs Published
- *     Stat Events       | Events Hosted
- *     Stat Testimonials | Testimonials
- */
-
-/* ─── Config reader ─── */
-
+// Reads key-value config rows from the block and removes them.
 function readConfig(block) {
   const cfg = {};
   [...block.children].forEach((row) => {
@@ -49,8 +12,7 @@ function readConfig(block) {
   return cfg;
 }
 
-/* ─── Avatar compression ─── */
-
+// Compresses an image file to max 256px and calls back with a JPEG data URL.
 function compressAvatar(file, callback) {
   const MAX = 256;
   const reader = new FileReader();
@@ -77,8 +39,7 @@ function compressAvatar(file, callback) {
   reader.readAsDataURL(file);
 }
 
-/* ─── DOM helpers ─── */
-
+// Creates a DOM element with optional class and text content.
 function el(tag, cls, text) {
   const e = document.createElement(tag);
   if (cls) e.className = cls;
@@ -86,8 +47,7 @@ function el(tag, cls, text) {
   return e;
 }
 
-/* ─── Confirmation modal ─── */
-
+// Opens a confirmation modal with cancel and confirm buttons.
 function openConfirm(message, confirmLabel, onConfirm) {
   const overlay = el('div', 'profile-modal-overlay');
   overlay.setAttribute('role', 'dialog');
@@ -109,8 +69,7 @@ function openConfirm(message, confirmLabel, onConfirm) {
   document.body.append(overlay);
 }
 
-/* ─── Shared: not-logged-in guard ─── */
-
+// Renders a "not logged in" message using the authored cell content.
 function showNotLoggedIn(block, cfg) {
   const cell = cfg['not-logged-in-cell'];
   const wrap = el('p', 'profile-empty');
@@ -125,10 +84,7 @@ function showNotLoggedIn(block, cfg) {
   block.append(wrap);
 }
 
-/* ═══════════════════════════════════
-   DEFAULT — profile card
-═══════════════════════════════════ */
-
+// Creates a labeled form field group wrapping the given input element.
 function fieldGroup(labelText, inputEl) {
   const group = el('div', 'profile-field-group');
   if (labelText) {
@@ -140,6 +96,7 @@ function fieldGroup(labelText, inputEl) {
   return group;
 }
 
+// Renders the user profile card with view and edit modes.
 function renderUser(block, cfg) {
   const { Storage, Utils } = window.AdobeSphere;
 
@@ -147,7 +104,6 @@ function renderUser(block, cfg) {
 
   let user = Storage.getCurrentUser() || {};
 
-  /* ── avatar ── */
   const avatarWrap = el('div', 'profile-avatar-wrap');
   const avatarImg = el('img', 'profile-avatar');
   avatarImg.src = user.avatarSrc || user.avatar || '/assets/images/profiles/default-user.jpg';
@@ -161,7 +117,6 @@ function renderUser(block, cfg) {
   avatarInput.hidden = true;
   avatarWrap.append(avatarImg, avatarOverlay, avatarInput);
 
-  /* ── VIEW section ── */
   const viewSection = el('div', 'profile-view');
   const nameView = el('h2', 'profile-name-display', user.name || '');
   const desigView = el('p', 'profile-view-designation', user.designation || '');
@@ -170,6 +125,7 @@ function renderUser(block, cfg) {
   const viewInfo = el('div', 'profile-view-info');
   viewInfo.append(nameView, desigView, emailView);
 
+  // Refreshes the LinkedIn link in the view section from the current user record.
   function refreshLinkedin() {
     const existing = viewInfo.querySelector('.profile-linkedin-link');
     const linkedin = (Storage.getCurrentUser() || {}).socials?.linkedin || '';
@@ -209,7 +165,6 @@ function renderUser(block, cfg) {
 
   viewSection.append(viewInfo, viewActions);
 
-  /* ── EDIT section ── */
   const editSection = el('div', 'profile-edit');
   editSection.style.display = 'none';
 
@@ -254,7 +209,6 @@ function renderUser(block, cfg) {
     dangerWrap,
   );
 
-  /* ── assemble card ── */
   const fields = el('div', 'profile-fields');
   fields.append(viewSection, editSection);
 
@@ -262,13 +216,14 @@ function renderUser(block, cfg) {
   card.append(avatarWrap, fields);
   block.append(card);
 
-  /* ── toggle helpers ── */
+  // Switches the card back to view mode.
   function showView() {
     card.classList.remove('editing');
     viewSection.style.display = '';
     editSection.style.display = 'none';
   }
 
+  // Populates edit fields from storage and switches the card to edit mode.
   function showEdit() {
     user = Storage.getCurrentUser() || {};
     nameInput.value = user.name || '';
@@ -280,7 +235,6 @@ function renderUser(block, cfg) {
     editSection.style.display = '';
   }
 
-  /* ── wiring ── */
   editProfileBtn.addEventListener('click', showEdit);
   cancelBtn.addEventListener('click', showView);
 
@@ -331,7 +285,7 @@ function renderUser(block, cfg) {
               const data = JSON.parse(localStorage.getItem(key) || '{}');
               delete data[email];
               localStorage.setItem(key, JSON.stringify(data));
-            } catch { /* noop */ }
+            } catch {}
           });
           localStorage.removeItem(`adobesphere_profile_${email}`);
         }
@@ -343,10 +297,7 @@ function renderUser(block, cfg) {
   });
 }
 
-/* ═══════════════════════════════════
-   CREATOR HERO
-═══════════════════════════════════ */
-
+// Renders the read-only creator hero with stats fetched from data/localStorage.
 async function renderCreator(block, cfg) {
   const { Utils, Storage } = window.AdobeSphere;
   const id = new URLSearchParams(window.location.search).get('id')
@@ -355,7 +306,6 @@ async function renderCreator(block, cfg) {
   let creator = null;
   const creators = await Utils.fetchData('creators');
   if (Array.isArray(creators)) creator = creators.find((c) => c.id === id) || null;
-  // Fallback: registered user with a localStorage-backed creator profile
   if (!creator) creator = Storage.getLocalCreator?.(id) || null;
 
   if (!creator) { block.append(el('p', 'profile-empty', 'Creator not found.')); return; }
@@ -387,8 +337,7 @@ async function renderCreator(block, cfg) {
   block.append(wrap);
 }
 
-/* ─── Dispatcher ─── */
-
+// Dispatches to the correct profile variant (creator or default user).
 export default async function decorate(block) {
   const cls = block.classList;
   const cfg = readConfig(block);

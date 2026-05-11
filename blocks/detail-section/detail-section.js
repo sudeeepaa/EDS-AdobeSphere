@@ -1,11 +1,4 @@
-/**
- * AdobeSphere detail-section block — reusable sub-section for detail pages.
- * All rendering uses DOM methods. All authored copy comes from DA.live config rows.
- *
- * Variants: overview · agenda · people · quote · comments · bio · reach-out ·
- *           blog-header · article-body
- */
-
+// Reads allowed config rows from the block and removes them.
 function readConfig(block) {
   const cfg = {};
   [...block.children].forEach((row) => {
@@ -20,6 +13,7 @@ function readConfig(block) {
   return cfg;
 }
 
+// Extracts the entity ID from the URL query string, path segment, or meta tag.
 function getEntityId() {
   const fromQuery = new URLSearchParams(window.location.search).get('id');
   if (fromQuery) return fromQuery;
@@ -29,6 +23,7 @@ function getEntityId() {
   return meta ? meta.content : null;
 }
 
+// Fetches a single entity by ID from the given data source.
 async function loadEntity(source, id) {
   const file = source === 'events' ? 'campaigns' : source;
   const data = await window.AdobeSphere.Utils.fetchData(file);
@@ -41,8 +36,9 @@ async function loadEntity(source, id) {
   return null;
 }
 
-/* ── SVG helper (no innerHTML) ── */
 const SVG_NS = 'http://www.w3.org/2000/svg';
+
+// Creates an SVG element with attributes and child elements using the DOM API.
 function makeSvg(svgAttrs, ...children) {
   const svg = document.createElementNS(SVG_NS, 'svg');
   Object.entries(svgAttrs).forEach(([k, v]) => svg.setAttribute(k, v));
@@ -54,13 +50,14 @@ function makeSvg(svgAttrs, ...children) {
   return svg;
 }
 
-/* ── Shared DOM helpers ── */
+// Creates a paragraph with the given text content.
 function emptyP(text) {
   const p = document.createElement('p');
   p.textContent = text;
   return p;
 }
 
+// Creates a section heading h2 with the given text.
 function sectionH2(text) {
   const h2 = document.createElement('h2');
   h2.className = 'section-heading';
@@ -68,8 +65,7 @@ function sectionH2(text) {
   return h2;
 }
 
-/* ─── overview ─── */
-
+// Renders the overview variant with key facts and description.
 function renderOverview(block, cfg, entity, headingText) {
   block.append(sectionH2(headingText || cfg.title || 'Overview'));
   const root = document.createElement('div');
@@ -112,8 +108,7 @@ function renderOverview(block, cfg, entity, headingText) {
   }
 }
 
-/* ─── blog-header ─── */
-
+// Renders the blog-header variant with author info, save button, and cover image.
 function renderBlogHeader(block, cfg, entity) {
   const { Utils, Storage } = window.AdobeSphere;
 
@@ -127,11 +122,9 @@ function renderBlogHeader(block, cfg, entity) {
   const profileUrl = profileId ? `/creator-profile?id=${encodeURIComponent(profileId)}` : '';
   const saved = Storage.isLoggedIn() && entity.id ? Storage.isBlogSaved?.(String(entity.id)) : false;
 
-  /* inner wrapper */
   const inner = document.createElement('div');
   inner.className = 'blog-header-inner';
 
-  /* meta row */
   const metaRow = document.createElement('div');
   metaRow.className = 'article-meta-row';
   const badge = document.createElement('span');
@@ -142,12 +135,10 @@ function renderBlogHeader(block, cfg, entity) {
   dateSpan.textContent = Utils.formatShortDate(entity.publishedDate) || '';
   metaRow.append(badge, dateSpan);
 
-  /* title */
   const h1 = document.createElement('h1');
   h1.className = 'article-title';
   h1.textContent = entity.title || 'Untitled';
 
-  /* author row */
   const authorRow = document.createElement('div');
   authorRow.className = 'author-row';
 
@@ -205,7 +196,6 @@ function renderBlogHeader(block, cfg, entity) {
     authorRow.append(socialsDiv);
   }
 
-  /* actions */
   const actions = document.createElement('div');
   actions.className = 'article-actions';
 
@@ -230,7 +220,6 @@ function renderBlogHeader(block, cfg, entity) {
   actions.append(saveBtn, writeBtn);
   inner.append(metaRow, h1, authorRow, actions);
 
-  /* cover */
   const coverWrap = document.createElement('div');
   coverWrap.className = 'article-cover-wrap';
   const coverImg = document.createElement('img');
@@ -269,8 +258,7 @@ function renderBlogHeader(block, cfg, entity) {
   });
 }
 
-/* ─── agenda ─── */
-
+// Renders the agenda variant as an ordered list of schedule items.
 function renderAgenda(block, cfg, entity) {
   block.append(sectionH2(cfg.title || 'Schedule & Agenda'));
   const ol = document.createElement('ol');
@@ -298,8 +286,7 @@ function renderAgenda(block, cfg, entity) {
   });
 }
 
-/* ─── people (presenters / speakers / hosts) ─── */
-
+// Renders the people variant (presenters/speakers/hosts) as a linked profile grid.
 async function renderPeople(block, cfg, entity) {
   const group = (() => {
     const ids = ['presenters', 'speakers', 'hosts', 'guests', 'authors'];
@@ -322,7 +309,7 @@ async function renderPeople(block, cfg, entity) {
     if (Array.isArray(creators)) {
       creators.forEach((c) => { if (c.name && c.id) creatorMap[c.name.toLowerCase()] = c.id; });
     }
-  } catch { /* noop */ }
+  } catch {}
 
   const { Utils } = window.AdobeSphere;
   people.forEach((person) => {
@@ -361,8 +348,7 @@ async function renderPeople(block, cfg, entity) {
   });
 }
 
-/* ─── quote ─── */
-
+// Renders the quote variant as a blockquote.
 function renderQuote(block, cfg, entity) {
   const text = (entity && (entity.closingQuote || entity.featuredQuote)) || cfg.title || '';
   if (!text) { block.style.display = 'none'; return; }
@@ -372,8 +358,7 @@ function renderQuote(block, cfg, entity) {
   block.append(bq);
 }
 
-/* ─── bio ─── */
-
+// Renders the bio variant as either a text block or an avatar+bio card.
 function renderBio(block, cfg, entity) {
   if (!entity) { block.style.display = 'none'; return; }
   const { Utils } = window.AdobeSphere;
@@ -414,8 +399,7 @@ function renderBio(block, cfg, entity) {
   block.append(article);
 }
 
-/* ─── reach-out ─── */
-
+// Builds an SVG icon for the given contact type (email or linkedin).
 function makeReachOutIcon(type) {
   const base = { width: '18', height: '18', 'aria-hidden': 'true' };
   if (type === 'email') {
@@ -436,6 +420,7 @@ function makeReachOutIcon(type) {
   return null;
 }
 
+// Renders the reach-out variant with email and LinkedIn contact pills.
 function renderReachOut(block, cfg, entity) {
   if (!entity) { block.style.display = 'none'; return; }
   const links = [];
@@ -464,8 +449,6 @@ function renderReachOut(block, cfg, entity) {
   block.append(container);
 }
 
-/* ─── default comment seeds ─── */
-
 const BLOG_COMMENT_SEEDS = [
   'Really insightful piece — this is exactly the kind of content that keeps me coming back to Adobesphere.',
   'Great breakdown! I\'ve been looking for a clear explanation of this for a while. Sharing with my team.',
@@ -482,6 +465,7 @@ const EVENT_COMMENT_SEEDS = [
   'This is going to be one of the highlights of the year. See you all there!',
 ];
 
+// Detects whether comments belong to a blog or event based on config or URL path.
 function detectCommentSource(cfg, id) {
   if (cfg.id_source) return cfg.id_source;
   const path = window.location.pathname.toLowerCase();
@@ -490,17 +474,16 @@ function detectCommentSource(cfg, id) {
   return 'events';
 }
 
+// Seeds curated default comments for new content if none exist yet.
 async function seedDefaultComments(id, source, entity) {
   const { Storage, Utils } = window.AdobeSphere;
   if (!id || Storage.getComments(id).length > 0) return;
 
-  // Only seed curated content — never user-submitted blogs.
   if ((entity && entity.userSubmitted) || id.startsWith('user-blog-')) return;
 
   const creators = await Utils.fetchData('creators').catch(() => null);
   if (!Array.isArray(creators) || !creators.length) return;
 
-  // Exclude the content author so they don't comment on their own work.
   const authorName = ((entity && entity.author && entity.author.name) || '').toLowerCase();
   const authorId = ((entity && (entity.ownerIdentity || (entity.author && entity.author.id))) || '')
     .replace(/^user:/, '').toLowerCase();
@@ -515,14 +498,12 @@ async function seedDefaultComments(id, source, entity) {
     .sort(() => Math.random() - 0.5)
     .slice(0, 3);
 
-  // Anchor timestamps to the content's publish date so comments feel contextual.
   const publishedAt = entity && (entity.publishedDate || entity.date)
     ? new Date(entity.publishedDate || entity.date)
     : new Date(Date.now() - 60 * 86_400_000);
   const now = new Date();
 
   picks.forEach((creator, i) => {
-    // Comments land 3, 7, 14 days after publish — capped at today.
     const daysAfter = [3, 7, 14][i];
     const commentDate = new Date(publishedAt.getTime() + daysAfter * 86_400_000);
     const ts = (commentDate > now ? now : commentDate).toISOString();
@@ -536,8 +517,7 @@ async function seedDefaultComments(id, source, entity) {
   });
 }
 
-/* ─── comments ─── */
-
+// Renders the comments variant with a composer and list of existing comments.
 async function renderComments(block, cfg, source, entity) {
   const id = getEntityId();
   const { Storage, Utils } = window.AdobeSphere;
@@ -578,6 +558,7 @@ async function renderComments(block, cfg, source, entity) {
   list.className = 'detail-comments-list';
   block.append(list);
 
+  // Re-renders the comment count and list from storage.
   function refresh() {
     const comments = id ? Storage.getComments(id) : [];
     countP.textContent = `${comments.length} comment${comments.length === 1 ? '' : 's'}`;
@@ -658,8 +639,7 @@ async function renderComments(block, cfg, source, entity) {
   refresh();
 }
 
-/* ─── article-body ─── */
-
+// Renders the article-body variant by iterating over content blocks.
 function renderArticleBody(block, cfg, entity) {
   if (!entity || !Array.isArray(entity.content) || !entity.content.length) {
     block.append(emptyP(cfg.empty || 'Article content is unavailable.'));
@@ -698,8 +678,7 @@ function renderArticleBody(block, cfg, entity) {
   block.append(article);
 }
 
-/* ─── dispatcher ─── */
-
+// Reads config, resolves the variant and entity, then dispatches to the correct renderer.
 export default async function decorate(block) {
   const cfg = readConfig(block);
   const variants = [...block.classList];
@@ -727,7 +706,7 @@ export default async function decorate(block) {
       const lookupId = rawId.startsWith('user:') ? rawId.slice(5) : rawId;
       const creator = await loadEntity('creators', lookupId);
       if (creator) entity = creator;
-    } catch { /* fall back to blog.author inline fields */ }
+    } catch {}
   }
 
   block.textContent = '';

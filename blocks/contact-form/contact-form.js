@@ -1,23 +1,3 @@
-/**
- * AdobeSphere contact-form block.
- *
- * Authoring contract (config rows in DA.live):
- *   Form Action | https://formspree.io/f/YOUR_ID   (optional — falls back to localStorage)
- *   Submit      | Send Message                      (optional)
- *   Success     | Thanks — we'll get back…          (optional)
- *   Label Name     | Full Name                      (optional, overrides field label)
- *   Label Email    | Email Address                  (optional)
- *   Label Subject  | Subject                        (optional)
- *   Label Category | Category                       (optional)
- *   Label Message  | Message                        (optional)
- *
- * All other copy (page heading, description) is authored as plain content
- * above the block in DA.live.
- *
- * If "Form Action" is set, the form POSTs JSON to that URL (Formspree-compatible).
- * Otherwise submissions are stored locally via Storage.addContactSubmission.
- */
-
 const CATEGORIES = [
   ['', 'Select a category'],
   ['general', 'General Inquiry'],
@@ -30,6 +10,7 @@ const CATEGORIES = [
   ['other', 'Other'],
 ];
 
+// Creates a form group with a label and error span for the given field id.
 function makeGroup(id, labelText) {
   const group = document.createElement('div');
   group.className = 'cf-group';
@@ -46,6 +27,7 @@ function makeGroup(id, labelText) {
   return { group, err };
 }
 
+// Creates a required input element with optional autocomplete.
 function makeInput(id, type, autocomplete) {
   const input = document.createElement('input');
   input.id = id;
@@ -56,6 +38,7 @@ function makeInput(id, type, autocomplete) {
   return input;
 }
 
+// Creates a required select element populated with the given choices.
 function makeSelect(id, choices) {
   const sel = document.createElement('select');
   sel.id = id;
@@ -70,6 +53,7 @@ function makeSelect(id, choices) {
   return sel;
 }
 
+// Creates a required textarea element with the given row count and max length.
 function makeTextarea(id, rows, maxlength) {
   const ta = document.createElement('textarea');
   ta.id = id;
@@ -80,8 +64,8 @@ function makeTextarea(id, rows, maxlength) {
   return ta;
 }
 
+// Decorates the contact-form block with a validated submission form.
 export default function decorate(block) {
-  // ── Parse config rows ──────────────────────────────────────────────────
   const cfg = {};
   [...block.children].forEach((row) => {
     if (row.children.length !== 2) return;
@@ -92,39 +76,32 @@ export default function decorate(block) {
 
   const { Utils, Storage } = window.AdobeSphere;
 
-  // ── Success banner ─────────────────────────────────────────────────────
   const successBanner = document.createElement('div');
   successBanner.className = 'cf-success';
   successBanner.setAttribute('role', 'status');
   successBanner.setAttribute('aria-live', 'polite');
   successBanner.hidden = true;
 
-  // ── Form ───────────────────────────────────────────────────────────────
   const form = document.createElement('form');
   form.className = 'cf-form';
   form.setAttribute('novalidate', '');
 
-  // Name
   const nameGrp = makeGroup('cf-name', cfg['label-name'] || 'Full Name');
   const nameI = makeInput('cf-name', 'text', 'name');
   nameGrp.group.append(nameI, nameGrp.err);
 
-  // Email
   const emailGrp = makeGroup('cf-email', cfg['label-email'] || 'Email Address');
   const emailI = makeInput('cf-email', 'email', 'email');
   emailGrp.group.append(emailI, emailGrp.err);
 
-  // Subject
   const subjectGrp = makeGroup('cf-subject', cfg['label-subject'] || 'Subject');
   const subjectI = makeInput('cf-subject', 'text', '');
   subjectGrp.group.append(subjectI, subjectGrp.err);
 
-  // Category
   const categoryGrp = makeGroup('cf-category', cfg['label-category'] || 'Category');
   const categoryI = makeSelect('cf-category', CATEGORIES);
   categoryGrp.group.append(categoryI, categoryGrp.err);
 
-  // Message
   const msgGrp = makeGroup('cf-message', cfg['label-message'] || 'Message');
   const msgI = makeTextarea('cf-message', 4, 500);
 
@@ -134,7 +111,6 @@ export default function decorate(block) {
 
   msgGrp.group.append(msgI, counter, msgGrp.err);
 
-  // Submit button
   const submitBtn = document.createElement('button');
   submitBtn.type = 'submit';
   submitBtn.className = 'button primary';
@@ -152,14 +128,12 @@ export default function decorate(block) {
   block.textContent = '';
   block.append(successBanner, form);
 
-  // ── Character counter ──────────────────────────────────────────────────
   msgI.addEventListener('input', () => {
     const len = msgI.value.length;
     counter.textContent = `${len} / 500`;
     counter.classList.toggle('cf-counter-over', len > 500);
   });
 
-  // ── Validation helper ──────────────────────────────────────────────────
   const setErr = (id, msg) => {
     const errEl = form.querySelector(`[data-field="${id}"]`);
     const inputEl = form.querySelector(`#${id}`);
@@ -172,7 +146,6 @@ export default function decorate(block) {
     form.querySelectorAll('.form-input').forEach((el) => el.classList.remove('error'));
   };
 
-  // ── Submit ─────────────────────────────────────────────────────────────
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     clearErrors();

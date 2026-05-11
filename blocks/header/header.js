@@ -3,18 +3,7 @@ import { loadFragment } from '../fragment/fragment.js';
 
 const isDesktop = window.matchMedia('(min-width: 768px)');
 
-/**
- * AdobeSphere header.
- *
- * Authoring contract (the linked /nav fragment):
- *   Section 1: brand          → image + AdobeSphere wordmark
- *   Section 2: primary links  → a UL of nav links (Home / Explore / About / Contact)
- *   Section 3 (optional): tools → reserved for future utilities (search, etc.)
- *
- * The auth zone (Sign In / Sign Up vs. Avatar+dropdown) is rendered by JS based
- * on `window.AdobeSphere.Storage.isLoggedIn()` — it doesn't need authoring.
- */
-
+// Builds the search icon button that redirects/focuses the Explore search.
 function buildNavSearch() {
   const btn = document.createElement('button');
   btn.type = 'button';
@@ -35,6 +24,7 @@ function buildNavSearch() {
   return btn;
 }
 
+// Builds the auth zone showing Sign In/Up links or a user avatar dropdown.
 function buildAuthZone() {
   const { Storage, Utils } = window.AdobeSphere;
   const wrap = document.createElement('div');
@@ -67,7 +57,6 @@ function buildAuthZone() {
       </div>
     </div>`;
 
-  // dropdown toggle
   const toggle = wrap.querySelector('.nav-user-toggle');
   const menu = wrap.querySelector('.nav-user-menu');
   toggle.addEventListener('click', (e) => {
@@ -82,13 +71,11 @@ function buildAuthZone() {
     }
   });
 
-  // sign out
   wrap.querySelector('.nav-signout').addEventListener('click', () => {
     Storage.clearSession();
     window.location.href = '/';
   });
 
-  // Same-page hash navigation — scroll smoothly if already on the target page
   wrap.querySelectorAll('.nav-user-menu a[href*="#"]').forEach((link) => {
     link.addEventListener('click', (e) => {
       const url = new URL(link.href, window.location.origin);
@@ -104,7 +91,6 @@ function buildAuthZone() {
     });
   });
 
-  // Live avatar update when profile page saves a new photo
   window.addEventListener('adobesphere:avatar-updated', (e) => {
     const navAvatar = wrap.querySelector('.nav-avatar');
     if (navAvatar && e.detail) navAvatar.src = e.detail;
@@ -113,11 +99,13 @@ function buildAuthZone() {
   return wrap;
 }
 
+// Sets the nav's aria-expanded attribute and body overflow for the mobile menu.
 function toggleMobileMenu(nav, expanded) {
   nav.setAttribute('aria-expanded', expanded ? 'true' : 'false');
   document.body.style.overflowY = expanded ? 'hidden' : '';
 }
 
+// Decorates the header block by loading the /nav fragment and adding auth/search controls.
 export default async function decorate(block) {
   const navMeta = getMetadata('nav');
   const navPath = navMeta ? new URL(navMeta, window.location).pathname : '/nav';
@@ -126,7 +114,6 @@ export default async function decorate(block) {
   try {
     fragment = await loadFragment(navPath);
   } catch {
-    // Graceful fallback if /nav hasn't been authored yet — render a minimal nav.
     block.innerHTML = `
       <nav id="nav" class="nav-fallback">
         <a class="nav-brand-link" href="/"><span class="adobe">Adobe</span>sphere</a>
@@ -139,13 +126,11 @@ export default async function decorate(block) {
   nav.id = 'nav';
   while (fragment.firstElementChild) nav.append(fragment.firstElementChild);
 
-  // Tag the three authored sections.
   ['brand', 'sections', 'tools'].forEach((cls, i) => {
     const sec = nav.children[i];
     if (sec) sec.classList.add(`nav-${cls}`);
   });
 
-  // Brand: strip auto-decorated button styling so the wordmark looks like a logo, not a CTA.
   const brand = nav.querySelector('.nav-brand');
   if (brand) {
     const link = brand.querySelector('a.button, a');
@@ -156,7 +141,6 @@ export default async function decorate(block) {
     }
   }
 
-  // Append the auth zone into the (optional) tools section, or create one.
   let tools = nav.querySelector('.nav-tools');
   if (!tools) {
     tools = document.createElement('div');
@@ -166,7 +150,6 @@ export default async function decorate(block) {
   tools.append(buildNavSearch());
   tools.append(buildAuthZone());
 
-  // Remove "Join Community" link from nav when user is logged in.
   if (window.AdobeSphere.Storage.isLoggedIn()) {
     const sections = nav.querySelector('.nav-sections');
     if (sections) {
@@ -179,7 +162,6 @@ export default async function decorate(block) {
     }
   }
 
-  // Hamburger toggle (mobile).
   const hamburger = document.createElement('button');
   hamburger.type = 'button';
   hamburger.className = 'nav-hamburger';
@@ -193,10 +175,8 @@ export default async function decorate(block) {
   nav.prepend(hamburger);
   nav.setAttribute('aria-expanded', 'false');
 
-  // Reset mobile menu state when crossing the desktop breakpoint.
   isDesktop.addEventListener('change', () => toggleMobileMenu(nav, false));
 
-  // Sticky-on-scroll subtle shadow.
   const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 8);
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();

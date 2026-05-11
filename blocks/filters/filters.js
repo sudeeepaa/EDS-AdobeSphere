@@ -1,55 +1,9 @@
-/**
- * AdobeSphere — filters block.
- *
- * A standalone block that renders filter controls for the cards block
- * on the Explore page. It reads its configuration from authored rows
- * and communicates with the adjacent cards block via a custom event.
- *
- * Authoring format in da.live:
- * ┌─────────────────────────────────────────────────────┐
- * │ filters (events)                                    │
- * ├──────────────────────┬──────────────────────────────┤
- * │ Source               │ events                       │
- * ├──────────────────────┼──────────────────────────────┤
- * │ Category Filter      │ true                         │
- * ├──────────────────────┼──────────────────────────────┤
- * │ Date Filter          │ true                         │
- * ├──────────────────────┼──────────────────────────────┤
- * │ Location Filter      │ true                         │
- * └──────────────────────┴──────────────────────────────┘
- *
- * For blogs:
- * ┌─────────────────────────────────────────────────────┐
- * │ filters (blogs)                                     │
- * ├──────────────────────┬──────────────────────────────┤
- * │ Source               │ blogs                        │
- * ├──────────────────────┼──────────────────────────────┤
- * │ Category Filter      │ true                         │
- * ├──────────────────────┼──────────────────────────────┤
- * │ Author Filter        │ true                         │
- * ├──────────────────────┼──────────────────────────────┤
- * │ Sort                 │ true                         │
- * └──────────────────────┴──────────────────────────────┘
- *
- * For creators:
- * ┌─────────────────────────────────────────────────────┐
- * │ filters (creators)                                  │
- * ├──────────────────────┬──────────────────────────────┤
- * │ Source               │ creators                     │
- * ├──────────────────────┼──────────────────────────────┤
- * │ Designation Filter   │ true                         │
- * ├──────────────────────┼──────────────────────────────┤
- * │ Sort                 │ true                         │
- * └──────────────────────┴──────────────────────────────┘
- *
- * The block fires `adobesphere:filter` with { source, state } whenever
- * any filter changes. The cards block listens for this event and re-renders.
- */
-
+// Delegates HTML escaping to the shared Utils helper.
 function escapeHtml(v) {
   return window.AdobeSphere.Utils.escapeHtml(v);
 }
 
+// Collects unique non-null values from items using a picker function.
 function uniqueValues(items, picker) {
   const seen = new Set();
   items.forEach((it) => {
@@ -60,14 +14,13 @@ function uniqueValues(items, picker) {
   return [...seen].sort((a, b) => String(a).localeCompare(String(b)));
 }
 
-// Smart defaults per source — every filter is ON unless the author
-// explicitly overrides it with "false" in the da.live table.
 const SOURCE_DEFAULTS = {
   events: { category_filter: 'true', date_filter: 'true', location_filter: 'true' },
   blogs: { category_filter: 'true', author_filter: 'true', sort: 'true' },
   creators: { designation_filter: 'true', sort: 'true' },
 };
 
+// Reads config rows from the block and applies source-specific defaults.
 function readConfig(block) {
   const cfg = {};
   [...block.children].forEach((row) => {
@@ -77,53 +30,48 @@ function readConfig(block) {
     cfg[key] = val;
     row.remove();
   });
-  // Apply per-source defaults for any key not explicitly authored
   const src = cfg.source || 'events';
   const defaults = SOURCE_DEFAULTS[src] || {};
   Object.keys(defaults).forEach((k) => { if (!(k in cfg)) cfg[k] = defaults[k]; });
   return cfg;
 }
 
+// Dispatches the adobesphere:filter event with the current filter state.
 function dispatchFilter(source, state) {
   window.dispatchEvent(new CustomEvent('adobesphere:filter', {
     detail: { source, state },
   }));
 }
 
+// Decorates the filters block with dynamic filter controls for the given data source.
 export default async function decorate(block) {
   const cfg = readConfig(block);
   const source = cfg.source || 'events';
 
-  // Load data to populate dynamic options (categories, locations, designations)
   const dataFile = source === 'events' ? 'campaigns' : source;
   const data = await window.AdobeSphere.Utils.fetchData(dataFile);
   const items = Array.isArray(data) ? data.slice() : [];
 
-  // Merge user-submitted blogs so their categories appear in filter dropdowns.
   if (source === 'blogs') {
     const userBlogs = window.AdobeSphere.Storage.getAllUserBlogs?.() || [];
     const existingIds = new Set(items.map((b) => b.id));
     userBlogs.forEach((ub) => { if (!existingIds.has(ub.id)) items.push(ub); });
   }
 
-  // Initial filter state — mirrors what cards.js uses internally
   const state = source === 'events'
     ? { category: '', location: [], date: 'all' }
     : source === 'blogs'
       ? { category: '', author: '', sort: 'newest' }
       : { designation: [], sort: 'name-asc' };
 
-  // Restore state from URL params so direct links like
-  // /explore?tab=blogs&category=AI%20%26%20Emerging%20Technology work
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('category')) state.category = urlParams.get('category');
   if (urlParams.get('sort')) state.sort = urlParams.get('sort');
   if (urlParams.get('date')) state.date = urlParams.get('date');
 
-  // Track whether this block's tab is currently active
   let isActive = false;
 
-  // Find which tab panel this block belongs to
+  // Finds the tab panel section that contains this block.
   const findTabPanel = () => {
     let parent = block.closest('.section');
     while (parent) {
@@ -136,6 +84,8 @@ export default async function decorate(block) {
   };
 
   const tabPanel = findTabPanel();
+
+  // Returns the active tab id from the tab panel's id attribute.
   const getActiveTab = () => {
     if (tabPanel) {
       return tabPanel.id.replace('tabpanel-', '');
@@ -143,16 +93,17 @@ export default async function decorate(block) {
     return null;
   };
 
+  // Updates the isActive flag and dispatches initial filter state if active.
   const updateVisibility = () => {
     const activeTab = getActiveTab();
     isActive = activeTab === source;
 
     if (isActive) {
-      // When this tab becomes active, dispatch initial state
       dispatchFilter(source, { ...state });
     }
   };
 
+  // Re-renders the filter controls from the current state.
   function render() {
     block.innerHTML = '';
 
@@ -322,7 +273,6 @@ export default async function decorate(block) {
   render();
   updateVisibility();
 
-  // Listen for tab changes — re-render and dispatch state when this tab becomes active
   window.addEventListener('adobesphere:switchtab', (e) => {
     const newTab = e.detail;
     if (newTab === source && !isActive) {
@@ -334,7 +284,6 @@ export default async function decorate(block) {
     }
   });
 
-  // Fire initial state so cards block syncs on load (e.g. URL has ?category=…)
   if (isActive) {
     dispatchFilter(source, { ...state });
   }

@@ -1,52 +1,7 @@
-/**
- * AdobeSphere — auth-form block.
- *
- * Variants: auth-form (signin) | auth-form (signup)
- *
- * DA.live authoring contract — two-column key | value rows:
- *
- * SIGNIN:
- *   Heading         | Welcome Back
- *   Subheading      | Sign in to your Adobesphere account
- *   Label Email     | Email Address
- *   Label Password  | Password
- *   Submit          | Sign In
- *   Help            | [rich text] Don't have an account? Sign Up → (link to /signup)
- *   After           | /
- *
- * SIGNUP — block header: | auth-form | signup |
- *   Brand                   | Adobesphere
- *   Heading                 | Join Adobesphere - Creative Experience Platform
- *   Subheading              | Create your creator profile and get started
- *   Label Name              | Full Name*
- *   Label Designation       | Designation / Role*
- *   Placeholder Designation | Graphic Designer
- *   Label Email             | Email Address*
- *   Label Password          | Password*
- *   Password Help           | Tip: use a mix of letters, numbers, and symbols for a stronger password.
- *   Label Confirm           | Confirm Password*
- *   Label Bio               | About / Bio (optional)
- *   Bio Counter             | 0 / 500 characters
- *   Label LinkedIn          | LinkedIn Profile*
- *   Placeholder LinkedIn    | https://linkedin.com/in/yourprofile
- *   Label Avatar            | Profile Picture (optional)
- *   Avatar Preview          | Avatar Preview
- *   Avatar Action           | Choose Photo
- *   Submit                  | Create Account
- *   Help                    | [rich text] Already have an account? Sign In → (link to /login)
- *   Modal Title             | Adobe Employees Only
- *   Modal Body              | This application is only for Adobe-registered employees. Please sign up using your @adobe.com email address.
- *   Modal Button            | Okay
- *
- * JS only handles interaction — all visible text and links come from DA.live.
- */
-
-/* ─── SVG constants (UI-only, not authored content) ─── */
 const EYE_OPEN_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
 const EYE_CLOSED_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19C5 19 1 12 1 12a21.77 21.77 0 0 1 5.06-6.94"></path><path d="M9.9 4.24A10.94 10.94 0 0 1 12 5c7 0 11 7 11 7a21.8 21.8 0 0 1-3.16 4.19"></path><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
 
-/* ─── Config reader ─── */
-
+// Reads key-value config rows and stores a reference to the help cell.
 function readConfig(block) {
   const cfg = {};
   [...block.children].forEach((row) => {
@@ -55,9 +10,6 @@ function readConfig(block) {
     const cell = row.children[1];
     cfg[key] = cell.textContent.trim();
     if (key === 'help') {
-      // Store cell reference AND extract the authored link href now, before buildHelpLine
-      // moves the child nodes away. getAttribute gives the raw relative path (/login),
-      // whereas .href gives the absolute URL — we want the relative form.
       cfg['help-cell'] = cell;
       cfg['signin-href'] = cell.querySelector('a')?.getAttribute('href') || '/login';
     }
@@ -66,8 +18,7 @@ function readConfig(block) {
   return cfg;
 }
 
-/* ─── DOM helpers (no innerHTML for content) ─── */
-
+// Creates a DOM element with optional class and text content.
 function el(tag, cls, text) {
   const e = document.createElement(tag);
   if (cls) e.className = cls;
@@ -75,10 +26,10 @@ function el(tag, cls, text) {
   return e;
 }
 
+// Creates the brand wordmark element with the "adobe" portion colored red.
 function buildWordmark(brand) {
   const div = el('div', 'auth-wordmark');
   const text = (brand || 'Adobesphere').trim();
-  // Colorize the 'adobe' portion red regardless of capitalisation.
   const lower = text.toLowerCase();
   const aIdx = lower.indexOf('adobe');
   if (aIdx >= 0) {
@@ -92,6 +43,7 @@ function buildWordmark(brand) {
   return div;
 }
 
+// Creates a hidden accessible error alert box with the given id.
 function buildErrorBox(id) {
   const box = el('div', 'auth-error-box');
   box.id = id;
@@ -101,6 +53,7 @@ function buildErrorBox(id) {
   return box;
 }
 
+// Creates a labeled form field group with an inline error span.
 function buildField({ id, type = 'text', label, placeholder, autocomplete, required = true }) {
   const group = el('div', 'form-group');
   const lbl = el('label', 'auth-label', label || '');
@@ -117,6 +70,7 @@ function buildField({ id, type = 'text', label, placeholder, autocomplete, requi
   return { group, input };
 }
 
+// Creates a password input group with a visibility toggle button.
 function buildPasswordField({ id, label, autocomplete }) {
   const group = el('div', 'form-group form-password-group');
   const lbl = el('label', 'auth-label', label || '');
@@ -147,21 +101,18 @@ function buildPasswordField({ id, label, autocomplete }) {
   return { group, input };
 }
 
+// Creates the help text paragraph from the authored cell content.
 function buildHelpLine(cfg) {
   const p = el('p', 'auth-help');
   const cell = cfg['help-cell'];
   if (cell) {
-    // EDS cell structure: <div(cell)> → <p> → [text nodes + <a>]
-    // We want the inline children of the authored <p>, not the <p> itself
-    // (nesting a <p> inside our <p> is invalid HTML).
     const authored = cell.querySelector('p') || cell;
     while (authored.firstChild) p.append(authored.firstChild);
   }
   return p;
 }
 
-/* ─── Error helpers ─── */
-
+// Returns a function that shows or hides the error box with an optional message and link.
 function makeShowErr(errorBox) {
   return (msg, linkText, linkHref) => {
     errorBox.textContent = '';
@@ -176,6 +127,7 @@ function makeShowErr(errorBox) {
   };
 }
 
+// Sets or clears the error state on a specific form field.
 function setFieldErr(form, id, msg) {
   const input = form.querySelector(`#${id}`);
   const span = form.querySelector(`[data-field="${id}"]`);
@@ -183,6 +135,7 @@ function setFieldErr(form, id, msg) {
   if (span) span.textContent = msg || '';
 }
 
+// Clears all field errors and the global error box.
 function clearAllErrors(form, errorBox) {
   form.querySelectorAll('.form-input').forEach((i) => i.classList.remove('error'));
   form.querySelectorAll('[data-field]').forEach((s) => { s.textContent = ''; });
@@ -190,10 +143,7 @@ function clearAllErrors(form, errorBox) {
   errorBox.hidden = true;
 }
 
-/* ═══════════════════════════════════
-   SIGN IN
-═══════════════════════════════════ */
-
+// Builds and returns the sign-in form DOM elements.
 function buildSigninDom(cfg) {
   const wrapper = el('div', 'auth-wrapper auth-signin-wrapper');
 
@@ -229,6 +179,7 @@ function buildSigninDom(cfg) {
   return { wrapper, form, errorBox, emailInput, pwdInput };
 }
 
+// Attaches submit handling and validation to the sign-in form.
 function wireSignin({ form, errorBox, emailInput, pwdInput, cfg }) {
   const { Utils, Storage } = window.AdobeSphere;
   const showErr = makeShowErr(errorBox);
@@ -265,10 +216,7 @@ function wireSignin({ form, errorBox, emailInput, pwdInput, cfg }) {
   });
 }
 
-/* ═══════════════════════════════════
-   SIGN UP
-═══════════════════════════════════ */
-
+// Evaluates password strength and returns label, progress bar width, and color.
 function evaluatePasswordStrength(password) {
   const v = String(password || '');
   const checks = {
@@ -287,6 +235,7 @@ function evaluatePasswordStrength(password) {
 
 const PWD_GUIDANCE = 'Use a minimum of 8 characters — include uppercase, lowercase, a number, and a special character.';
 
+// Creates the password strength meter bar and label elements.
 function buildStrengthMeter() {
   const wrap = el('div', 'form-strength');
   const bar = el('span', 'form-strength-bar');
@@ -296,6 +245,7 @@ function buildStrengthMeter() {
   return { wrap, bar, lbl, tip };
 }
 
+// Compresses an image file to max 256px and calls back with a JPEG data URL.
 function compressAvatar(file, callback) {
   const MAX = 256;
   const reader = new FileReader();
@@ -322,6 +272,7 @@ function compressAvatar(file, callback) {
   reader.readAsDataURL(file);
 }
 
+// Creates the avatar upload field with a live preview image.
 function buildAvatarField(cfg) {
   const DEFAULT = '/assets/images/profiles/default-user.jpg';
   const group = el('div', 'form-group');
@@ -352,6 +303,7 @@ function buildAvatarField(cfg) {
   return { group, preview, defaultSrc: DEFAULT };
 }
 
+// Builds the "Adobe employees only" modal and fetches its content from a DA.live fragment.
 function buildEmployeeModal(cfg = {}) {
   const overlay = el('div', 'modal-overlay auth-employee-modal');
   overlay.setAttribute('aria-hidden', 'true');
@@ -374,7 +326,6 @@ function buildEmployeeModal(cfg = {}) {
   okBtn.addEventListener('click', close);
   overlay.addEventListener('click', (ev) => { if (ev.target === overlay) close(); });
 
-  // Fetch content from DA.live fragment and update modal in place
   const src = cfg['modal-source'] || '/modals/employee-only';
   fetch(`${src}.plain.html`)
     .then((r) => (r.ok ? r.text() : null))
@@ -388,11 +339,12 @@ function buildEmployeeModal(cfg = {}) {
       if (para) bodyEl.textContent = para.textContent.trim();
       if (btn) okBtn.textContent = btn.textContent.trim();
     })
-    .catch(() => { /* keep defaults on network error */ });
+    .catch(() => {});
 
   return { overlay, open };
 }
 
+// Builds and returns the sign-up form DOM with all input fields.
 function buildSignupDom(cfg) {
   const wrapper = el('div', 'auth-wrapper auth-signup-wrapper');
 
@@ -458,7 +410,6 @@ function buildSignupDom(cfg) {
     autocomplete: 'new-password',
   });
 
-  // Bio textarea
   const bioGroup = el('div', 'form-group');
   const bioLbl = el('label', 'auth-label', cfg['label-bio'] || 'About / Bio (optional)');
   bioLbl.htmlFor = 'af-bio';
@@ -524,6 +475,7 @@ function buildSignupDom(cfg) {
   };
 }
 
+// Attaches submit handling and validation to the sign-up form.
 function wireSignup(refs, cfg) {
   const {
     form, errorBox,
@@ -612,8 +564,7 @@ function wireSignup(refs, cfg) {
   });
 }
 
-/* ─── Dispatcher ─── */
-
+// Dispatches to sign-in or sign-up rendering based on the block variant.
 export default function decorate(block) {
   const isSignup = block.classList.contains('signup');
   const cfg = readConfig(block);

@@ -1,17 +1,7 @@
-/**
- * AdobeSphere stats block — animated counters with optional CTA links.
- *
- * Authoring contract: each row is one stat.
- *   col 1 = label (Creators, Events, Blogs, …)
- *   col 2 = source (one of: creators | events | blogs | users) OR a literal number.
- *           When a source is given, the number is read live from the data layer.
- *           For `users` we count unique entries in `adobesphere_users` localStorage.
- *   col 3 (optional) = CTA link target (e.g. /explore?tab=creators)
- *   col 4 (optional) = CTA label (e.g. "View All Creators →")
- */
-
+// Delegates HTML escaping to the shared Utils helper.
 function escapeHtml(v) { return window.AdobeSphere.Utils.escapeHtml(v); }
 
+// Reads label, source, href, and CTA text from each block row.
 function readRows(block) {
   const rows = [];
   [...block.children].forEach((row) => {
@@ -26,9 +16,9 @@ function readRows(block) {
   return rows;
 }
 
+// Resolves a stat count from a data source name, literal number, or localStorage.
 async function resolveTarget(source) {
   if (!source) return 0;
-  // Literal numbers pass through.
   const literal = parseInt(source, 10);
   if (!Number.isNaN(literal) && /^\d+$/.test(source.trim())) return literal;
 
@@ -37,9 +27,6 @@ async function resolveTarget(source) {
     catch { return 0; }
   }
 
-  // 'creators' = curated JSON creators PLUS any users who self-registered
-  // (each sign-up auto-creates a local creator entry via Storage.upsertLocalCreator).
-  // This keeps the Creators count equal to the Registered Users count.
   if (source === 'creators') {
     const data = await window.AdobeSphere.Utils.fetchData('creators');
     const jsonCount = Array.isArray(data) ? data.length : 0;
@@ -54,6 +41,7 @@ async function resolveTarget(source) {
   return Array.isArray(data) ? data.length : 0;
 }
 
+// Animates a number counter from 0 to target over ~1200ms with easing.
 function countUp(el, target) {
   const duration = 1200;
   const start = performance.now();
@@ -68,6 +56,7 @@ function countUp(el, target) {
   requestAnimationFrame(step);
 }
 
+// Decorates the stats block with animated counters that trigger on scroll.
 export default async function decorate(block) {
   const rows = readRows(block);
   block.textContent = '';
@@ -91,7 +80,6 @@ export default async function decorate(block) {
 
   const results = await Promise.all(tasks);
 
-  // Animate when section enters the viewport.
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((e) => {
       if (e.isIntersecting) {

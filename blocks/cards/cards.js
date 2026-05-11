@@ -1,30 +1,7 @@
-/**
- * AdobeSphere universal cards block.
- *
- * The cards block has TWO authoring modes:
- *
- * 1. STATIC mode — author writes the cards directly as block rows.
- *    Each row is one card. Cell contents become the card body. Supports
- *    `cards (testimonials)`, `cards (horizontal)`, etc. Useful for hand-curated
- *    content like the "What Creators Are Saying" testimonials section.
- *
- * 2. DATA mode — first cell of the first row is `Source | events|blogs|creators`
- *    and the rest of the rows are filter/limit hints (e.g. `Filter | featured=true`,
- *    `Limit | 6`). The block hydrates from /data/{events|blogs|creators}.json.
- *    Used for everything dynamic (home grids, "you might also like", etc.).
- *
- * Variants (block class — multiple allowed, space-separated in da.live):
- *   • events / blogs / creators / testimonials → card type
- *   • horizontal → side-by-side image+body layout (e.g. user-profile saved items)
- *   • with-save → toggleable bookmark button
- *   • with-actions → register/cancel/delete/edit buttons
- *
- * `data-source` is the canonical signal — the first row of the block sets it.
- */
-
 const FALLBACK_AVATAR = '/icons/user-default.svg';
 const FALLBACK_THUMB = '/icons/card-fallback.svg';
 
+// Extracts variant flags from the block's class list.
 function classify(block) {
   const variants = [...block.classList].filter((c) => c !== 'cards' && c !== 'block');
   return {
@@ -36,10 +13,8 @@ function classify(block) {
   };
 }
 
+// Reads source, filter, limit, and other config rows from the block.
 function readConfig(block) {
-  // Recognises rows like `Source | events`, `Filter | featured=true`, `Limit | 6`,
-  // `Title | Featured Events`, `Empty | No events available`, `Ids From | creators.eventIds`.
-  // Also supports `Filters | true` and `Pagination | 6`
   const cfg = {};
   const rows = [...block.children];
   rows.forEach((row) => {
@@ -54,14 +29,17 @@ function readConfig(block) {
   return cfg;
 }
 
+// Delegates HTML escaping to the shared Utils helper.
 function escapeHtml(value) {
   return window.AdobeSphere.Utils.escapeHtml(value);
 }
 
+// Normalises an asset path with a fallback via Utils.
 function asAsset(src, fallback) {
   return window.AdobeSphere.Utils.normaliseAsset(src, fallback);
 }
 
+// Filters items by a key=value expression string.
 function applyFilter(items, filter) {
   if (!filter) return items;
   const [k, v] = filter.split('=').map((s) => s.trim());
@@ -74,12 +52,14 @@ function applyFilter(items, filter) {
   });
 }
 
+// Returns the SVG markup string for the bookmark icon.
 function bookmarkSvg() {
   return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
     <path d="M6 3H18C18.55 3 19 3.45 19 4V21L12 17L5 21V4C5 3.45 5.45 3 6 3Z" stroke="currentColor" stroke-width="1.7" fill="none"></path>
   </svg>`;
 }
 
+// Creates a toggleable save/unsave bookmark button for a card item.
 function buildSaveButton(type, id) {
   const { Storage, Utils } = window.AdobeSphere;
   const saved = Storage.isLoggedIn() && Storage.isSaved(type, id);
@@ -105,8 +85,7 @@ function buildSaveButton(type, id) {
   return btn;
 }
 
-/* ─────────── card builders (return an HTMLElement) ─────────── */
-
+// Builds an event article card element.
 function buildEventCard(event, opts) {
   const { withSave, withActions } = opts;
   const article = document.createElement('article');
@@ -164,6 +143,7 @@ function buildEventCard(event, opts) {
   return article;
 }
 
+// Builds a blog article card element.
 function buildBlogCard(blog, opts) {
   const { withSave, withActions } = opts;
   const article = document.createElement('article');
@@ -208,8 +188,7 @@ function buildBlogCard(blog, opts) {
     del.textContent = 'Delete';
     del.addEventListener('click', (e) => {
       e.preventDefault();
-      // eslint-disable-next-line no-restricted-globals, no-alert
-      if (confirm('Delete this blog? This cannot be undone.')) {
+      if (confirm('Delete this blog? This cannot be undone.')) { // eslint-disable-line no-restricted-globals, no-alert
         window.AdobeSphere.Storage.deleteUserBlog(id);
         window.AdobeSphere.Utils.toast('Blog deleted.', 'success');
         article.remove();
@@ -221,6 +200,7 @@ function buildBlogCard(blog, opts) {
   return article;
 }
 
+// Builds a creator article card element.
 function buildCreatorCard(creator) {
   const article = document.createElement('article');
   article.className = 'card card-creator reveal';
@@ -242,6 +222,7 @@ function buildCreatorCard(creator) {
   return article;
 }
 
+// Builds a testimonial article card element.
 function buildTestimonialCard(t) {
   const article = document.createElement('article');
   article.className = 'card card-testimonial reveal';
@@ -260,13 +241,12 @@ function buildTestimonialCard(t) {
   return article;
 }
 
+// Wraps an authored block row as a static card element.
 function buildStaticCard(row, variants) {
-  // Static-mode card: each row is a card. We drop the row's content into a shell.
   const card = document.createElement('article');
   card.className = 'card card-static reveal';
   if (variants.horizontal) card.classList.add('horizontal');
 
-  // Move children into the card. If there's a picture, lift it to image slot.
   const cells = [...row.children];
   cells.forEach((cell) => {
     if (cell.querySelector('picture, img') && cell.children.length === 1) {
@@ -280,6 +260,7 @@ function buildStaticCard(row, variants) {
   return card;
 }
 
+// Collects unique non-null values from items using a picker function.
 function uniqueValues(items, picker) {
   const seen = new Set();
   items.forEach((it) => {
@@ -290,11 +271,13 @@ function uniqueValues(items, picker) {
   return [...seen].sort((a, b) => String(a).localeCompare(String(b)));
 }
 
+// Returns true if the item's JSON representation contains the query string.
 function matchesText(item, q) {
   if (!q) return true;
   return JSON.stringify(item).toLowerCase().includes(q.toLowerCase());
 }
 
+// Filters and sorts items by the given filter state for the source type.
 function getFilteredItems(type, items, f) {
   if (type === 'events') {
     return items.filter((e) => {
@@ -341,6 +324,7 @@ function getFilteredItems(type, items, f) {
   return items;
 }
 
+// Returns the appropriate card builder function for the given source type.
 function dispatchBuilder(type) {
   switch (type) {
     case 'events': return buildEventCard;
@@ -351,20 +335,19 @@ function dispatchBuilder(type) {
   }
 }
 
+// Fetches data and renders the card grid with optional filtering and pagination.
 async function hydrateFromData(block, type, cfg, opts) {
   const { Utils } = window.AdobeSphere;
   const data = await Utils.fetchData(type === 'events' ? 'campaigns' : type);
 
   let items = Array.isArray(data) ? data.slice() : [];
 
-  // Append registered user profiles to the creators listing.
   if (type === 'creators') {
     const localCreators = window.AdobeSphere.Storage.getAllLocalCreators?.() || [];
     const existingIds = new Set(items.map((c) => c.id));
     localCreators.forEach((lc) => { if (!existingIds.has(lc.id)) items.push(lc); });
   }
 
-  // Merge user-submitted blogs (localStorage) into the public blogs listing.
   if (type === 'blogs') {
     const userBlogs = window.AdobeSphere.Storage.getAllUserBlogs?.() || [];
     const existingIds = new Set(items.map((b) => b.id));
@@ -376,7 +359,6 @@ async function hydrateFromData(block, type, cfg, opts) {
     return;
   }
 
-  // Resolve Ids From
   let idsFromList = null;
   if (cfg.ids_from) {
     const [refSource, refField] = cfg.ids_from.split('.').map((s) => s.trim());
@@ -389,19 +371,16 @@ async function hydrateFromData(block, type, cfg, opts) {
       return seg.length >= 2 ? decodeURIComponent(seg[seg.length - 1]) : null;
     })();
     let refEntity = urlId && Array.isArray(refData) && refData.find((it) => it.id === urlId);
-    // Fallback: registered user creator profile backed by localStorage
     if (!refEntity && refSource === 'creators' && urlId) {
       refEntity = window.AdobeSphere.Storage.getLocalCreator?.(urlId) || null;
     }
     if (refEntity && Array.isArray(refEntity[refField])) idsFromList = refEntity[refField];
   }
 
-  // Pre-filter with Explicit IDs or `Filter | featured=true`
   if (cfg.ids) {
     const ids = cfg.ids.split(',').map((s) => s.trim()).filter(Boolean);
     items = ids.map((id) => items.find((it) => it.id === id)).filter(Boolean);
   } else if (idsFromList) {
-    // Try matching from remote data first; for remaining IDs check localStorage user blogs
     const remoteItems = idsFromList.map((id) => items.find((it) => it.id === id)).filter(Boolean);
     if (type === 'blogs') {
       const foundIds = new Set(remoteItems.map((b) => b.id));
@@ -428,7 +407,6 @@ async function hydrateFromData(block, type, cfg, opts) {
   const pageSize = parseInt(cfg.pagination, 10) || 0;
   const builder = dispatchBuilder(type);
 
-  // If no dynamic features, render static grid and exit early
   if (!pageSize && !cfg.pagination) {
     if (cfg.limit) items = items.slice(0, parseInt(cfg.limit, 10) || items.length);
     const grid = document.createElement('div');
@@ -442,10 +420,6 @@ async function hydrateFromData(block, type, cfg, opts) {
     }
     return;
   }
-
-  // --- Dynamic Mode (Pagination and/or external Filters block) ---
-  // Filters are no longer injected here — they live in a dedicated filters block
-  // that fires adobesphere:filter events. cards.js just listens and re-renders.
 
   const grid = document.createElement('div');
   grid.className = `cards-grid grid-${type}`;
@@ -468,10 +442,9 @@ async function hydrateFromData(block, type, cfg, opts) {
         : { designation: [], sort: urlParams.get('sort') || 'name-asc' },
   };
 
-  // Track whether this block's tab is currently active
   let isActive = false;
 
-  // Find which tab panel this block belongs to
+  // Finds the tab panel section that contains this block.
   const findTabPanel = () => {
     let parent = block.closest('.section');
     while (parent) {
@@ -484,6 +457,8 @@ async function hydrateFromData(block, type, cfg, opts) {
   };
 
   const tabPanel = findTabPanel();
+
+  // Returns the active tab id from the tab panel's id attribute.
   const getActiveTab = () => {
     if (tabPanel) {
       return tabPanel.id.replace('tabpanel-', '');
@@ -491,12 +466,14 @@ async function hydrateFromData(block, type, cfg, opts) {
     return null;
   };
 
+  // Updates whether this block's tab is currently active.
   const updateVisibility = () => {
     isActive = getActiveTab() === type;
   };
 
   updateVisibility();
 
+  // Re-renders the card grid from the current filter and pagination state.
   function renderGrid() {
     const filtered = getFilteredItems(type, items, { q: state.q, ...state.f });
 
@@ -507,8 +484,6 @@ async function hydrateFromData(block, type, cfg, opts) {
       const start = (state.page - 1) * pageSize;
       slice = filtered.slice(start, start + pageSize);
 
-      // Rebuild pagination buttons — only render Prev/Next when that
-      // direction actually exists, so disabled states are never shown.
       pagiHost.innerHTML = '';
       if (state.page > 1) {
         const prevBtn = document.createElement('button');
@@ -540,23 +515,16 @@ async function hydrateFromData(block, type, cfg, opts) {
     } else {
       slice.forEach((item) => {
         const card = builder(item, opts);
-        // Pre-reveal: cards rendered by pagination / filter / search are
-        // already inside the visible viewport. Adding 'revealed' BEFORE
-        // appending means the element never enters the DOM in an invisible
-        // state, bypassing any IntersectionObserver timing issues entirely.
         card.classList.add('revealed');
         grid.append(card);
       });
     }
 
-    // Tell the tabs coordinator how many results this dataset has for the
-    // current query so it can auto-switch to the right tab.
     window.dispatchEvent(new CustomEvent('adobesphere:search:results', {
       detail: { type, count: filtered.length, q: state.q },
     }));
   }
 
-  // Listen for filter changes from the dedicated filters block
   window.addEventListener('adobesphere:filter', (e) => {
     if (e.detail.source !== type) return;
     state.f = { ...e.detail.state };
@@ -564,7 +532,6 @@ async function hydrateFromData(block, type, cfg, opts) {
     renderGrid();
   });
 
-  // Listen for tab switches — re-render when this tab becomes active
   window.addEventListener('adobesphere:switchtab', (e) => {
     const newTab = e.detail;
     if (newTab === type && !isActive) {
@@ -588,6 +555,7 @@ async function hydrateFromData(block, type, cfg, opts) {
   renderGrid();
 }
 
+// Wraps authored block rows into a static card grid.
 function hydrateStatic(block, opts) {
   const grid = document.createElement('div');
   grid.className = `cards-grid grid-static${opts.horizontal ? ' horizontal' : ''}`;
@@ -599,8 +567,6 @@ function hydrateStatic(block, opts) {
   block.append(grid);
 }
 
-/* ─────────── user-profile card hydrators ─────────── */
-
 const USER_EMPTY = {
   'user-blogs': "You haven't published any blogs yet.",
   'saved-blogs': "You haven't saved any blogs yet.",
@@ -608,7 +574,7 @@ const USER_EMPTY = {
   'registered-events': "You haven't registered for any events yet.",
 };
 
-/* Appends / replaces the .card-actions slot inside a card body. */
+// Gets or creates the .card-actions element inside a card body.
 function getOrCreateActions(article) {
   const body = article.querySelector('.card-body');
   if (!body) return null;
@@ -623,6 +589,7 @@ function getOrCreateActions(article) {
   return actions;
 }
 
+// Creates a button element with the given class and text.
 function makeBtn(cls, text) {
   const btn = document.createElement('button');
   btn.type = 'button';
@@ -631,6 +598,7 @@ function makeBtn(cls, text) {
   return btn;
 }
 
+// Creates an anchor element with the given class, href, and text.
 function makeLink(cls, href, text) {
   const a = document.createElement('a');
   a.className = cls;
@@ -639,6 +607,7 @@ function makeLink(cls, href, text) {
   return a;
 }
 
+// Renders the user's own saved, registered, or published item cards.
 async function hydrateUserSource(block, source, cfg, opts) {
   const { Storage, Utils } = window.AdobeSphere;
 
@@ -658,6 +627,7 @@ async function hydrateUserSource(block, source, cfg, opts) {
 
   const emptyMsg = cfg.empty || USER_EMPTY[source] || 'Nothing here yet.';
 
+  // Renders the empty state message into the grid.
   function showEmpty() {
     grid.textContent = '';
     const p = document.createElement('p');
@@ -666,11 +636,11 @@ async function hydrateUserSource(block, source, cfg, opts) {
     grid.append(p);
   }
 
+  // Shows the empty state if no cards remain in the grid.
   function checkEmpty() {
     if (!grid.querySelector('.card')) showEmpty();
   }
 
-  /* ── Published blogs ── */
   if (source === 'user-blogs') {
     const blogs = Storage.getUserBlogs();
     if (!blogs.length) { showEmpty(); return; }
@@ -684,8 +654,7 @@ async function hydrateUserSource(block, source, cfg, opts) {
         delBtn.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
-          // eslint-disable-next-line no-restricted-globals, no-alert
-          if (confirm('Delete this blog? This cannot be undone.')) {
+          if (confirm('Delete this blog? This cannot be undone.')) { // eslint-disable-line no-restricted-globals, no-alert
             Storage.deleteUserBlog(b.id);
             Utils.toast('Blog deleted.', 'success');
             article.remove();
@@ -699,7 +668,6 @@ async function hydrateUserSource(block, source, cfg, opts) {
     return;
   }
 
-  /* ── Saved blogs ── */
   if (source === 'saved-blogs') {
     const ids = Storage.getSaved('blogs');
     if (!ids.length) { showEmpty(); return; }
@@ -729,7 +697,6 @@ async function hydrateUserSource(block, source, cfg, opts) {
     return;
   }
 
-  /* ── Saved events ── */
   if (source === 'saved-events') {
     const ids = Storage.getSaved('events');
     if (!ids.length) { showEmpty(); return; }
@@ -758,7 +725,6 @@ async function hydrateUserSource(block, source, cfg, opts) {
     return;
   }
 
-  /* ── Registered events ── */
   if (source === 'registered-events') {
     const regs = Storage.getRegistrations();
     if (!regs.length) { showEmpty(); return; }
@@ -787,11 +753,11 @@ async function hydrateUserSource(block, source, cfg, opts) {
   }
 }
 
+// Dispatches to the correct hydration path based on the source configuration.
 export default async function decorate(block) {
   const variants = classify(block);
   const cfg = readConfig(block);
 
-  // Optional title row.
   if (cfg.title) {
     const h2 = document.createElement('h2');
     h2.className = 'section-heading';
@@ -799,7 +765,6 @@ export default async function decorate(block) {
     block.parentElement.insertBefore(h2, block);
   }
 
-  // Determine source. If `Source` cell explicitly set, use that. Otherwise infer from variant.
   const source = (cfg.source || variants.type || '').toLowerCase();
   const opts = { withSave: variants.withSave, withActions: variants.withActions, horizontal: variants.horizontal };
 
@@ -812,9 +777,7 @@ export default async function decorate(block) {
     block.dataset.source = source;
     await hydrateFromData(block, source, cfg, opts);
   } else if (variants.type === 'testimonials' || block.children.length > 0) {
-    // Testimonials usually authored statically (4-cell rows: name|designation|quote|picture).
     if (variants.type === 'testimonials' && block.children.length) {
-      // Each row → testimonial card. Pull cells into an item object.
       const grid = document.createElement('div');
       grid.className = 'cards-grid grid-testimonials';
       [...block.children].forEach((row) => {

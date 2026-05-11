@@ -1,32 +1,10 @@
-/**
- * AdobeSphere hero block.
- *
- * Variants (set via block class — `hero (video)`, `hero (search)`, etc.):
- *   • default / no variant  → centred heading + paragraph + buttons.
- *   • video   → background video + heading + paragraph + buttons + scroll chevron.
- *   • search  → heading + paragraph + search input.
- *   • media   → full-width banner image + heading + meta. DYNAMIC if `Id Source` set.
- *   • gradient → red→dark gradient hero with avatar + stats.
- *   • compact → low-profile hero used for Blog detail title row. DYNAMIC if `Id Source` set.
- *
- * Forgiving authoring:
- *   • The first row may be a <picture>, an <a href="..."> link, OR plain text URL.
- *     If it points to .mp4/.webm, the block auto-promotes itself to `video` variant.
- *   • If no <h1>/<h2> is present, the first text-only paragraph is promoted to <h1>.
- *   • Authors can put both buttons in one paragraph; scripts.js handles that.
- *
- * Dynamic mode:
- *   When the author writes `Id Source | events|blogs|creators`, the block looks up
- *   the entity by the current URL's id (last URL segment or ?id=…) and hydrates
- *   the title, banner image, and meta line for media/compact variants.
- */
-
 const VIDEO_RE = /\.(mp4|webm)(\?[^\s]*)?$/i;
 const IMAGE_RE = /\.(jpe?g|png|webp|gif|svg)(\?[^\s]*)?$/i;
 const URL_LIKE = /^(https?:\/\/|\/)\S+$/i;
 
 const SOURCE_FILE = { events: 'campaigns', blogs: 'blogs', creators: 'creators' };
 
+// Extracts the entity ID from the URL query string or last path segment.
 function getUrlId() {
   const fromQuery = new URLSearchParams(window.location.search).get('id');
   if (fromQuery) return fromQuery;
@@ -35,6 +13,7 @@ function getUrlId() {
   return null;
 }
 
+// Fetches the entity matching the current URL for the given data source.
 async function fetchEntity(source) {
   const file = SOURCE_FILE[source];
   if (!file) return null;
@@ -44,6 +23,7 @@ async function fetchEntity(source) {
   return Array.isArray(data) ? (data.find((it) => it.id === id) || null) : null;
 }
 
+// Extracts the first row as a media descriptor (picture, video, or image).
 function takeMediaRow(block) {
   const first = block.firstElementChild;
   if (!first) return null;
@@ -69,6 +49,7 @@ function takeMediaRow(block) {
   return null;
 }
 
+// Extracts allowed key-value rows (search, avatar, stats, meta, id source) from the block.
 function takeKeyedRows(block) {
   const map = {};
   const allowed = ['search', 'placeholder', 'avatar', 'stats', 'meta', 'id source'];
@@ -84,6 +65,7 @@ function takeKeyedRows(block) {
   return map;
 }
 
+// Renders a debounced search input that dispatches or navigates to the Explore page.
 function renderSearch(placeholder) {
   const wrap = document.createElement('div');
   wrap.className = 'hero-search';
@@ -100,6 +82,7 @@ function renderSearch(placeholder) {
   const input = wrap.querySelector('.hero-search-input');
   const isExplore = window.location.pathname.includes('/explore');
 
+  // Dispatches a search event on /explore or navigates with ?q= otherwise.
   const submit = () => {
     const q = input.value.trim();
     if (isExplore) {
@@ -113,12 +96,9 @@ function renderSearch(placeholder) {
     }
   };
 
-  // AFTER:
   wrap.querySelector('.hero-search-btn').addEventListener('click', submit);
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
 
-  // Instant search: debounced on input so every keystroke triggers
-  // without hammering renderGrid. 250 ms feels responsive without flicker.
   let debounceTimer;
   input.addEventListener('input', () => {
     clearTimeout(debounceTimer);
@@ -128,6 +108,7 @@ function renderSearch(placeholder) {
   return wrap;
 }
 
+// Renders a chevron anchor that smooth-scrolls to the next section.
 function renderScrollChevron() {
   const a = document.createElement('a');
   a.className = 'hero-scroll';
@@ -144,6 +125,7 @@ function renderScrollChevron() {
   return a;
 }
 
+// Builds the background layer for video or image media.
 function buildBgLayer(media) {
   const layer = document.createElement('div');
   layer.className = 'hero-bg';
@@ -160,7 +142,7 @@ function buildBgLayer(media) {
       layer.append(video);
       video.addEventListener('loadedmetadata', () => {
         const p = video.play();
-        if (p && typeof p.catch === 'function') p.catch(() => { });
+        if (p && typeof p.catch === 'function') p.catch(() => {});
       });
     } else if (media.kind === 'image') {
       const img = document.createElement('img');
@@ -177,6 +159,7 @@ function buildBgLayer(media) {
   return layer;
 }
 
+// Builds the banner image layer for the media variant.
 function buildBannerLayer(media) {
   const layer = document.createElement('div');
   layer.className = 'hero-banner';
@@ -195,6 +178,7 @@ function buildBannerLayer(media) {
   return layer;
 }
 
+// Promotes the first plain-text paragraph to an h1 if no heading exists.
 function ensureHeading(content) {
   if (content.querySelector('h1, h2')) return;
   const candidates = content.querySelectorAll('p');
@@ -209,19 +193,16 @@ function ensureHeading(content) {
   }
 }
 
-/* ─── dynamic hydration helpers ─── */
-
+// Injects entity title, category badge, and meta into the media variant content.
 function hydrateMediaFromEntity(entity, content, media) {
   const { Utils } = window.AdobeSphere;
 
-  // Banner: use entity thumbnail, falling back to what the author supplied.
   let resolvedMedia = media;
   if (entity.thumbnail) {
     const url = Utils.normaliseAsset(entity.thumbnail, '');
     if (url) resolvedMedia = { kind: 'image', url };
   }
 
-  // Category badge above the heading.
   if (entity.category) {
     const badge = document.createElement('span');
     badge.className = 'hero-category-badge';
@@ -229,7 +210,6 @@ function hydrateMediaFromEntity(entity, content, media) {
     content.prepend(badge);
   }
 
-  // Heading: replace the authored placeholder with the entity title.
   if (entity.title) {
     const existing = content.querySelector('h1, h2');
     if (existing) {
@@ -237,14 +217,12 @@ function hydrateMediaFromEntity(entity, content, media) {
     } else {
       const h1 = document.createElement('h1');
       h1.textContent = entity.title;
-      // Insert after badge if it exists.
       const badge = content.querySelector('.hero-category-badge');
       if (badge) badge.after(h1);
       else content.prepend(h1);
     }
   }
 
-  // Meta: date on one line, location on another.
   if (!content.querySelector('.hero-meta')) {
     const meta = document.createElement('div');
     meta.className = 'hero-meta';
@@ -267,17 +245,16 @@ function hydrateMediaFromEntity(entity, content, media) {
   return resolvedMedia;
 }
 
+// Injects entity title and compact meta (category, date, author) into the compact variant.
 function hydrateCompactFromEntity(entity, content) {
   const { Utils } = window.AdobeSphere;
 
-  // Heading.
   if (!content.querySelector('h1, h2') && entity.title) {
     const h1 = document.createElement('h1');
     h1.textContent = entity.title;
     content.prepend(h1);
   }
 
-  // Meta line above heading: category · date · author.
   if (!content.querySelector('.hero-compact-meta')) {
     const parts = [];
     if (entity.category) parts.push(`<span class="badge outline">${Utils.escapeHtml(entity.category)}</span>`);
@@ -300,12 +277,10 @@ function hydrateCompactFromEntity(entity, content) {
   }
 }
 
-/* ─── creator variant ─── */
-
+// Renders the creator variant hero with avatar, name, designation, and stats.
 async function renderCreatorVariant(block) {
   const { Utils, Storage } = window.AdobeSphere;
 
-  // Read all config rows (Id Source, Id, stat labels, etc.).
   const cfg = {};
   [...block.children].forEach((row) => {
     if (row.children.length !== 2) return;
@@ -322,7 +297,7 @@ async function renderCreatorVariant(block) {
       const file = source === 'events' ? 'campaigns' : source;
       const data = await Utils.fetchData(file);
       if (Array.isArray(data)) entity = data.find((c) => c.id === entityId) || null;
-    } catch { /* noop */ }
+    } catch {}
     if (!entity && source === 'creators') entity = Storage.getLocalCreator?.(entityId) || null;
   }
 
@@ -346,7 +321,6 @@ async function renderCreatorVariant(block) {
   const inner = document.createElement('div');
   inner.className = 'hero-creator-inner';
 
-  // Row 1: avatar + name/designation
   const heroRow = document.createElement('div');
   heroRow.className = 'hero-creator-hero';
 
@@ -365,7 +339,6 @@ async function renderCreatorVariant(block) {
   textDiv.append(h1, desig);
   heroRow.append(img, textDiv);
 
-  // Row 2: stats bar
   const statItems = [
     [stats.blogsPublished ?? 0, cfg['stat-blogs'] || 'Blogs Published'],
     [stats.eventsHosted ?? 0, cfg['stat-events'] || 'Events Hosted'],
@@ -388,11 +361,11 @@ async function renderCreatorVariant(block) {
   block.append(inner);
 }
 
+// Decorates the hero block, dispatching to the correct variant renderer.
 export default async function decorate(block) {
   const variants = [...block.classList].filter((c) => c !== 'hero' && c !== 'block');
   const isCreator = variants.includes('creator');
 
-  // Creator variant: fully dynamic, returns early.
   if (isCreator) {
     await renderCreatorVariant(block);
     return;
@@ -407,7 +380,6 @@ export default async function decorate(block) {
   const keyed = takeKeyedRows(block);
   const isVideo = variants.includes('video') || (media && media.kind === 'video');
 
-  // Pull authored content into a stack we can manipulate.
   const content = document.createElement('div');
   content.className = 'hero-content';
   while (block.firstElementChild) {
@@ -418,8 +390,6 @@ export default async function decorate(block) {
 
   ensureHeading(content);
 
-  // Dynamic hydration when `Id Source | …` is present, or auto-detected from
-  // the URL path for media / compact variants on template-based detail pages.
   const autoSource = (() => {
     if (keyed.id_source) return keyed.id_source.textContent.trim().toLowerCase();
     if (!isMedia && !isCompact) return null;
@@ -436,15 +406,13 @@ export default async function decorate(block) {
       if (entity) {
         if (isMedia) media = hydrateMediaFromEntity(entity, content, media);
         else if (isCompact) hydrateCompactFromEntity(entity, content);
-        // Update the document title with the entity's real name.
         if (entity.title || entity.name) {
           document.title = `${entity.title || entity.name} — AdobeSphere`;
         }
       }
-    } catch { /* fall back to authored content */ }
+    } catch {}
   }
 
-  // Static keyed rows (gradient avatar/stats, media meta, search placeholder).
   if (isGradient && keyed.avatar) {
     const avatar = document.createElement('div');
     avatar.className = 'hero-avatar';
@@ -470,25 +438,21 @@ export default async function decorate(block) {
     content.append(stats);
   }
 
-  // Render.
   block.textContent = '';
   if (isMedia) block.append(buildBannerLayer(media));
   else if (isVideo || (media && !isCompact && !isMedia)) block.append(buildBgLayer(media));
   block.append(content);
   if (isVideo) block.append(renderScrollChevron());
 
-  // Auto-focus search when arriving from the navbar search icon.
   if (isSearch) {
     const focusInput = () => {
       const inp = block.querySelector('.hero-search-input');
       if (inp) inp.focus();
     };
-    // Cross-page: navbar set sessionStorage before navigating here.
     if (sessionStorage.getItem('adobesphere:focus-search')) {
       sessionStorage.removeItem('adobesphere:focus-search');
       requestAnimationFrame(focusInput);
     }
-    // Same-page: navbar dispatches a custom event when already on /explore.
     window.addEventListener('adobesphere:focus-search', focusInput, { once: true });
   }
 

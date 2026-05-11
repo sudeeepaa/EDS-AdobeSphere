@@ -1,12 +1,4 @@
-/**
- * AdobeSphere universal form block.
- *
- * Variants (block class): contact | login | signup | event-registration | blog-editor.
- *
- * All two-cell rows are read as config and removed before render.
- * Keys are lowercased and spaces normalised to hyphens.
- */
-
+// Reads key-value config rows from the block and removes them.
 function readConfig(block) {
   const cfg = {};
   [...block.children].forEach((row) => {
@@ -18,8 +10,10 @@ function readConfig(block) {
   return cfg;
 }
 
+// Delegates HTML escaping to the shared Utils helper.
 function escapeHtml(v) { return window.AdobeSphere.Utils.escapeHtml(v); }
 
+// Shows a validation error message on a form field.
 function showFieldError(input, msg) {
   input.classList.add('error');
   let err = input.parentElement.querySelector('.form-error');
@@ -31,23 +25,15 @@ function showFieldError(input, msg) {
   err.textContent = msg;
 }
 
+// Clears the validation error state from a form field.
 function clearFieldError(input) {
   input.classList.remove('error');
   const err = input.parentElement.querySelector('.form-error');
   if (err) err.textContent = '';
 }
 
-/* ─────────── LOGIN / SIGNUP ─────────── */
-/* Moved to the auth-form block (blocks/auth-form/).                      */
-/* Pages should use: auth-form (signin) | auth-form (signup)              */
-
-/* ─────────── EVENT REGISTRATION ─────────── */
-// The registration form renders as a modal overlay that is hidden by default.
-// It opens when `event-actions.js` fires `adobesphere:show-registration` and
-// closes on successful submission or when the user clicks the backdrop/close.
-
+// Renders the event registration form as a modal overlay.
 function renderEventRegistration(block, cfg) {
-  // Wrap the entire form in a modal overlay so it is invisible until triggered.
   block.innerHTML = `
     <div class="modal-overlay form-registration-overlay" role="dialog" aria-modal="true" aria-label="Event registration">
       <div class="modal-box form-registration-box">
@@ -104,11 +90,9 @@ function renderEventRegistration(block, cfg) {
   const openModal = () => { overlay.classList.add('open'); document.body.style.overflow = 'hidden'; };
   const closeModal = () => { overlay.classList.remove('open'); document.body.style.overflow = ''; };
 
-  // Close on backdrop click or close button
   overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
   block.querySelector('.form-reg-close').addEventListener('click', closeModal);
 
-  // Open when event-actions fires the show-registration event
   window.addEventListener('adobesphere:show-registration', openModal);
 
   form.querySelectorAll('[name="companion"]').forEach((r) => r.addEventListener('change', (e) => {
@@ -130,30 +114,28 @@ function renderEventRegistration(block, cfg) {
       return;
     }
 
-    // Pull event id from URL params or the last URL segment.
     const eventId = new URLSearchParams(window.location.search).get('id')
       || document.querySelector('meta[name="event-id"]')?.content
       || window.location.pathname.split('/').filter(Boolean).pop();
     Storage.registerForEvent(eventId, { food: food.value });
     Utils.toast(cfg.success || 'You\'re registered. See you there!', 'success');
     closeModal();
-    // Notify event-actions to update its button state
     window.dispatchEvent(new CustomEvent('adobesphere:registration-changed', { detail: eventId }));
     if (cfg.after) setTimeout(() => { window.location.href = cfg.after; }, 800);
   });
 }
 
-/* ─────────── BLOG EDITOR ─────────── */
-
 const BE_DEFAULT_CATEGORY = 'Community / Events / Creator Programs';
 const BE_OTHER_VALUE = '__other__';
 
+// Validates that an image source is an allowed URL or relative path.
 function isSafeImageSrc(src) {
   const v = String(src || '').trim();
-  if (!v) return true; // empty = no image, allowed
+  if (!v) return true;
   return /^https?:\/\//i.test(v) || /^(\/|\.{1,2}[/\\]|assets[/\\])/i.test(v);
 }
 
+// Creates a labeled form group wrapping the given input element.
 function makeGroup(labelText, input) {
   const div = document.createElement('div');
   div.className = 'form-group';
@@ -164,14 +146,17 @@ function makeGroup(labelText, input) {
   return div;
 }
 
+// Populates the category select with categories fetched from data and localStorage.
 async function buildCategorySelect(selectEl, otherEl) {
   const { Storage, Utils } = window.AdobeSphere;
 
+  // Shows or hides the "Other" category text input.
   function setOtherVisible(visible) {
     otherEl.hidden = !visible;
     if (!visible) otherEl.value = '';
   }
 
+  // Rebuilds the select options from the given list, restoring the prior selection.
   function renderOptions(cats) {
     const current = selectEl.value;
     while (selectEl.firstChild) selectEl.removeChild(selectEl.firstChild);
@@ -195,6 +180,7 @@ async function buildCategorySelect(selectEl, otherEl) {
     if (selectEl.value === BE_OTHER_VALUE) otherEl.focus();
   });
 
+  // Pushes a value to the list only if not already present (case-insensitive).
   function uniquePush(list, seen, val) {
     const v = String(val || '').trim();
     if (!v) return;
@@ -228,6 +214,7 @@ async function buildCategorySelect(selectEl, otherEl) {
   }
 }
 
+// Loads an existing blog's data into the editor form fields for editing.
 function loadBlogForEdit(blogId, fields) {
   const { Storage } = window.AdobeSphere;
   const blog = Storage.getUserBlogById(blogId);
@@ -251,17 +238,16 @@ function loadBlogForEdit(blogId, fields) {
   return true;
 }
 
+// Renders the blog editor form for creating or updating a user blog post.
 async function renderBlogEditor(block, cfg) {
   const { Storage, Utils } = window.AdobeSphere;
 
-  // All labels and messages authored in DA.live config rows.
   const lHeading = cfg['label-heading'] || 'Heading';
   const lBody = cfg['label-body'] || 'Write your blog';
   const lCategory = cfg['label-category'] || 'Category';
   const lImage = cfg['label-image'] || 'Image link';
   const authNotice = cfg['auth-notice'] || 'Please sign in to write a blog post.';
 
-  // Auth gate — show modal and authored notice, don't render the form.
   if (!Storage.isLoggedIn()) {
     Utils.showAuthModal({ redirect: window.location.href });
     const notice = document.createElement('p');
@@ -271,25 +257,21 @@ async function renderBlogEditor(block, cfg) {
     return;
   }
 
-  // Build form via DOM methods.
   const form = document.createElement('form');
   form.className = 'form form-blog-editor';
   form.noValidate = true;
 
-  // Heading field.
   const titleI = document.createElement('input');
   titleI.id = 'be-title';
   titleI.className = 'form-input';
   titleI.type = 'text';
   titleI.required = true;
 
-  // Body textarea.
   const bodyI = document.createElement('textarea');
   bodyI.id = 'be-body';
   bodyI.className = 'form-input be-body';
   bodyI.required = true;
 
-  // Category select + "Other" input.
   const catSel = document.createElement('select');
   catSel.id = 'be-category';
   catSel.className = 'form-input';
@@ -308,17 +290,14 @@ async function renderBlogEditor(block, cfg) {
   catLabel.htmlFor = 'be-category';
   catWrap.append(catLabel, catSel, otherI);
 
-  // Image link field.
   const imageI = document.createElement('input');
   imageI.id = 'be-image';
   imageI.className = 'form-input';
   imageI.type = 'url';
 
-  // Error element.
   const errEl = document.createElement('p');
   errEl.className = 'form-error form-error-global';
 
-  // Submit button.
   const submitBtn = document.createElement('button');
   submitBtn.type = 'submit';
   submitBtn.className = 'button primary be-submit';
@@ -338,10 +317,8 @@ async function renderBlogEditor(block, cfg) {
   );
   block.append(form);
 
-  // Build category options (async — needs fetching blogs.json).
   await buildCategorySelect(catSel, otherI);
 
-  // Edit mode — load existing blog if ?id= is set.
   const editId = new URLSearchParams(window.location.search).get('id') || '';
   if (editId) {
     loadBlogForEdit(editId, { titleI, bodyI, catSel, otherI, imageI, submitBtn });
@@ -368,7 +345,6 @@ async function renderBlogEditor(block, cfg) {
       category = otherI.value.trim();
       if (!category) { otherI.focus(); showFieldError(otherI, 'Enter a category name.'); return; }
       Storage.addBlogCategory(category);
-      // Add to select so it persists in the DOM.
       const hasOpt = [...catSel.options].some((o) => o.value === category);
       if (!hasOpt) {
         const newOpt = document.createElement('option');
@@ -433,8 +409,7 @@ async function renderBlogEditor(block, cfg) {
   });
 }
 
-/* ─────────── dispatcher ─────────── */
-
+// Dispatches to the correct form variant based on the block class.
 export default async function decorate(block) {
   const variants = [...block.classList];
   const cfg = readConfig(block);

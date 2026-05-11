@@ -1,28 +1,7 @@
-/**
- * AdobeSphere timeline block — Platform Journey auto-scroll ribbon.
- *
- * Authoring contract: each row is one milestone.
- *   col 1 = title  (e.g. "Ideation & Vision")
- *   col 2 = date   (e.g. "Apr 09, 2026")
- *   col 3 = bullet points authored as a UL — each <li> becomes a separate line.
- *
- * Progress bar:
- *   - Click anywhere on the bar to jump to that position.
- *   - Drag (mouse or touch) to scrub through the timeline.
- *   - Tab to the bar and use ← → arrow keys (10% steps) for keyboard access.
- *   - Hovering reveals a circular handle at the current position.
- *
- * Auto-scroll:
- *   - rAF-driven scrollLeft on the card wrapper (~90 px/s).
- *   - Reaches end → fade out → reset to start → fade in.
- *   - Pauses on hover / focus / touch / scrubbing.
- *
- * prefers-reduced-motion: static swipeable list, no animation, bar hidden.
- */
+const SPEED = 0.4;
+const FADE_MS = 280;
 
-const SPEED = 0.4; // px per rAF tick ≈ 24 px/s at 60 fps — slow enough to read
-const FADE_MS = 280; // loop-reset opacity transition (ms)
-
+// Builds a single timeline card article from a milestone object.
 function buildCard(m) {
   const article = document.createElement('article');
   article.className = 'timeline-item';
@@ -55,6 +34,7 @@ function buildCard(m) {
   return article;
 }
 
+// Decorates the timeline block with an auto-scrolling progress-bar ribbon.
 export default function decorate(block) {
   const milestones = [];
   [...block.children].forEach((row) => {
@@ -82,9 +62,6 @@ export default function decorate(block) {
     return;
   }
 
-  // ── Progress bar ──────────────────────────────────────────────────────
-  // Structure: progressWrap (clickable area) > progressTrack > progressBar
-  //                                          > thumb (circle handle)
   const progressWrap = document.createElement('div');
   progressWrap.className = 'timeline-progress-wrap';
   progressWrap.setAttribute('tabindex', '0');
@@ -107,7 +84,6 @@ export default function decorate(block) {
 
   progressWrap.append(progressTrack, thumb);
 
-  // ── Scrollable card wrapper ───────────────────────────────────────────
   const wrap = document.createElement('div');
   wrap.className = 'timeline-track-wrap';
 
@@ -120,11 +96,9 @@ export default function decorate(block) {
 
   block.append(progressWrap, wrap);
 
-  // ── Reduced-motion: static list, no animation ─────────────────────────
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduceMotion) return;
 
-  // ── Shared state ──────────────────────────────────────────────────────
   let pos = 0;
   let paused = false;
   let resetting = false;
@@ -132,8 +106,10 @@ export default function decorate(block) {
   let rafId = null;
   let inView = false;
 
+  // Returns the maximum scrollable distance for the track.
   const getMax = () => Math.max(0, wrap.scrollWidth - wrap.clientWidth);
 
+  // Updates the progress bar width and thumb position from the current scroll position.
   const setProgress = (p, max) => {
     const pct = max > 0 ? Math.min(p / max, 1) * 100 : 0;
     progressBar.style.width = `${pct}%`;
@@ -141,6 +117,7 @@ export default function decorate(block) {
     progressWrap.setAttribute('aria-valuenow', String(Math.round(pct)));
   };
 
+  // Fades the track out, resets scroll to the start, then fades back in.
   const resetLoop = () => {
     resetting = true;
     wrap.style.opacity = '0';
@@ -153,7 +130,7 @@ export default function decorate(block) {
     }, FADE_MS);
   };
 
-  // ── rAF tick — only continues scheduling while block is in view ───────
+  // Advances the scroll position by SPEED px per frame and loops at the end.
   const tick = () => {
     if (!paused && !resetting) {
       const max = getMax();
@@ -174,11 +151,12 @@ export default function decorate(block) {
     }
   };
 
+  // Starts the rAF loop if not already running.
   const startScroll = () => {
     if (!rafId) rafId = requestAnimationFrame(tick);
   };
 
-  // ── Scrub helpers ─────────────────────────────────────────────────────
+  // Seeks the track to the position corresponding to a pointer x-coordinate.
   const scrubTo = (clientX) => {
     const rect = progressWrap.getBoundingClientRect();
     const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
@@ -188,6 +166,7 @@ export default function decorate(block) {
     setProgress(pos, max);
   };
 
+  // Begins a scrub operation and pauses auto-scroll.
   const startScrub = (clientX) => {
     scrubbing = true;
     paused = true;
@@ -195,6 +174,7 @@ export default function decorate(block) {
     scrubTo(clientX);
   };
 
+  // Ends a scrub operation and resumes auto-scroll after a short delay.
   const endScrub = () => {
     if (!scrubbing) return;
     scrubbing = false;
@@ -202,9 +182,8 @@ export default function decorate(block) {
     setTimeout(() => { paused = false; }, 800);
   };
 
-  // ── Mouse: click to seek, drag to scrub ──────────────────────────────
   progressWrap.addEventListener('mousedown', (e) => {
-    e.preventDefault(); // prevent text selection while dragging
+    e.preventDefault();
     startScrub(e.clientX);
   });
 
@@ -214,7 +193,6 @@ export default function decorate(block) {
 
   document.addEventListener('mouseup', endScrub);
 
-  // ── Touch: tap to seek, drag to scrub ────────────────────────────────
   progressWrap.addEventListener('touchstart', (e) => {
     startScrub(e.touches[0].clientX);
   }, { passive: true });
@@ -225,7 +203,6 @@ export default function decorate(block) {
 
   progressWrap.addEventListener('touchend', endScrub, { passive: true });
 
-  // ── Keyboard: ← → arrow keys seek by 10% ─────────────────────────────
   progressWrap.addEventListener('keydown', (e) => {
     const max = getMax();
     if (max <= 0) return;
@@ -248,7 +225,6 @@ export default function decorate(block) {
     setTimeout(() => { if (!scrubbing) paused = false; }, 500);
   });
 
-  // ── Card area: hover / focus pauses; touch syncs pos on resume ────────
   wrap.addEventListener('mouseenter', () => { paused = true; });
   wrap.addEventListener('mouseleave', () => { if (!scrubbing) paused = false; });
   wrap.addEventListener('focusin', () => { paused = true; });
@@ -262,17 +238,14 @@ export default function decorate(block) {
     }, 1000);
   }, { passive: true });
 
-  // Keep progress bar synced when user touch-scrolls the card area.
   wrap.addEventListener('scroll', () => {
     setProgress(wrap.scrollLeft, getMax());
   }, { passive: true });
 
-  // Start scrolling only when the block scrolls into view (≥25% visible)
   const observer = new IntersectionObserver(
     (entries) => {
       inView = entries[0].isIntersecting;
       if (inView) startScroll();
-      // when !inView tick stops self-scheduling naturally
     },
     { threshold: 0.25 },
   );

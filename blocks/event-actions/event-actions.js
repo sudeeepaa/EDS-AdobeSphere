@@ -1,26 +1,4 @@
-/**
- * AdobeSphere — event-actions block.
- *
- * A sticky action bar with Save + Register buttons for event detail pages.
- *
- * ┌─────────────────────────────────────────────────────────────┐
- * │                     event-actions                           │
- * ├──────────────────────┬──────────────────────────────────────┤
- * │ Save Event           │ Register for this Event              │
- * └──────────────────────┴──────────────────────────────────────┘
- *
- * Column 1  →  Save / Unsave toggle label
- * Column 2  →  Register / Cancel / Event Ended label
- *
- * The block auto-detects the event from the URL, then rewrites both
- * cells into interactive buttons with the correct initial state.
- *
- * Registration flow: clicking the Register button fires the custom event
- * `adobesphere:show-registration`, which the form (event-registration) block
- * listens for and opens as a modal. The form block fires
- * `adobesphere:registration-changed` on success so this block can update.
- */
-
+// Extracts the event ID from the URL query string or last path segment.
 function getUrlId() {
   const fromQuery = new URLSearchParams(window.location.search).get('id');
   if (fromQuery) return fromQuery;
@@ -29,6 +7,7 @@ function getUrlId() {
   return null;
 }
 
+// Fetches the event entity matching the current URL.
 async function fetchEvent() {
   const id = getUrlId();
   if (!id) return null;
@@ -36,6 +15,7 @@ async function fetchEvent() {
   return Array.isArray(data) ? (data.find((it) => it.id === id) || null) : null;
 }
 
+// Returns true if the given date string is before today.
 function isPastEvent(dateStr) {
   if (!dateStr) return false;
   const parts = String(dateStr).split('-').map(Number);
@@ -46,14 +26,13 @@ function isPastEvent(dateStr) {
   return eventDate < today;
 }
 
+// Decorates the event-actions block with Save and Register/Cancel buttons.
 export default async function decorate(block) {
-  /* ── Read authored labels from the two cells ── */
   const row = block.querySelector(':scope > div');
   const cells = row ? [...row.children] : [];
   const saveLabel = (cells[0] && cells[0].textContent.trim()) || 'Save Event';
   const regLabel = (cells[1] && cells[1].textContent.trim()) || 'Register for this Event';
 
-  /* ── Fetch the event entity ── */
   const entity = await fetchEvent();
   if (!entity || !entity.id) {
     block.style.display = 'none';
@@ -64,26 +43,24 @@ export default async function decorate(block) {
   const eventId = entity.id;
   const past = isPastEvent(entity.date);
 
-  /* ── Lift block to <main> so position: sticky works across the entire page ── */
   const section = block.closest('.section');
   if (section && section.parentElement) {
     section.parentElement.insertBefore(block, section.nextSibling);
     if (!section.textContent.trim()) section.style.display = 'none';
   }
 
-  /* ── Clear authored content, rebuild as buttons ── */
   block.textContent = '';
   block.classList.add('event-actions');
 
   const inner = document.createElement('div');
   inner.className = 'event-actions-inner';
 
-  /* ── Save / Unsave button ── */
   const saveBtn = document.createElement('button');
   saveBtn.type = 'button';
   saveBtn.className = 'event-actions-save';
   const isSaved = Storage.isLoggedIn() && Storage.isSaved('events', eventId);
 
+  // Updates the save button's icon and label to match the saved state.
   const updateSaveUI = (saved) => {
     saveBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M6 3H18C18.55 3 19 3.45 19 4V21L12 17L5 21V4C5 3.45 5.45 3 6 3Z"
@@ -101,7 +78,6 @@ export default async function decorate(block) {
     updateSaveUI(!wasSaved);
   });
 
-  /* ── Register / Cancel Registration / Event Ended button ── */
   const regBtn = document.createElement('button');
   regBtn.type = 'button';
 
@@ -113,6 +89,7 @@ export default async function decorate(block) {
     const isReg = () => Storage.isLoggedIn()
       && Storage.getRegistrations().some((r) => r.eventId === eventId);
 
+    // Updates the register button's label and state to reflect current registration.
     const updateRegUI = (registered) => {
       regBtn.classList.toggle('registered', registered);
       regBtn.textContent = registered ? 'Cancel Registration' : regLabel;
@@ -124,17 +101,14 @@ export default async function decorate(block) {
     regBtn.addEventListener('click', () => {
       if (!Storage.isLoggedIn()) { window.location.href = '/login'; return; }
       if (isReg()) {
-        // Already registered → cancel directly (no form needed)
         Storage.cancelRegistration(eventId);
         updateRegUI(false);
         window.AdobeSphere.Utils.toast('Registration cancelled.', 'success');
       } else {
-        // Not yet registered → open the registration form modal
         window.dispatchEvent(new CustomEvent('adobesphere:show-registration'));
       }
     });
 
-    // Stay in sync when the registration form modal submits successfully
     window.addEventListener('adobesphere:registration-changed', (e) => {
       if (e.detail === eventId) updateRegUI(isReg());
     });
