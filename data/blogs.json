@@ -7,11 +7,11 @@
       "id": "creator-001",
       "name": "Ariana Flores",
       "designation": "Senior AI Creative Evangelist",
-      "avatar": "assets\\images\\profiles\\ariana-flores-creator.jpg",
+      "avatar": "/assets/images/profiles/ariana-flores-creator.jpg",
       "bio": "Ariana explores practical generative AI workflows for multidisciplinary creative teams."
     },
     "publishedDate": "2025-11-20",
-    "coverImage": "assets\\images\\blogs\\create-with-unlimited-generations-using-google.jpg",
+    "coverImage": "/assets/images/blogs/create-with-unlimited-generations-using-google.jpg",
     "excerpt": "Explore how Gemini 3 integration in Adobe Firefly unlocks unlimited high-speed generations for ideation, concepting, and iterative creative workflows.",
     "content": [
       {
@@ -28,7 +28,7 @@
       },
       {
         "type": "image",
-        "src": "assets\\images\\blogs\\create-with-unlimited-generations-using-google-inline-1.jpg",
+        "src": "/assets/images/blogs/create-with-unlimited-generations-using-google-inline-1.jpg",
         "alt": "Adobe Firefly interface showcasing unlimited AI image generations powered by Gemini 3"
       },
       {
@@ -51,11 +51,11 @@
       "id": "creator-002",
       "name": "Malik Thompson",
       "designation": "Director, Intelligent Experiences",
-      "avatar": "assets\\images\\profiles\\malik-thompson-creator.jpg",
+      "avatar": "/assets/images/profiles/malik-thompson-creator.jpg",
       "bio": "Malik focuses on human-centered AI assistants across creative and productivity products."
     },
     "publishedDate": "2025-10-28",
-    "coverImage": "assets\\images\\blogs\\our-view-on-agentic-ai-ai.jpg",
+    "coverImage": "/assets/images/blogs/our-view-on-agentic-ai-ai.jpg",
     "excerpt": "Learn how agentic AI assistants are evolving beyond chatbots to perform multi-step tasks directly inside the apps creators already use.",
     "content": [
       {
@@ -72,7 +72,7 @@
       },
       {
         "type": "image",
-        "src": "assets\\images\\blogs\\our-view-on-agentic-ai-ai-inline-1.jpg",
+        "src": "/assets/images/blogs/our-view-on-agentic-ai-ai-inline-1.jpg",
         "alt": "Conceptual visualization of agentic AI assistants working across creative applications"
       },
       {
@@ -95,11 +95,11 @@
       "id": "creator-003",
       "name": "Priya Raman",
       "designation": "Principal Product Lead, Firefly",
-      "avatar": "assets\\images\\profiles\\priya-raman-creator.jpg",
+      "avatar": "/assets/images/profiles/priya-raman-creator.jpg",
       "bio": "Priya leads roadmap initiatives for video, imaging, and enterprise-safe model innovation."
     },
     "publishedDate": "2026-03-19",
-    "coverImage": "assets\\images\\blogs\\adobe-firefly-expands-video-and-image.jpg",
+    "coverImage": "/assets/images/blogs/adobe-firefly-expands-video-and-image.jpg",
     "excerpt": "Discover Adobe Firefly’s latest AI-powered video, image, and custom model enhancements built for scalable enterprise-grade content production.",
     "content": [
       {
@@ -116,7 +116,7 @@
       },
       {
         "type": "image",
-        "src": "assets\\images\\blogs\\adobe-firefly-expands-video-and-image-inline-1.jpg",
+        "src": "/assets/images/blogs/adobe-firefly-expands-video-and-image-inline-1.jpg",
         "alt": "Adobe Firefly AI tools generating video and image content with custom model controls"
       },
       {
@@ -139,11 +139,11 @@
       "id": "creator-004",
       "name": "Noah Bennett",
       "designation": "Collaboration Solutions Manager",
-      "avatar": "assets\\images\\profiles\\noah-bennett-creator.jpg",
+      "avatar": "/assets/images/profiles/noah-bennett-creator.jpg",
       "bio": "Noah helps creative organizations streamline review and approval pipelines at scale."
     },
     "publishedDate": "2025-12-19",
-    "coverImage": "assets\\images\\blogs\\get-your-creative-team-on-the.jpg",
+    "coverImage": "/assets/images/blogs/get-your-creative-team-on-the.jpg",
     "excerpt": "See how Frame.io’s availability on Adobe.com makes collaborative review, approval, and production workflows more accessible to teams.",
     "content": [
       {
@@ -160,7 +160,7 @@
       },
       {
         "type": "image",
-        "src": "assets\\images\\blogs\\get-your-creative-team-on-the-inline-1.jpg",
+        "src": "/assets/images/blogs/get-your-creative-team-on-the-inline-1.jpg",
         "alt": "Creative team collaborating through Frame.io review and approval dashboard"
       },
       {
@@ -183,11 +183,11 @@
       "id": "creator-005",
       "name": "Elena Park",
       "designation": "Senior Content Discovery Strategist",
-      "avatar": "assets\\images\\profiles\\elena-park-creator.jpg",
+      "avatar": "/assets/images/profiles/elena-park-creator.jpg",
       "bio": "Elena researches content sourcing patterns and creative reuse across global teams."
     },
     "publishedDate": "2026-04-13",
-    "coverImage": "assets\\images\\blogs\\discover-and-perfect-great-content-with.jpg",
+    "coverImage": "/assets/images/blogs/discover-and-perfect-great-content-with.jpg",
     "excerpt": "Explore Adobe Stock’s redesigned platform built to improve discovery, curation, and refinement of premium creative assets.",
     "content": [
       {
@@ -204,7 +204,7 @@
       },
       {
         "type": "image",
-        "src": "assets\\images\\blogs\\discover-and-perfect-great-content-with-inline-1.jpg",
+        "src": "/assets/images/blogs/discover-and-perfect-great-content-with-inline-1.jpg",
         "alt": "Adobe Stock redesigned interface highlighting improved asset discovery tools"
       },
       {
@@ -227,11 +227,11 @@
       "id": "creator-006",
       "name": "Luca Moretti",
       "designation": "3D Workflow Specialist",
-      "avatar": "assets\\images\\profiles\\luca-moretti-creator.jpg",
+      "avatar": "/assets/images/profiles/luca-moretti-creator.jpg",
       "bio": "Luca advises studios on texture pipelines, material systems, and 3D production efficiency."
     },
     "publishedDate": "2026-03-09",
-    "coverImage": "assets\\images\\blogs\\more-control-less-friction-in-texturing.jpg",
+    "coverImage": "/assets/images/blogs/more-control-less-friction-in-texturing.jpg",
     "excerpt": "Discover the newest Substance 3D updates designed to streamline texturing pipelines and enhance creative precision in 3D production.",
     "content": [
       {
@@ -248,7 +248,7 @@
       },
       {
         "type": "image",
-        "src": "assets\\images\\blogs\\more-control-less-friction-in-texturing-inline-1.jpg",
+        "src": "/assets/images/blogs/more-control-less-friction-in-texturing-inline-1.jpg",
         "alt": "3D artist editing textures using latest Adobe Substance 3D workflow tools"
       },
       {
@@ -271,11 +271,11 @@
       "id": "creator-007",
       "name": "Sofia Diaz",
       "designation": "Creative Trends Analyst",
-      "avatar": "assets\\images\\profiles\\sofia-diaz-creator.jpg",
+      "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg",
       "bio": "Sofia translates macro cultural signals into practical guidance for creators and brands."
     },
     "publishedDate": "2026-01-08",
-    "coverImage": "assets\\images\\blogs\\how-creators-are-leveraging-adobe-s.jpg",
+    "coverImage": "/assets/images/blogs/how-creators-are-leveraging-adobe-s.jpg",
     "excerpt": "Understand how modern creators are applying Adobe’s 2026 Creative Trends to shape campaigns, content, and audience engagement.",
     "content": [
       {
@@ -292,7 +292,7 @@
       },
       {
         "type": "image",
-        "src": "assets\\images\\blogs\\how-creators-are-leveraging-adobe-s-inline-1.jpg",
+        "src": "/assets/images/blogs/how-creators-are-leveraging-adobe-s-inline-1.jpg",
         "alt": "Creative professionals applying Adobe 2026 design and branding trends"
       },
       {
@@ -315,11 +315,11 @@
       "id": "creator-008",
       "name": "Ethan Cole",
       "designation": "Design Futurist and Typographer",
-      "avatar": "assets\\images\\profiles\\ethan-cole-creator.jpg",
+      "avatar": "/assets/images/profiles/ethan-cole-creator.jpg",
       "bio": "Ethan writes about typography, interface systems, and emerging design technologies."
     },
     "publishedDate": "2025-09-24",
-    "coverImage": "assets\\images\\blogs\\how-to-shape-the-future-with.jpg",
+    "coverImage": "/assets/images/blogs/how-to-shape-the-future-with.jpg",
     "excerpt": "Explore how typography, emerging technologies, and innovative design thinking combine to influence the future of creative work.",
     "content": [
       {
@@ -336,7 +336,7 @@
       },
       {
         "type": "image",
-        "src": "assets\\images\\blogs\\how-to-shape-the-future-with-inline-1.jpg",
+        "src": "/assets/images/blogs/how-to-shape-the-future-with-inline-1.jpg",
         "alt": "Typography and digital design concepts representing future-focused creative thinking"
       },
       {
@@ -359,11 +359,11 @@
       "id": "creator-001",
       "name": "Ariana Flores",
       "designation": "Senior AI Creative Evangelist",
-      "avatar": "assets\\images\\profiles\\ariana-flores-creator.jpg",
+      "avatar": "/assets/images/profiles/ariana-flores-creator.jpg",
       "bio": "Ariana explores practical generative AI workflows for multidisciplinary creative teams."
     },
     "publishedDate": "2025-10-03",
-    "coverImage": "assets\\images\\blogs\\building-a-side-hustle-or-creative.jpg",
+    "coverImage": "/assets/images/blogs/building-a-side-hustle-or-creative.jpg",
     "excerpt": "Learn how Adobe MAX’s new Creator Track helps aspiring creatives build side hustles, monetize skills, and grow their personal brand.",
     "content": [
       {
@@ -380,7 +380,7 @@
       },
       {
         "type": "image",
-        "src": "assets\\images\\blogs\\building-a-side-hustle-or-creative-inline-1.jpg",
+        "src": "/assets/images/blogs/building-a-side-hustle-or-creative-inline-1.jpg",
         "alt": "Adobe MAX Creator Track session for freelancers and aspiring creative entrepreneurs"
       },
       {
@@ -403,11 +403,11 @@
       "id": "creator-002",
       "name": "Malik Thompson",
       "designation": "Director, Intelligent Experiences",
-      "avatar": "assets\\images\\profiles\\malik-thompson-creator.jpg",
+      "avatar": "/assets/images/profiles/malik-thompson-creator.jpg",
       "bio": "Malik focuses on human-centered AI assistants across creative and productivity products."
     },
     "publishedDate": "2025-07-31",
-    "coverImage": "assets\\images\\blogs\\meet-the-new-generation-of-creative.jpg",
+    "coverImage": "/assets/images/blogs/meet-the-new-generation-of-creative.jpg",
     "excerpt": "Meet the rising creative leaders and breakthrough talent being spotlighted at this year’s Adobe MAX event.",
     "content": [
       {
@@ -424,7 +424,7 @@
       },
       {
         "type": "image",
-        "src": "assets\\images\\blogs\\meet-the-new-generation-of-creative-inline-1.jpg",
+        "src": "/assets/images/blogs/meet-the-new-generation-of-creative-inline-1.jpg",
         "alt": "Featured emerging creators and speakers showcased at Adobe MAX"
       },
       {

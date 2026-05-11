@@ -11,7 +11,7 @@
             "country": "USA"
         },
         "venue": "Houston Convention Center",
-        "thumbnail": "assets/images/events/create-now-houston.jpg",
+        "thumbnail": "/assets/images/events/create-now-houston.jpg",
         "shortDescription": "A creator-focused day in Houston centered on AI-assisted ideation and iteration and creative workflows at scale.",
         "fullDescription": "Create Now Houston is a community-forward event with structured learning and real examples. The agenda covers brand-consistent production systems alongside AI-assisted ideation and iteration, with time for Q&A and discussion. Bring an active project and leave with a plan you can use the next day.",
         "agenda": [
@@ -41,13 +41,13 @@
                 "name": "Sofia Diaz",
                 "designation": "Presenter - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             },
             {
                 "name": "Priya Raman",
                 "designation": "Presenter - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -55,13 +55,13 @@
                 "name": "Elena Park",
                 "designation": "Guest Speaker - Photographer",
                 "bio": "Elena creates editorial and commercial imagery with a focus on composition, light, and visual storytelling. She also advises teams on efficient content sourcing workflows.",
-                "avatar": "assets/images/profiles/elena-park-creator.jpg"
+                "avatar": "/assets/images/profiles/elena-park-creator.jpg"
             },
             {
                 "name": "Ethan Cole",
                 "designation": "Guest Speaker - Content Creator",
                 "bio": "Ethan produces educational creative content across video, newsletters, and live workshops. He helps emerging creators build sustainable publishing habits.",
-                "avatar": "assets/images/profiles/ethan-cole-creator.jpg"
+                "avatar": "/assets/images/profiles/ethan-cole-creator.jpg"
             }
         ],
         "hosts": [
@@ -69,13 +69,13 @@
                 "name": "Ariana Flores",
                 "designation": "Host - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             },
             {
                 "name": "Noah Bennett",
                 "designation": "Host - Brand Strategist",
                 "bio": "Noah aligns brand narrative, campaign planning, and creative operations for distributed teams. He helps organizations build consistency without limiting originality.",
-                "avatar": "assets/images/profiles/noah-bennett-creator.jpg"
+                "avatar": "/assets/images/profiles/noah-bennett-creator.jpg"
             }
         ],
         "closingQuote": "Consistency turns creative sparks into a body of work that compounds over time.",
@@ -93,7 +93,7 @@
             "country": "USA"
         },
         "venue": "Kansas City Convention Center",
-        "thumbnail": "assets/images/events/create-now-kansas-city-design-week.jpg",
+        "thumbnail": "/assets/images/events/create-now-kansas-city-design-week.jpg",
         "shortDescription": "A creator-focused day in Kansas City centered on brand-consistent production systems and content operations and handoffs.",
         "fullDescription": "Create Now Kansas City Design Week brings creators and teams together for a hands-on program. You will explore content operations and handoffs, then apply creative workflows at scale through a practical walkthrough. Hosted at Kansas City Convention Center, the day includes time to connect with peers and compare approaches.",
         "agenda": [
@@ -123,13 +123,13 @@
                 "name": "Ariana Flores",
                 "designation": "Presenter - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             },
             {
                 "name": "Elena Park",
                 "designation": "Presenter - Photographer",
                 "bio": "Elena creates editorial and commercial imagery with a focus on composition, light, and visual storytelling. She also advises teams on efficient content sourcing workflows.",
-                "avatar": "assets/images/profiles/elena-park-creator.jpg"
+                "avatar": "/assets/images/profiles/elena-park-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -137,13 +137,13 @@
                 "name": "Noah Bennett",
                 "designation": "Guest Speaker - Brand Strategist",
                 "bio": "Noah aligns brand narrative, campaign planning, and creative operations for distributed teams. He helps organizations build consistency without limiting originality.",
-                "avatar": "assets/images/profiles/noah-bennett-creator.jpg"
+                "avatar": "/assets/images/profiles/noah-bennett-creator.jpg"
             },
             {
                 "name": "Ethan Cole",
                 "designation": "Guest Speaker - Content Creator",
                 "bio": "Ethan produces educational creative content across video, newsletters, and live workshops. He helps emerging creators build sustainable publishing habits.",
-                "avatar": "assets/images/profiles/ethan-cole-creator.jpg"
+                "avatar": "/assets/images/profiles/ethan-cole-creator.jpg"
             }
         ],
         "hosts": [
@@ -151,13 +151,13 @@
                 "name": "Malik Thompson",
                 "designation": "Host - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             },
             {
                 "name": "Sofia Diaz",
                 "designation": "Host - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             }
         ],
         "closingQuote": "Consistency turns creative sparks into a body of work that compounds over time.",
@@ -175,7 +175,7 @@
             "country": "USA"
         },
         "venue": "Philadelphia Convention Center",
-        "thumbnail": "assets/images/events/create-now-philadelphia.jpg",
+        "thumbnail": "/assets/images/events/create-now-philadelphia.jpg",
         "shortDescription": "A creator-focused day in Philadelphia centered on brand-consistent production systems and faster delivery with fewer revisions.",
         "fullDescription": "Create Now Philadelphia brings creators and teams together for a hands-on program. Sessions focus on creative workflows at scale and brand-consistent production systems, with demos and guided exercises. Hosted at Philadelphia Convention Center, the day includes time to connect with peers and compare approaches.",
         "agenda": [
@@ -205,13 +205,13 @@
                 "name": "Sofia Diaz",
                 "designation": "Presenter - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             },
             {
                 "name": "Elena Park",
                 "designation": "Presenter - Photographer",
                 "bio": "Elena creates editorial and commercial imagery with a focus on composition, light, and visual storytelling. She also advises teams on efficient content sourcing workflows.",
-                "avatar": "assets/images/profiles/elena-park-creator.jpg"
+                "avatar": "/assets/images/profiles/elena-park-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -219,13 +219,13 @@
                 "name": "Ethan Cole",
                 "designation": "Guest Speaker - Content Creator",
                 "bio": "Ethan produces educational creative content across video, newsletters, and live workshops. He helps emerging creators build sustainable publishing habits.",
-                "avatar": "assets/images/profiles/ethan-cole-creator.jpg"
+                "avatar": "/assets/images/profiles/ethan-cole-creator.jpg"
             },
             {
                 "name": "Malik Thompson",
                 "designation": "Guest Speaker - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             }
         ],
         "hosts": [
@@ -233,13 +233,13 @@
                 "name": "Priya Raman",
                 "designation": "Host - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             },
             {
                 "name": "Noah Bennett",
                 "designation": "Host - Brand Strategist",
                 "bio": "Noah aligns brand narrative, campaign planning, and creative operations for distributed teams. He helps organizations build consistency without limiting originality.",
-                "avatar": "assets/images/profiles/noah-bennett-creator.jpg"
+                "avatar": "/assets/images/profiles/noah-bennett-creator.jpg"
             }
         ],
         "closingQuote": "Consistency turns creative sparks into a body of work that compounds over time.",
@@ -257,7 +257,7 @@
             "country": "USA"
         },
         "venue": "San Francisco Convention Center",
-        "thumbnail": "assets/images/events/create-now-san-francisco-design-week.jpg",
+        "thumbnail": "/assets/images/events/create-now-san-francisco-design-week.jpg",
         "shortDescription": "Create Now San Francisco Design Week: practical sessions on AI-assisted ideation and iteration, plus collaboration and review loops.",
         "fullDescription": "Create Now San Francisco Design Week brings creators and teams together for a hands-on program. The agenda covers AI-assisted ideation and iteration alongside brand-consistent production systems, with time for Q&A and discussion. Hosted at San Francisco Convention Center, the day includes time to connect with peers and compare approaches.",
         "agenda": [
@@ -287,13 +287,13 @@
                 "name": "Sofia Diaz",
                 "designation": "Presenter - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             },
             {
                 "name": "Priya Raman",
                 "designation": "Presenter - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -301,13 +301,13 @@
                 "name": "Ethan Cole",
                 "designation": "Guest Speaker - Content Creator",
                 "bio": "Ethan produces educational creative content across video, newsletters, and live workshops. He helps emerging creators build sustainable publishing habits.",
-                "avatar": "assets/images/profiles/ethan-cole-creator.jpg"
+                "avatar": "/assets/images/profiles/ethan-cole-creator.jpg"
             },
             {
                 "name": "Luca Moretti",
                 "designation": "Guest Speaker - 3D Artist",
                 "bio": "Luca designs materials and environments for product visualization and immersive storytelling. He focuses on reliable pipelines from concept to final render.",
-                "avatar": "assets/images/profiles/luca-moretti-creator.jpg"
+                "avatar": "/assets/images/profiles/luca-moretti-creator.jpg"
             }
         ],
         "hosts": [
@@ -315,13 +315,13 @@
                 "name": "Noah Bennett",
                 "designation": "Host - Brand Strategist",
                 "bio": "Noah aligns brand narrative, campaign planning, and creative operations for distributed teams. He helps organizations build consistency without limiting originality.",
-                "avatar": "assets/images/profiles/noah-bennett-creator.jpg"
+                "avatar": "/assets/images/profiles/noah-bennett-creator.jpg"
             },
             {
                 "name": "Ariana Flores",
                 "designation": "Host - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             }
         ],
         "closingQuote": "Consistency turns creative sparks into a body of work that compounds over time.",
@@ -339,7 +339,7 @@
             "country": "USA"
         },
         "venue": "New York Convention Center",
-        "thumbnail": "assets/images/events/create-now-new-york.jpg",
+        "thumbnail": "/assets/images/events/create-now-new-york.jpg",
         "shortDescription": "Create Now New York: practical sessions on AI-assisted ideation and iteration, plus creative workflows at scale.",
         "fullDescription": "Create Now New York is designed for people who want practical, repeatable workflows. You will explore faster delivery with fewer revisions, then apply content operations and handoffs through a practical walkthrough. Bring an active project and leave with a plan you can use the next day.",
         "agenda": [
@@ -369,13 +369,13 @@
                 "name": "Noah Bennett",
                 "designation": "Presenter - Brand Strategist",
                 "bio": "Noah aligns brand narrative, campaign planning, and creative operations for distributed teams. He helps organizations build consistency without limiting originality.",
-                "avatar": "assets/images/profiles/noah-bennett-creator.jpg"
+                "avatar": "/assets/images/profiles/noah-bennett-creator.jpg"
             },
             {
                 "name": "Elena Park",
                 "designation": "Presenter - Photographer",
                 "bio": "Elena creates editorial and commercial imagery with a focus on composition, light, and visual storytelling. She also advises teams on efficient content sourcing workflows.",
-                "avatar": "assets/images/profiles/elena-park-creator.jpg"
+                "avatar": "/assets/images/profiles/elena-park-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -383,13 +383,13 @@
                 "name": "Priya Raman",
                 "designation": "Guest Speaker - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             },
             {
                 "name": "Luca Moretti",
                 "designation": "Guest Speaker - 3D Artist",
                 "bio": "Luca designs materials and environments for product visualization and immersive storytelling. He focuses on reliable pipelines from concept to final render.",
-                "avatar": "assets/images/profiles/luca-moretti-creator.jpg"
+                "avatar": "/assets/images/profiles/luca-moretti-creator.jpg"
             }
         ],
         "hosts": [
@@ -397,13 +397,13 @@
                 "name": "Ariana Flores",
                 "designation": "Host - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             },
             {
                 "name": "Sofia Diaz",
                 "designation": "Host - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             }
         ],
         "closingQuote": "Great 3D work is equal parts craft, structure, and relentless iteration.",
@@ -421,7 +421,7 @@
             "country": "Canada"
         },
         "venue": "Toronto Convention Center",
-        "thumbnail": "assets/images/events/adobe-create-now-toronto.jpg",
+        "thumbnail": "/assets/images/events/adobe-create-now-toronto.jpg",
         "shortDescription": "Adobe Create Now Toronto: practical sessions on creative workflows at scale, plus content operations and handoffs.",
         "fullDescription": "Adobe Create Now Toronto is a community-forward event with structured learning and real examples. You will explore faster delivery with fewer revisions, then apply brand-consistent production systems through a practical walkthrough. You will leave with reusable templates, a checklist, and a clear next step.",
         "agenda": [
@@ -451,13 +451,13 @@
                 "name": "Noah Bennett",
                 "designation": "Presenter - Brand Strategist",
                 "bio": "Noah aligns brand narrative, campaign planning, and creative operations for distributed teams. He helps organizations build consistency without limiting originality.",
-                "avatar": "assets/images/profiles/noah-bennett-creator.jpg"
+                "avatar": "/assets/images/profiles/noah-bennett-creator.jpg"
             },
             {
                 "name": "Ethan Cole",
                 "designation": "Presenter - Content Creator",
                 "bio": "Ethan produces educational creative content across video, newsletters, and live workshops. He helps emerging creators build sustainable publishing habits.",
-                "avatar": "assets/images/profiles/ethan-cole-creator.jpg"
+                "avatar": "/assets/images/profiles/ethan-cole-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -465,13 +465,13 @@
                 "name": "Ariana Flores",
                 "designation": "Guest Speaker - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             },
             {
                 "name": "Priya Raman",
                 "designation": "Guest Speaker - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             }
         ],
         "hosts": [
@@ -479,13 +479,13 @@
                 "name": "Malik Thompson",
                 "designation": "Host - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             },
             {
                 "name": "Sofia Diaz",
                 "designation": "Host - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             }
         ],
         "closingQuote": "Great design is not just what we make, it is how we help others create with clarity and confidence.",
@@ -503,7 +503,7 @@
             "country": "USA"
         },
         "venue": "Chicago Convention Center",
-        "thumbnail": "assets/images/events/adobe-creative-cafe-chicago.jpg",
+        "thumbnail": "/assets/images/events/adobe-creative-cafe-chicago.jpg",
         "shortDescription": "A creator-focused day in Chicago centered on storytelling and craft and portfolio feedback and critique.",
         "fullDescription": "Adobe Creative Cafe Chicago brings creators and teams together for a hands-on program. Sessions focus on quick tips and mini demos and creative process show-and-tell, with demos and guided exercises. You will leave with reusable templates, a checklist, and a clear next step.",
         "agenda": [
@@ -533,7 +533,7 @@
                 "name": "Ariana Flores",
                 "designation": "Presenter - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -541,7 +541,7 @@
                 "name": "Ethan Cole",
                 "designation": "Guest Speaker - Content Creator",
                 "bio": "Ethan produces educational creative content across video, newsletters, and live workshops. He helps emerging creators build sustainable publishing habits.",
-                "avatar": "assets/images/profiles/ethan-cole-creator.jpg"
+                "avatar": "/assets/images/profiles/ethan-cole-creator.jpg"
             }
         ],
         "hosts": [
@@ -549,13 +549,13 @@
                 "name": "Elena Park",
                 "designation": "Host - Photographer",
                 "bio": "Elena creates editorial and commercial imagery with a focus on composition, light, and visual storytelling. She also advises teams on efficient content sourcing workflows.",
-                "avatar": "assets/images/profiles/elena-park-creator.jpg"
+                "avatar": "/assets/images/profiles/elena-park-creator.jpg"
             },
             {
                 "name": "Sofia Diaz",
                 "designation": "Host - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             }
         ],
         "closingQuote": "Movement gives ideas momentum; intention gives that momentum meaning.",
@@ -573,7 +573,7 @@
             "country": "USA"
         },
         "venue": "New York Convention Center",
-        "thumbnail": "assets/images/events/adobe-creative-cafe-new-york.jpg",
+        "thumbnail": "/assets/images/events/adobe-creative-cafe-new-york.jpg",
         "shortDescription": "Join us for Adobe Creative Cafe New York featuring community networking and quick tips and mini demos.",
         "fullDescription": "Adobe Creative Cafe New York is designed for people who want practical, repeatable workflows. The agenda covers quick tips and mini demos alongside community networking, with time for Q&A and discussion. Hosted at New York Convention Center, the day includes time to connect with peers and compare approaches.",
         "agenda": [
@@ -603,7 +603,7 @@
                 "name": "Elena Park",
                 "designation": "Presenter - Photographer",
                 "bio": "Elena creates editorial and commercial imagery with a focus on composition, light, and visual storytelling. She also advises teams on efficient content sourcing workflows.",
-                "avatar": "assets/images/profiles/elena-park-creator.jpg"
+                "avatar": "/assets/images/profiles/elena-park-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -611,7 +611,7 @@
                 "name": "Priya Raman",
                 "designation": "Guest Speaker - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             }
         ],
         "hosts": [
@@ -619,13 +619,13 @@
                 "name": "Ariana Flores",
                 "designation": "Host - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             },
             {
                 "name": "Sofia Diaz",
                 "designation": "Host - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             }
         ],
         "closingQuote": "Research is most powerful when it turns uncertainty into shared creative direction.",
@@ -643,7 +643,7 @@
             "country": "USA"
         },
         "venue": "San Francisco Convention Center",
-        "thumbnail": "assets/images/events/adobe-creative-cafe-cca-san-francisco.jpg",
+        "thumbnail": "/assets/images/events/adobe-creative-cafe-cca-san-francisco.jpg",
         "shortDescription": "Adobe Creative Cafe @ CCA San Francisco: practical sessions on quick tips and mini demos, plus portfolio feedback and critique.",
         "fullDescription": "Adobe Creative Cafe @ CCA San Francisco brings creators and teams together for a hands-on program. You will explore storytelling and craft, then apply quick tips and mini demos through a practical walkthrough. Hosted at San Francisco Convention Center, the day includes time to connect with peers and compare approaches.",
         "agenda": [
@@ -673,7 +673,7 @@
                 "name": "Priya Raman",
                 "designation": "Presenter - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -681,7 +681,7 @@
                 "name": "Malik Thompson",
                 "designation": "Guest Speaker - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             }
         ],
         "hosts": [
@@ -689,13 +689,13 @@
                 "name": "Ariana Flores",
                 "designation": "Host - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             },
             {
                 "name": "Sofia Diaz",
                 "designation": "Host - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             }
         ],
         "closingQuote": "When interfaces feel effortless, teams can spend their energy on ideas instead of obstacles.",
@@ -713,7 +713,7 @@
             "country": "Global"
         },
         "venue": "Virtual + Regional Community Hubs",
-        "thumbnail": "assets/images/events/adobe-creative-cafe-portfolio-review-series.jpg",
+        "thumbnail": "/assets/images/events/adobe-creative-cafe-portfolio-review-series.jpg",
         "shortDescription": "Adobe Creative Cafe Portfolio Review Series in Online / Multiple Locations: practical sessions on storytelling and craft, plus quick tips and mini demos.",
         "fullDescription": "In Online / Multiple Locations, Adobe Creative Cafe Portfolio Review Series is designed for people who want practical, repeatable workflows. Sessions focus on building sustainable creative habits and storytelling and craft, with demos and guided exercises. Bring an active project and leave with a plan you can use the next day.",
         "agenda": [
@@ -743,7 +743,7 @@
                 "name": "Elena Park",
                 "designation": "Presenter - Photographer",
                 "bio": "Elena creates editorial and commercial imagery with a focus on composition, light, and visual storytelling. She also advises teams on efficient content sourcing workflows.",
-                "avatar": "assets/images/profiles/elena-park-creator.jpg"
+                "avatar": "/assets/images/profiles/elena-park-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -751,7 +751,7 @@
                 "name": "Noah Bennett",
                 "designation": "Guest Speaker - Brand Strategist",
                 "bio": "Noah aligns brand narrative, campaign planning, and creative operations for distributed teams. He helps organizations build consistency without limiting originality.",
-                "avatar": "assets/images/profiles/noah-bennett-creator.jpg"
+                "avatar": "/assets/images/profiles/noah-bennett-creator.jpg"
             }
         ],
         "hosts": [
@@ -759,13 +759,13 @@
                 "name": "Malik Thompson",
                 "designation": "Host - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             },
             {
                 "name": "Sofia Diaz",
                 "designation": "Host - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             }
         ],
         "closingQuote": "A single image can hold a story, but a thoughtful system helps that story travel everywhere.",
@@ -783,7 +783,7 @@
             "country": "USA"
         },
         "venue": "Kansas City Convention Center",
-        "thumbnail": "assets/images/events/creative-cloud-workshop-generative-ai-workflows-from-working.jpg",
+        "thumbnail": "/assets/images/events/creative-cloud-workshop-generative-ai-workflows-from-working.jpg",
         "shortDescription": "Creative Cloud Workshop: Generative AI Workflows from Working Hollywood Poster Artists in Kansas City: practical sessions on asset organization and reuse, plus workflow automation.",
         "fullDescription": "Creative Cloud Workshop: Generative AI Workflows from Working Hollywood Poster Artists brings creators and teams together in Kansas City for a hands-on program. The agenda covers workflow automation alongside hands-on exercises, with time for Q&A and discussion. Bring an active project and leave with a plan you can use the next day.",
         "agenda": [
@@ -813,13 +813,13 @@
                 "name": "Sofia Diaz",
                 "designation": "Presenter - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             },
             {
                 "name": "Priya Raman",
                 "designation": "Presenter - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -827,7 +827,7 @@
                 "name": "Elena Park",
                 "designation": "Guest Speaker - Photographer",
                 "bio": "Elena creates editorial and commercial imagery with a focus on composition, light, and visual storytelling. She also advises teams on efficient content sourcing workflows.",
-                "avatar": "assets/images/profiles/elena-park-creator.jpg"
+                "avatar": "/assets/images/profiles/elena-park-creator.jpg"
             }
         ],
         "hosts": [
@@ -835,7 +835,7 @@
                 "name": "Luca Moretti",
                 "designation": "Host - 3D Artist",
                 "bio": "Luca designs materials and environments for product visualization and immersive storytelling. He focuses on reliable pipelines from concept to final render.",
-                "avatar": "assets/images/profiles/luca-moretti-creator.jpg"
+                "avatar": "/assets/images/profiles/luca-moretti-creator.jpg"
             }
         ],
         "closingQuote": "Movement gives ideas momentum; intention gives that momentum meaning.",
@@ -853,7 +853,7 @@
             "country": "Global"
         },
         "venue": "Virtual Event Platform",
-        "thumbnail": "assets/images/events/prompting-like-a-pro-with-adobe-firefly.jpg",
+        "thumbnail": "/assets/images/events/prompting-like-a-pro-with-adobe-firefly.jpg",
         "shortDescription": "Join live to learn practical production checklists, plus a practical walkthrough of workflow automation.",
         "fullDescription": "Join Prompting Like a Pro with Adobe Firefly online for a practical, demo-driven learning session. The session includes demos on practical production checklists, and a structured approach to repeatable templates. Bring your questions for Q&A and leave with a repeatable plan.",
         "agenda": [
@@ -883,13 +883,13 @@
                 "name": "Sofia Diaz",
                 "designation": "Presenter - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             },
             {
                 "name": "Luca Moretti",
                 "designation": "Presenter - 3D Artist",
                 "bio": "Luca designs materials and environments for product visualization and immersive storytelling. He focuses on reliable pipelines from concept to final render.",
-                "avatar": "assets/images/profiles/luca-moretti-creator.jpg"
+                "avatar": "/assets/images/profiles/luca-moretti-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -897,7 +897,7 @@
                 "name": "Ariana Flores",
                 "designation": "Guest Speaker - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             }
         ],
         "hosts": [
@@ -905,7 +905,7 @@
                 "name": "Elena Park",
                 "designation": "Host - Photographer",
                 "bio": "Elena creates editorial and commercial imagery with a focus on composition, light, and visual storytelling. She also advises teams on efficient content sourcing workflows.",
-                "avatar": "assets/images/profiles/elena-park-creator.jpg"
+                "avatar": "/assets/images/profiles/elena-park-creator.jpg"
             }
         ],
         "closingQuote": "A single image can hold a story, but a thoughtful system helps that story travel everywhere.",
@@ -923,7 +923,7 @@
             "country": "Global"
         },
         "venue": "Virtual Event Platform",
-        "thumbnail": "assets/images/events/new-ways-to-create-with-adobe-firefly.jpg",
+        "thumbnail": "/assets/images/events/new-ways-to-create-with-adobe-firefly.jpg",
         "shortDescription": "A focused webinar covering repeatable templates and hands-on exercises, designed for busy teams.",
         "fullDescription": "New Ways to Create with Adobe Firefly brings a focused, live format for teams working across time zones. We will cover asset organization and reuse and repeatable templates with step-by-step walkthroughs. You will get practical takeaways that reduce rework and speed up delivery.",
         "agenda": [
@@ -953,13 +953,13 @@
                 "name": "Malik Thompson",
                 "designation": "Presenter - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             },
             {
                 "name": "Elena Park",
                 "designation": "Presenter - Photographer",
                 "bio": "Elena creates editorial and commercial imagery with a focus on composition, light, and visual storytelling. She also advises teams on efficient content sourcing workflows.",
-                "avatar": "assets/images/profiles/elena-park-creator.jpg"
+                "avatar": "/assets/images/profiles/elena-park-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -967,7 +967,7 @@
                 "name": "Noah Bennett",
                 "designation": "Guest Speaker - Brand Strategist",
                 "bio": "Noah aligns brand narrative, campaign planning, and creative operations for distributed teams. He helps organizations build consistency without limiting originality.",
-                "avatar": "assets/images/profiles/noah-bennett-creator.jpg"
+                "avatar": "/assets/images/profiles/noah-bennett-creator.jpg"
             }
         ],
         "hosts": [
@@ -975,7 +975,7 @@
                 "name": "Sofia Diaz",
                 "designation": "Host - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             }
         ],
         "closingQuote": "A single image can hold a story, but a thoughtful system helps that story travel everywhere.",
@@ -993,7 +993,7 @@
             "country": "Global"
         },
         "venue": "Virtual Event Platform",
-        "thumbnail": "assets/images/events/video-ai-magic-create-iterate-and-refine-with.jpg",
+        "thumbnail": "/assets/images/events/video-ai-magic-create-iterate-and-refine-with.jpg",
         "shortDescription": "Live online session on rapid prototyping and asset organization and reuse with demos and Q&A.",
         "fullDescription": "Join Video AI Magic: Create, Iterate, and Refine with Adobe Firefly online for a practical, demo-driven learning session. Expect clear examples on practical production checklists, plus a guided look at rapid prototyping. Bring your questions for Q&A and leave with a repeatable plan.",
         "agenda": [
@@ -1023,13 +1023,13 @@
                 "name": "Malik Thompson",
                 "designation": "Presenter - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             },
             {
                 "name": "Ariana Flores",
                 "designation": "Presenter - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -1037,7 +1037,7 @@
                 "name": "Elena Park",
                 "designation": "Guest Speaker - Photographer",
                 "bio": "Elena creates editorial and commercial imagery with a focus on composition, light, and visual storytelling. She also advises teams on efficient content sourcing workflows.",
-                "avatar": "assets/images/profiles/elena-park-creator.jpg"
+                "avatar": "/assets/images/profiles/elena-park-creator.jpg"
             }
         ],
         "hosts": [
@@ -1045,7 +1045,7 @@
                 "name": "Sofia Diaz",
                 "designation": "Host - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             }
         ],
         "closingQuote": "When interfaces feel effortless, teams can spend their energy on ideas instead of obstacles.",
@@ -1063,7 +1063,7 @@
             "country": "Global"
         },
         "venue": "Virtual Event Platform",
-        "thumbnail": "assets/images/events/adobe-premiere-indesign-workshop.jpg",
+        "thumbnail": "/assets/images/events/adobe-premiere-indesign-workshop.jpg",
         "shortDescription": "Join live to learn hands-on exercises, plus a practical walkthrough of repeatable templates.",
         "fullDescription": "Join Adobe Premiere + InDesign Workshop online for a practical, demo-driven learning session. Expect clear examples on asset organization and reuse, plus a guided look at repeatable templates. Bring your questions for Q&A and leave with a repeatable plan.",
         "agenda": [
@@ -1093,13 +1093,13 @@
                 "name": "Elena Park",
                 "designation": "Presenter - Photographer",
                 "bio": "Elena creates editorial and commercial imagery with a focus on composition, light, and visual storytelling. She also advises teams on efficient content sourcing workflows.",
-                "avatar": "assets/images/profiles/elena-park-creator.jpg"
+                "avatar": "/assets/images/profiles/elena-park-creator.jpg"
             },
             {
                 "name": "Ariana Flores",
                 "designation": "Presenter - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -1107,7 +1107,7 @@
                 "name": "Noah Bennett",
                 "designation": "Guest Speaker - Brand Strategist",
                 "bio": "Noah aligns brand narrative, campaign planning, and creative operations for distributed teams. He helps organizations build consistency without limiting originality.",
-                "avatar": "assets/images/profiles/noah-bennett-creator.jpg"
+                "avatar": "/assets/images/profiles/noah-bennett-creator.jpg"
             }
         ],
         "hosts": [
@@ -1115,7 +1115,7 @@
                 "name": "Malik Thompson",
                 "designation": "Host - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             }
         ],
         "closingQuote": "Great design is not just what we make, it is how we help others create with clarity and confidence.",
@@ -1133,7 +1133,7 @@
             "country": "Global"
         },
         "venue": "Virtual Event Platform",
-        "thumbnail": "assets/images/events/doing-more-with-documents-how-professionals-use-ai.jpg",
+        "thumbnail": "/assets/images/events/doing-more-with-documents-how-professionals-use-ai.jpg",
         "shortDescription": "Live online session on practical frameworks and real-world examples with demos and Q&A.",
         "fullDescription": "Doing More with Documents: How Professionals Use AI is a live online session built for creators and teams. We will cover real-world examples and workflow walkthroughs with step-by-step walkthroughs. You will get practical takeaways that reduce rework and speed up delivery.",
         "agenda": [
@@ -1163,7 +1163,7 @@
                 "name": "Malik Thompson",
                 "designation": "Presenter - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -1171,7 +1171,7 @@
                 "name": "Ethan Cole",
                 "designation": "Guest Speaker - Content Creator",
                 "bio": "Ethan produces educational creative content across video, newsletters, and live workshops. He helps emerging creators build sustainable publishing habits.",
-                "avatar": "assets/images/profiles/ethan-cole-creator.jpg"
+                "avatar": "/assets/images/profiles/ethan-cole-creator.jpg"
             }
         ],
         "hosts": [
@@ -1179,7 +1179,7 @@
                 "name": "Ariana Flores",
                 "designation": "Host - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             }
         ],
         "closingQuote": "Great design is not just what we make, it is how we help others create with clarity and confidence.",
@@ -1197,7 +1197,7 @@
             "country": "Global"
         },
         "venue": "Virtual Event Platform",
-        "thumbnail": "assets/images/events/adobe-s-creative-forecast-trends-shaping-2026.jpg",
+        "thumbnail": "/assets/images/events/adobe-s-creative-forecast-trends-shaping-2026.jpg",
         "shortDescription": "Join live to learn practical frameworks, plus a practical walkthrough of live demos.",
         "fullDescription": "Adobe's Creative Forecast: Trends Shaping 2026 brings a focused, live format for teams working across time zones. We will cover practical frameworks and Q&A and troubleshooting with step-by-step walkthroughs. Bring your questions for Q&A and leave with a repeatable plan.",
         "agenda": [
@@ -1227,7 +1227,7 @@
                 "name": "Malik Thompson",
                 "designation": "Presenter - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -1235,7 +1235,7 @@
                 "name": "Priya Raman",
                 "designation": "Guest Speaker - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             }
         ],
         "hosts": [
@@ -1243,7 +1243,7 @@
                 "name": "Noah Bennett",
                 "designation": "Host - Brand Strategist",
                 "bio": "Noah aligns brand narrative, campaign planning, and creative operations for distributed teams. He helps organizations build consistency without limiting originality.",
-                "avatar": "assets/images/profiles/noah-bennett-creator.jpg"
+                "avatar": "/assets/images/profiles/noah-bennett-creator.jpg"
             }
         ],
         "closingQuote": "A strong brand is a shared promise made visible in every creative choice.",
@@ -1261,7 +1261,7 @@
             "country": "Global"
         },
         "venue": "Virtual Event Platform",
-        "thumbnail": "assets/images/events/create-with-confidence-using-generative-ai.jpg",
+        "thumbnail": "/assets/images/events/create-with-confidence-using-generative-ai.jpg",
         "shortDescription": "Live online: Create with Confidence Using Generative AI. Join live to learn real-world examples, plus a practical walkthrough of best practices.",
         "fullDescription": "Join Create with Confidence Using Generative AI online for a practical, demo-driven learning session. Expect clear examples on best practices, plus a guided look at practical frameworks. You will get practical takeaways that reduce rework and speed up delivery.",
         "agenda": [
@@ -1291,7 +1291,7 @@
                 "name": "Malik Thompson",
                 "designation": "Presenter - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -1299,7 +1299,7 @@
                 "name": "Sofia Diaz",
                 "designation": "Guest Speaker - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             }
         ],
         "hosts": [
@@ -1307,7 +1307,7 @@
                 "name": "Priya Raman",
                 "designation": "Host - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             }
         ],
         "closingQuote": "Movement gives ideas momentum; intention gives that momentum meaning.",
@@ -1325,7 +1325,7 @@
             "country": "Global"
         },
         "venue": "Virtual Event Platform",
-        "thumbnail": "assets/images/events/scale-creative-production-with-generative-ai-and-automated.jpg",
+        "thumbnail": "/assets/images/events/scale-creative-production-with-generative-ai-and-automated.jpg",
         "shortDescription": "Live online session on workflow walkthroughs and live demos with demos and Q&A.",
         "fullDescription": "Scale Creative Production with Generative AI and Automated Workflows brings a focused, live format for teams working across time zones. Expect clear examples on live demos, plus a guided look at real-world examples. You will get practical takeaways that reduce rework and speed up delivery.",
         "agenda": [
@@ -1355,7 +1355,7 @@
                 "name": "Ethan Cole",
                 "designation": "Presenter - Content Creator",
                 "bio": "Ethan produces educational creative content across video, newsletters, and live workshops. He helps emerging creators build sustainable publishing habits.",
-                "avatar": "assets/images/profiles/ethan-cole-creator.jpg"
+                "avatar": "/assets/images/profiles/ethan-cole-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -1363,7 +1363,7 @@
                 "name": "Sofia Diaz",
                 "designation": "Guest Speaker - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             }
         ],
         "hosts": [
@@ -1371,7 +1371,7 @@
                 "name": "Malik Thompson",
                 "designation": "Host - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             }
         ],
         "closingQuote": "Movement gives ideas momentum; intention gives that momentum meaning.",
@@ -1389,7 +1389,7 @@
             "country": "Global"
         },
         "venue": "Virtual Event Platform",
-        "thumbnail": "assets/images/events/from-idea-to-impact-ideate-and-create-with.jpg",
+        "thumbnail": "/assets/images/events/from-idea-to-impact-ideate-and-create-with.jpg",
         "shortDescription": "Live online session on workflow walkthroughs and Q&A and troubleshooting with demos and Q&A.",
         "fullDescription": "From Idea to Impact: Ideate and Create with Firefly Boards brings a focused, live format for teams working across time zones. We will cover Q&A and troubleshooting and live demos with step-by-step walkthroughs. You will get practical takeaways that reduce rework and speed up delivery.",
         "agenda": [
@@ -1419,7 +1419,7 @@
                 "name": "Ariana Flores",
                 "designation": "Presenter - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -1427,7 +1427,7 @@
                 "name": "Malik Thompson",
                 "designation": "Guest Speaker - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             }
         ],
         "hosts": [
@@ -1435,7 +1435,7 @@
                 "name": "Noah Bennett",
                 "designation": "Host - Brand Strategist",
                 "bio": "Noah aligns brand narrative, campaign planning, and creative operations for distributed teams. He helps organizations build consistency without limiting originality.",
-                "avatar": "assets/images/profiles/noah-bennett-creator.jpg"
+                "avatar": "/assets/images/profiles/noah-bennett-creator.jpg"
             }
         ],
         "closingQuote": "When interfaces feel effortless, teams can spend their energy on ideas instead of obstacles.",
@@ -1453,7 +1453,7 @@
             "country": "Global"
         },
         "venue": "Virtual Event Platform",
-        "thumbnail": "assets/images/events/bridging-creative-ai-with-human-ingenuity.jpg",
+        "thumbnail": "/assets/images/events/bridging-creative-ai-with-human-ingenuity.jpg",
         "shortDescription": "A focused webinar covering live demos and workflow walkthroughs, designed for busy teams.",
         "fullDescription": "Bridging Creative AI with Human Ingenuity is a live online session built for creators and teams. The session includes demos on Q&A and troubleshooting, and a structured approach to best practices. You will leave with a compact checklist and next steps you can apply immediately.",
         "agenda": [
@@ -1483,7 +1483,7 @@
                 "name": "Ariana Flores",
                 "designation": "Presenter - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -1491,7 +1491,7 @@
                 "name": "Malik Thompson",
                 "designation": "Guest Speaker - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             }
         ],
         "hosts": [
@@ -1499,7 +1499,7 @@
                 "name": "Priya Raman",
                 "designation": "Host - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             }
         ],
         "closingQuote": "Research is most powerful when it turns uncertainty into shared creative direction.",
@@ -1517,7 +1517,7 @@
             "country": "Global"
         },
         "venue": "Virtual Event Platform",
-        "thumbnail": "assets/images/events/building-the-business-case-for-ai.jpg",
+        "thumbnail": "/assets/images/events/building-the-business-case-for-ai.jpg",
         "shortDescription": "Live online session on best practices and real-world examples with demos and Q&A.",
         "fullDescription": "Building the Business Case for AI is a live online session built for creators and teams. The session includes demos on workflow walkthroughs, and a structured approach to practical frameworks. You will get practical takeaways that reduce rework and speed up delivery.",
         "agenda": [
@@ -1547,7 +1547,7 @@
                 "name": "Ethan Cole",
                 "designation": "Presenter - Content Creator",
                 "bio": "Ethan produces educational creative content across video, newsletters, and live workshops. He helps emerging creators build sustainable publishing habits.",
-                "avatar": "assets/images/profiles/ethan-cole-creator.jpg"
+                "avatar": "/assets/images/profiles/ethan-cole-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -1555,7 +1555,7 @@
                 "name": "Malik Thompson",
                 "designation": "Guest Speaker - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             }
         ],
         "hosts": [
@@ -1563,7 +1563,7 @@
                 "name": "Ariana Flores",
                 "designation": "Host - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             }
         ],
         "closingQuote": "When interfaces feel effortless, teams can spend their energy on ideas instead of obstacles.",
@@ -1581,7 +1581,7 @@
             "country": "Global"
         },
         "venue": "Virtual Event Platform",
-        "thumbnail": "assets/images/events/genai-in-action-unlocking-the-future-of-document.jpg",
+        "thumbnail": "/assets/images/events/genai-in-action-unlocking-the-future-of-document.jpg",
         "shortDescription": "Live online: GenAI in Action: Unlocking the Future of Document Management and Content Creation. Join live to learn real-world examples, plus a practical walkthrough of best practices.",
         "fullDescription": "GenAI in Action: Unlocking the Future of Document Management and Content Creation is a live online session built for creators and teams. Expect clear examples on practical frameworks, plus a guided look at real-world examples. You will get practical takeaways that reduce rework and speed up delivery.",
         "agenda": [
@@ -1611,7 +1611,7 @@
                 "name": "Noah Bennett",
                 "designation": "Presenter - Brand Strategist",
                 "bio": "Noah aligns brand narrative, campaign planning, and creative operations for distributed teams. He helps organizations build consistency without limiting originality.",
-                "avatar": "assets/images/profiles/noah-bennett-creator.jpg"
+                "avatar": "/assets/images/profiles/noah-bennett-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -1619,7 +1619,7 @@
                 "name": "Ariana Flores",
                 "designation": "Guest Speaker - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             }
         ],
         "hosts": [
@@ -1627,7 +1627,7 @@
                 "name": "Malik Thompson",
                 "designation": "Host - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             }
         ],
         "closingQuote": "Great design is not just what we make, it is how we help others create with clarity and confidence.",
@@ -1645,7 +1645,7 @@
             "country": "Global"
         },
         "venue": "Virtual Event Platform",
-        "thumbnail": "assets/images/events/best-of-adobe-max-creativity-meets-enterprise-impact.jpg",
+        "thumbnail": "/assets/images/events/best-of-adobe-max-creativity-meets-enterprise-impact.jpg",
         "shortDescription": "Join live to learn practical frameworks, plus a practical walkthrough of best practices.",
         "fullDescription": "Join Best of Adobe MAX: Creativity Meets Enterprise Impact online for a practical, demo-driven learning session. We will cover Q&A and troubleshooting and real-world examples with step-by-step walkthroughs. Bring your questions for Q&A and leave with a repeatable plan.",
         "agenda": [
@@ -1675,7 +1675,7 @@
                 "name": "Ethan Cole",
                 "designation": "Presenter - Content Creator",
                 "bio": "Ethan produces educational creative content across video, newsletters, and live workshops. He helps emerging creators build sustainable publishing habits.",
-                "avatar": "assets/images/profiles/ethan-cole-creator.jpg"
+                "avatar": "/assets/images/profiles/ethan-cole-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -1683,7 +1683,7 @@
                 "name": "Malik Thompson",
                 "designation": "Guest Speaker - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             }
         ],
         "hosts": [
@@ -1691,7 +1691,7 @@
                 "name": "Priya Raman",
                 "designation": "Host - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             }
         ],
         "closingQuote": "Consistency turns creative sparks into a body of work that compounds over time.",
@@ -1709,7 +1709,7 @@
             "country": "Global"
         },
         "venue": "Virtual Event Platform",
-        "thumbnail": "assets/images/events/ai-that-delivers-roi-and-value.jpg",
+        "thumbnail": "/assets/images/events/ai-that-delivers-roi-and-value.jpg",
         "shortDescription": "Live online session on live demos and Q&A and troubleshooting with demos and Q&A.",
         "fullDescription": "AI That Delivers ROI and Value brings a focused, live format for teams working across time zones. We will cover workflow walkthroughs and live demos with step-by-step walkthroughs. You will get practical takeaways that reduce rework and speed up delivery.",
         "agenda": [
@@ -1739,7 +1739,7 @@
                 "name": "Priya Raman",
                 "designation": "Presenter - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -1747,7 +1747,7 @@
                 "name": "Sofia Diaz",
                 "designation": "Guest Speaker - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             }
         ],
         "hosts": [
@@ -1755,7 +1755,7 @@
                 "name": "Ariana Flores",
                 "designation": "Host - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             }
         ],
         "closingQuote": "Great design is not just what we make, it is how we help others create with clarity and confidence.",
@@ -1773,7 +1773,7 @@
             "country": "USA"
         },
         "venue": "Los Angeles Convention Center",
-        "thumbnail": "assets/images/events/adobe-max-flagship-annual-conference.jpg",
+        "thumbnail": "/assets/images/events/adobe-max-flagship-annual-conference.jpg",
         "shortDescription": "Join us in Los Angeles for Adobe MAX (Flagship Annual Conference) featuring cross-team collaboration and panels and case studies.",
         "fullDescription": "Adobe MAX (Flagship Annual Conference) in Los Angeles is a community-forward event with structured learning and real examples. The agenda covers breakout sessions alongside keynotes and product insights, with time for Q&A and discussion. Bring an active project and leave with a plan you can use the next day.",
         "agenda": [
@@ -1803,13 +1803,13 @@
                 "name": "Elena Park",
                 "designation": "Presenter - Photographer",
                 "bio": "Elena creates editorial and commercial imagery with a focus on composition, light, and visual storytelling. She also advises teams on efficient content sourcing workflows.",
-                "avatar": "assets/images/profiles/elena-park-creator.jpg"
+                "avatar": "/assets/images/profiles/elena-park-creator.jpg"
             },
             {
                 "name": "Malik Thompson",
                 "designation": "Presenter - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -1817,13 +1817,13 @@
                 "name": "Sofia Diaz",
                 "designation": "Guest Speaker - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             },
             {
                 "name": "Luca Moretti",
                 "designation": "Guest Speaker - 3D Artist",
                 "bio": "Luca designs materials and environments for product visualization and immersive storytelling. He focuses on reliable pipelines from concept to final render.",
-                "avatar": "assets/images/profiles/luca-moretti-creator.jpg"
+                "avatar": "/assets/images/profiles/luca-moretti-creator.jpg"
             }
         ],
         "hosts": [
@@ -1831,13 +1831,13 @@
                 "name": "Noah Bennett",
                 "designation": "Host - Brand Strategist",
                 "bio": "Noah aligns brand narrative, campaign planning, and creative operations for distributed teams. He helps organizations build consistency without limiting originality.",
-                "avatar": "assets/images/profiles/noah-bennett-creator.jpg"
+                "avatar": "/assets/images/profiles/noah-bennett-creator.jpg"
             },
             {
                 "name": "Priya Raman",
                 "designation": "Host - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             }
         ],
         "closingQuote": "Research is most powerful when it turns uncertainty into shared creative direction.",
@@ -1855,7 +1855,7 @@
             "country": "United Kingdom"
         },
         "venue": "London Convention Center",
-        "thumbnail": "assets/images/events/adobe-max-london.jpg",
+        "thumbnail": "/assets/images/events/adobe-max-london.jpg",
         "shortDescription": "A creator-focused day in London centered on future trends and keynotes and product insights.",
         "fullDescription": "Adobe MAX London is designed for people who want practical, repeatable workflows. You will explore future trends, then apply panels and case studies through a practical walkthrough. You will leave with reusable templates, a checklist, and a clear next step.",
         "agenda": [
@@ -1885,13 +1885,13 @@
                 "name": "Priya Raman",
                 "designation": "Presenter - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             },
             {
                 "name": "Malik Thompson",
                 "designation": "Presenter - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -1899,13 +1899,13 @@
                 "name": "Ariana Flores",
                 "designation": "Guest Speaker - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             },
             {
                 "name": "Ethan Cole",
                 "designation": "Guest Speaker - Content Creator",
                 "bio": "Ethan produces educational creative content across video, newsletters, and live workshops. He helps emerging creators build sustainable publishing habits.",
-                "avatar": "assets/images/profiles/ethan-cole-creator.jpg"
+                "avatar": "/assets/images/profiles/ethan-cole-creator.jpg"
             }
         ],
         "hosts": [
@@ -1913,13 +1913,13 @@
                 "name": "Elena Park",
                 "designation": "Host - Photographer",
                 "bio": "Elena creates editorial and commercial imagery with a focus on composition, light, and visual storytelling. She also advises teams on efficient content sourcing workflows.",
-                "avatar": "assets/images/profiles/elena-park-creator.jpg"
+                "avatar": "/assets/images/profiles/elena-park-creator.jpg"
             },
             {
                 "name": "Noah Bennett",
                 "designation": "Host - Brand Strategist",
                 "bio": "Noah aligns brand narrative, campaign planning, and creative operations for distributed teams. He helps organizations build consistency without limiting originality.",
-                "avatar": "assets/images/profiles/noah-bennett-creator.jpg"
+                "avatar": "/assets/images/profiles/noah-bennett-creator.jpg"
             }
         ],
         "closingQuote": "Research is most powerful when it turns uncertainty into shared creative direction.",
@@ -1937,7 +1937,7 @@
             "country": "USA"
         },
         "venue": "Las Vegas Convention Center",
-        "thumbnail": "assets/images/events/adobe-summit.jpg",
+        "thumbnail": "/assets/images/events/adobe-summit.jpg",
         "shortDescription": "A creator-focused day in Las Vegas centered on keynotes and product insights and future trends.",
         "fullDescription": "In Las Vegas, Adobe Summit is designed for people who want practical, repeatable workflows. The agenda covers keynotes and product insights alongside breakout sessions, with time for Q&A and discussion. You will leave with reusable templates, a checklist, and a clear next step.",
         "agenda": [
@@ -1967,13 +1967,13 @@
                 "name": "Noah Bennett",
                 "designation": "Presenter - Brand Strategist",
                 "bio": "Noah aligns brand narrative, campaign planning, and creative operations for distributed teams. He helps organizations build consistency without limiting originality.",
-                "avatar": "assets/images/profiles/noah-bennett-creator.jpg"
+                "avatar": "/assets/images/profiles/noah-bennett-creator.jpg"
             },
             {
                 "name": "Elena Park",
                 "designation": "Presenter - Photographer",
                 "bio": "Elena creates editorial and commercial imagery with a focus on composition, light, and visual storytelling. She also advises teams on efficient content sourcing workflows.",
-                "avatar": "assets/images/profiles/elena-park-creator.jpg"
+                "avatar": "/assets/images/profiles/elena-park-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -1981,13 +1981,13 @@
                 "name": "Priya Raman",
                 "designation": "Guest Speaker - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             },
             {
                 "name": "Ethan Cole",
                 "designation": "Guest Speaker - Content Creator",
                 "bio": "Ethan produces educational creative content across video, newsletters, and live workshops. He helps emerging creators build sustainable publishing habits.",
-                "avatar": "assets/images/profiles/ethan-cole-creator.jpg"
+                "avatar": "/assets/images/profiles/ethan-cole-creator.jpg"
             }
         ],
         "hosts": [
@@ -1995,13 +1995,13 @@
                 "name": "Luca Moretti",
                 "designation": "Host - 3D Artist",
                 "bio": "Luca designs materials and environments for product visualization and immersive storytelling. He focuses on reliable pipelines from concept to final render.",
-                "avatar": "assets/images/profiles/luca-moretti-creator.jpg"
+                "avatar": "/assets/images/profiles/luca-moretti-creator.jpg"
             },
             {
                 "name": "Ariana Flores",
                 "designation": "Host - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             }
         ],
         "closingQuote": "Consistency turns creative sparks into a body of work that compounds over time.",
@@ -2019,7 +2019,7 @@
             "country": "USA"
         },
         "venue": "New York Convention Center",
-        "thumbnail": "assets/images/events/adobe-99u-conference-creative-collective-summit.jpg",
+        "thumbnail": "/assets/images/events/adobe-99u-conference-creative-collective-summit.jpg",
         "shortDescription": "Join us in New York for Adobe 99U Conference / Creative Collective Summit featuring breakout sessions and panels and case studies.",
         "fullDescription": "In New York, Adobe 99U Conference / Creative Collective Summit is designed for people who want practical, repeatable workflows. The agenda covers panels and case studies alongside hands-on labs, with time for Q&A and discussion. You will leave with reusable templates, a checklist, and a clear next step.",
         "agenda": [
@@ -2049,13 +2049,13 @@
                 "name": "Priya Raman",
                 "designation": "Presenter - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             },
             {
                 "name": "Malik Thompson",
                 "designation": "Presenter - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -2063,13 +2063,13 @@
                 "name": "Luca Moretti",
                 "designation": "Guest Speaker - 3D Artist",
                 "bio": "Luca designs materials and environments for product visualization and immersive storytelling. He focuses on reliable pipelines from concept to final render.",
-                "avatar": "assets/images/profiles/luca-moretti-creator.jpg"
+                "avatar": "/assets/images/profiles/luca-moretti-creator.jpg"
             },
             {
                 "name": "Noah Bennett",
                 "designation": "Guest Speaker - Brand Strategist",
                 "bio": "Noah aligns brand narrative, campaign planning, and creative operations for distributed teams. He helps organizations build consistency without limiting originality.",
-                "avatar": "assets/images/profiles/noah-bennett-creator.jpg"
+                "avatar": "/assets/images/profiles/noah-bennett-creator.jpg"
             }
         ],
         "hosts": [
@@ -2077,13 +2077,13 @@
                 "name": "Ariana Flores",
                 "designation": "Host - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             },
             {
                 "name": "Elena Park",
                 "designation": "Host - Photographer",
                 "bio": "Elena creates editorial and commercial imagery with a focus on composition, light, and visual storytelling. She also advises teams on efficient content sourcing workflows.",
-                "avatar": "assets/images/profiles/elena-park-creator.jpg"
+                "avatar": "/assets/images/profiles/elena-park-creator.jpg"
             }
         ],
         "closingQuote": "A single image can hold a story, but a thoughtful system helps that story travel everywhere.",
@@ -2101,7 +2101,7 @@
             "country": "Global"
         },
         "venue": "Virtual Event Platform",
-        "thumbnail": "assets/images/events/adobe-express-add-ons-for-enterprise-hackathon.jpg",
+        "thumbnail": "/assets/images/events/adobe-express-add-ons-for-enterprise-hackathon.jpg",
         "shortDescription": "Join live to learn community learning, plus a practical walkthrough of building extensions and add-ons.",
         "fullDescription": "Adobe Express Add-ons for Enterprise Hackathon brings a focused, live format for teams working across time zones. We will cover community learning and team challenges with step-by-step walkthroughs. Bring your questions for Q&A and leave with a repeatable plan.",
         "agenda": [
@@ -2131,7 +2131,7 @@
                 "name": "Priya Raman",
                 "designation": "Presenter - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -2139,7 +2139,7 @@
                 "name": "Noah Bennett",
                 "designation": "Guest Speaker - Brand Strategist",
                 "bio": "Noah aligns brand narrative, campaign planning, and creative operations for distributed teams. He helps organizations build consistency without limiting originality.",
-                "avatar": "assets/images/profiles/noah-bennett-creator.jpg"
+                "avatar": "/assets/images/profiles/noah-bennett-creator.jpg"
             }
         ],
         "hosts": [
@@ -2147,13 +2147,13 @@
                 "name": "Ethan Cole",
                 "designation": "Host - Content Creator",
                 "bio": "Ethan produces educational creative content across video, newsletters, and live workshops. He helps emerging creators build sustainable publishing habits.",
-                "avatar": "assets/images/profiles/ethan-cole-creator.jpg"
+                "avatar": "/assets/images/profiles/ethan-cole-creator.jpg"
             },
             {
                 "name": "Ariana Flores",
                 "designation": "Host - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             }
         ],
         "closingQuote": "Great design is not just what we make, it is how we help others create with clarity and confidence.",
@@ -2171,7 +2171,7 @@
             "country": "Global"
         },
         "venue": "Virtual Event Platform",
-        "thumbnail": "assets/images/events/adobe-creative-collective-community-talks.jpg",
+        "thumbnail": "/assets/images/events/adobe-creative-collective-community-talks.jpg",
         "shortDescription": "Live online session on team challenges and prototype sprints with demos and Q&A.",
         "fullDescription": "Adobe Creative Collective Community Talks is a live online session built for creators and teams. Expect clear examples on team challenges, plus a guided look at showcase demos. Bring your questions for Q&A and leave with a repeatable plan.",
         "agenda": [
@@ -2201,7 +2201,7 @@
                 "name": "Malik Thompson",
                 "designation": "Presenter - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -2209,7 +2209,7 @@
                 "name": "Noah Bennett",
                 "designation": "Guest Speaker - Brand Strategist",
                 "bio": "Noah aligns brand narrative, campaign planning, and creative operations for distributed teams. He helps organizations build consistency without limiting originality.",
-                "avatar": "assets/images/profiles/noah-bennett-creator.jpg"
+                "avatar": "/assets/images/profiles/noah-bennett-creator.jpg"
             }
         ],
         "hosts": [
@@ -2217,13 +2217,13 @@
                 "name": "Sofia Diaz",
                 "designation": "Host - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             },
             {
                 "name": "Ethan Cole",
                 "designation": "Host - Content Creator",
                 "bio": "Ethan produces educational creative content across video, newsletters, and live workshops. He helps emerging creators build sustainable publishing habits.",
-                "avatar": "assets/images/profiles/ethan-cole-creator.jpg"
+                "avatar": "/assets/images/profiles/ethan-cole-creator.jpg"
             }
         ],
         "closingQuote": "A strong brand is a shared promise made visible in every creative choice.",
@@ -2241,7 +2241,7 @@
             "country": "Global"
         },
         "venue": "Virtual Event Platform",
-        "thumbnail": "assets/images/events/adobe-developer-community-workshops.jpg",
+        "thumbnail": "/assets/images/events/adobe-developer-community-workshops.jpg",
         "shortDescription": "Live online session on community learning and showcase demos with demos and Q&A.",
         "fullDescription": "Adobe Developer Community Workshops is a live online session built for creators and teams. The session includes demos on showcase demos, and a structured approach to mentorship hours. You will leave with a compact checklist and next steps you can apply immediately.",
         "agenda": [
@@ -2271,7 +2271,7 @@
                 "name": "Priya Raman",
                 "designation": "Presenter - UX Researcher",
                 "bio": "Priya studies creative workflows and decision patterns to shape more human-centered product experiences. Her research helps teams design with confidence and evidence.",
-                "avatar": "assets/images/profiles/priya-raman-creator.jpg"
+                "avatar": "/assets/images/profiles/priya-raman-creator.jpg"
             }
         ],
         "guestSpeakers": [
@@ -2279,7 +2279,7 @@
                 "name": "Ariana Flores",
                 "designation": "Guest Speaker - Senior Creative Director",
                 "bio": "Ariana leads multidisciplinary teams building brand storytelling systems powered by modern creative tools. She mentors early-career designers on craft and creative leadership.",
-                "avatar": "assets/images/profiles/ariana-flores-creator.jpg"
+                "avatar": "/assets/images/profiles/ariana-flores-creator.jpg"
             }
         ],
         "hosts": [
@@ -2287,13 +2287,13 @@
                 "name": "Malik Thompson",
                 "designation": "Host - Frontend Developer",
                 "bio": "Malik builds performant creative web experiences and design tooling for enterprise teams. He specializes in turning complex ideas into accessible interfaces.",
-                "avatar": "assets/images/profiles/malik-thompson-creator.jpg"
+                "avatar": "/assets/images/profiles/malik-thompson-creator.jpg"
             },
             {
                 "name": "Sofia Diaz",
                 "designation": "Host - Motion Designer",
                 "bio": "Sofia creates motion systems that make complex ideas easier to understand and remember. Her work blends narrative pacing with brand coherence.",
-                "avatar": "assets/images/profiles/sofia-diaz-creator.jpg"
+                "avatar": "/assets/images/profiles/sofia-diaz-creator.jpg"
             }
         ],
         "closingQuote": "Movement gives ideas momentum; intention gives that momentum meaning.",
