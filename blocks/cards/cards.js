@@ -712,7 +712,6 @@ async function hydrateUserSource(block, source, cfg, opts) {
       const article = buildBlogCard(found, { withSave: false, withActions: false });
       const actions = getOrCreateActions(article);
       if (actions) {
-        const readLink = makeLink('button ghost', `/blog/${encodeURIComponent(id)}`, 'Read');
         const unsaveBtn = makeBtn('button ghost', 'Unsave');
         unsaveBtn.addEventListener('click', (e) => {
           e.preventDefault();
@@ -722,7 +721,7 @@ async function hydrateUserSource(block, source, cfg, opts) {
           article.remove();
           checkEmpty();
         });
-        actions.append(readLink, unsaveBtn);
+        actions.append(unsaveBtn);
       }
       grid.append(article);
     });
