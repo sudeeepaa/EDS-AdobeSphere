@@ -34,6 +34,9 @@
  *   Avatar Action           | Choose Photo
  *   Submit                  | Create Account
  *   Help                    | [rich text] Already have an account? Sign In → (link to /login)
+ *   Modal Title             | Adobe Employees Only
+ *   Modal Body              | This application is only for Adobe-registered employees. Please sign up using your @adobe.com email address.
+ *   Modal Button            | Okay
  *
  * JS only handles interaction — all visible text and links come from DA.live.
  */
@@ -349,19 +352,19 @@ function buildAvatarField(cfg) {
   return { group, preview, defaultSrc: DEFAULT };
 }
 
-function buildEmployeeModal() {
+function buildEmployeeModal(cfg = {}) {
   const overlay = el('div', 'modal-overlay auth-employee-modal');
   overlay.setAttribute('aria-hidden', 'true');
   overlay.setAttribute('role', 'dialog');
   overlay.setAttribute('aria-modal', 'true');
 
   const box = el('div', 'modal-box');
-  const title = el('h2', '', 'Adobe Employees Only');
+  const title = el('h2', '', cfg['modal-title'] || 'Adobe Employees Only');
   const body = el('p', 'text-muted');
-  body.textContent = 'This application is only for Adobe-registered employees. Please sign up using your @adobe.com email address.';
+  body.textContent = cfg['modal-body'] || 'This application is only for Adobe-registered employees. Please sign up using your @adobe.com email address.';
 
   const footer = el('div', 'modal-footer');
-  const okBtn = el('button', 'button primary', 'Okay');
+  const okBtn = el('button', 'button primary', cfg['modal-button'] || 'Okay');
   okBtn.type = 'button';
   footer.append(okBtn);
   box.append(title, body, footer);
@@ -486,7 +489,7 @@ function buildSignupDom(cfg) {
   );
   wrapper.append(header, form);
 
-  const { overlay: modal, open: openModal } = buildEmployeeModal();
+  const { overlay: modal, open: openModal } = buildEmployeeModal(cfg);
 
   return {
     wrapper,
