@@ -4,10 +4,6 @@
  * 3 or 4 columns depending on the card type and viewport.
  */
 
-/* Hide raw config rows (source, pagination, etc.) before JS removes them. */
-.cards > div:not(.cards-grid):not(.explore-pagination) {
-  display: none;
-}
 
 .cards .cards-grid {
   display: grid;

@@ -489,3 +489,8 @@ blockquote {
 main>.section:has(.hero) {
   padding: 0;
 }
+
+/* Hide raw block config rows before JS removes them (prevents flash of "source / pagination" text). */
+.cards > div:not(.cards-grid):not(.explore-pagination) {
+  display: none;
+}
