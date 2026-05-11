@@ -186,14 +186,15 @@ export default async function decorate(block) {
       }
 
       if (cfg.author_filter === 'true') {
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.className = 'form-input';
-        input.placeholder = 'Search by author';
-        input.dataset.filter = 'author';
-        input.value = state.author || '';
-        input.addEventListener('input', (e) => { state.author = e.target.value; dispatchFilter(source, { ...state }); });
-        row.append(input);
+        const authors = uniqueValues(items, (b) => b.author_name || (b.author && b.author.name) || '');
+        if (authors.length) {
+          const sel = document.createElement('select');
+          sel.className = 'form-input';
+          sel.dataset.filter = 'author';
+          sel.innerHTML = `<option value="">All Creators</option>${authors.map((a) => `<option value="${escapeHtml(a)}"${state.author === a ? ' selected' : ''}>${escapeHtml(a)}</option>`).join('')}`;
+          sel.addEventListener('change', (e) => { state.author = e.target.value; dispatchFilter(source, { ...state }); });
+          row.append(sel);
+        }
       }
 
       if (cfg.sort === 'true') {
