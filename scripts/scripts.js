@@ -312,6 +312,8 @@ const Storage = {
   },
 };
 
+const dataCache = {};
+
 const Utils = {
   // Escapes HTML special characters to prevent XSS.
   escapeHtml(value) {
@@ -377,17 +379,17 @@ const Utils = {
     }, duration);
   },
 
-  async fetchData(name) {
-    try {
-      const res = await fetch(`/data/${name}.json`);
-      if (res.ok) {
-        const json = await res.json();
-        return Array.isArray(json) ? json : (json.data ?? null);
-      }
-    } catch {
-      // fetch failed
+  fetchData(name) {
+    if (!(name in dataCache)) {
+      dataCache[name] = fetch(`/data/${name}.json`)
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then((json) => (Array.isArray(json) ? json : (json.data ?? null)))
+        .catch(() => null);
     }
-    return null;
+    return dataCache[name];
   },
 
   // Attaches an IntersectionObserver to all .reveal elements to animate them into view.
