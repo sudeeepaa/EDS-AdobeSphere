@@ -5,11 +5,11 @@
  */
 
 .filters {
-    padding: 20px 0;
+    padding: 0 0 8px;
     margin-bottom: 8px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
 }
 
 .filters .filter-row {

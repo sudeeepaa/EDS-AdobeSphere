@@ -10,11 +10,16 @@ main>.section:has(.tabs) {
   padding-bottom: 0;
 }
 
+/* tab panel sections sit flush under the tab bar */
+main>.section.tabs-panel {
+  padding-top: 16px;
+}
+
 .tabs-list {
   display: flex;
   gap: 4px;
   border-bottom: 2px solid var(--neutral-light);
-  margin-bottom: 32px;
+  margin-bottom: 0;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
