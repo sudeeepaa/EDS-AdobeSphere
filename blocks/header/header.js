@@ -24,15 +24,13 @@ function buildNavSearch() {
   return btn;
 }
 
-// Builds the auth zone showing Sign In/Up links or a user avatar dropdown.
+// Builds the auth zone showing Sign In/Up links or inline action icons + avatar.
 function buildAuthZone() {
   const { Storage, Utils } = window.AdobeSphere;
   const wrap = document.createElement('div');
   wrap.className = 'nav-auth';
 
-  const loggedIn = Storage.isLoggedIn();
-
-  if (!loggedIn) {
+  if (!Storage.isLoggedIn()) {
     wrap.innerHTML = `
       <a class="button ghost" href="/login">Sign In</a>
       <a class="button primary" href="/signup">Sign Up</a>`;
@@ -43,53 +41,60 @@ function buildAuthZone() {
   const DEFAULT_AVATAR = '/assets/images/profiles/default-user.jpg';
   const avatar = Utils.escapeHtml(user.avatarSrc || user.avatar || DEFAULT_AVATAR);
   const displayName = Utils.escapeHtml(user.name || 'User');
-  wrap.innerHTML = `
-    <div class="nav-user">
-      <button type="button" class="nav-user-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
-        <img class="nav-avatar" src="${avatar}" alt="${displayName} avatar">
-      </button>
-      <div class="nav-user-menu" role="menu">
-        <a href="/user-profile" role="menuitem">My Profile</a>
-        <a href="/creator-profile?id=${encodeURIComponent(user.email)}" role="menuitem">My Creator Profile</a>
-        <a href="/user-profile#saved" role="menuitem">My Saved Items</a>
-        <a href="/blog-editor" role="menuitem">Write a Blog</a>
-        <button type="button" class="nav-signout" role="menuitem">Sign Out</button>
-      </div>
-    </div>`;
 
-  const toggle = wrap.querySelector('.nav-user-toggle');
-  const menu = wrap.querySelector('.nav-user-menu');
-  toggle.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const open = menu.classList.toggle('open');
-    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-  });
-  document.addEventListener('click', (e) => {
-    if (!wrap.contains(e.target)) {
-      menu.classList.remove('open');
-      toggle.setAttribute('aria-expanded', 'false');
-    }
+  const userDiv = document.createElement('div');
+  userDiv.className = 'nav-user';
+
+  const NAV_ACTIONS = [
+    {
+      href: '/user-profile#saved',
+      label: 'My Saved Items',
+      svg: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M6 3H18C18.55 3 19 3.45 19 4V21L12 17L5 21V4C5 3.45 5.45 3 6 3Z"
+          stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      </svg>`,
+    },
+    {
+      href: '/blog-editor',
+      label: 'Write a Blog',
+      svg: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M11 4H4C3.45 4 3 4.45 3 5V20C3 20.55 3.45 21 4 21H19C19.55 21 20 20.55 20 20V13"
+          stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M17.5 2.5C18.33 1.67 19.67 1.67 20.5 2.5C21.33 3.33 21.33 4.67 20.5 5.5L12 14L8 15L9 11L17.5 2.5Z"
+          stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      </svg>`,
+    },
+    {
+      href: `/creator-profile?id=${encodeURIComponent(user.email)}`,
+      label: 'My Creator Profile',
+      svg: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M5 20C5 17.24 8.13 15 12 15C15.87 15 19 17.24 19 20"
+          stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M19 2L19.9 4.6L22.5 5.5L19.9 6.4L19 9L18.1 6.4L15.5 5.5L18.1 4.6L19 2Z"
+          stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+      </svg>`,
+    },
+  ];
+
+  NAV_ACTIONS.forEach(({ href, label, svg }) => {
+    const a = document.createElement('a');
+    a.className = 'nav-action-icon';
+    a.href = href;
+    a.setAttribute('aria-label', label);
+    a.dataset.tooltip = label;
+    a.innerHTML = svg;
+    userDiv.append(a);
   });
 
-  wrap.querySelector('.nav-signout').addEventListener('click', () => {
-    Storage.clearSession();
-    window.location.href = '/';
-  });
+  const avatarLink = document.createElement('a');
+  avatarLink.className = 'nav-avatar-link';
+  avatarLink.href = '/user-profile';
+  avatarLink.setAttribute('aria-label', 'My Profile');
+  avatarLink.innerHTML = `<img class="nav-avatar" src="${avatar}" alt="${displayName} avatar">`;
+  userDiv.append(avatarLink);
 
-  wrap.querySelectorAll('.nav-user-menu a[href*="#"]').forEach((link) => {
-    link.addEventListener('click', (e) => {
-      const url = new URL(link.href, window.location.origin);
-      if (url.pathname === window.location.pathname && url.hash) {
-        const target = document.getElementById(url.hash.slice(1));
-        if (target) {
-          e.preventDefault();
-          menu.classList.remove('open');
-          toggle.setAttribute('aria-expanded', 'false');
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }
-    });
-  });
+  wrap.append(userDiv);
 
   window.addEventListener('adobesphere:avatar-updated', (e) => {
     const navAvatar = wrap.querySelector('.nav-avatar');
