@@ -260,8 +260,8 @@ function renderUser(block, cfg) {
       let valid = false;
       try {
         const url = new URL(linkedinRaw);
-        const validHost = url.hostname === 'linkedin.com' || url.hostname === 'www.linkedin.com';
-        const validPath = /^\/in\/[A-Za-z0-9\-_%]{2,}(\/)?$/.test(url.pathname);
+        const validHost = url.hostname === 'linkedin.com' || /^[a-z0-9-]+\.linkedin\.com$/i.test(url.hostname);
+        const validPath = /^\/in\/[A-Za-z0-9\-_%.]{2,}\/?$/.test(url.pathname);
         valid = url.protocol === 'https:' && validHost && validPath;
       } catch { valid = false; }
       if (!valid) {
