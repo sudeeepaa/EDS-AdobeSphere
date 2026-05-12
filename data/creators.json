@@ -205,7 +205,7 @@
                         "testimonialsGiven": 1
                 },
         "eventIds": ["event-006"],
-        "blogIds": ["blog-011"],
+        "blogIds": ["blog-004"],
         "featured": false,
         "isTestimonial": true
     },
@@ -225,7 +225,7 @@
         "testimonialsGiven": 1
         },
         "eventIds": ["event-012"],
-        "blogIds": ["blog-012"],
+        "blogIds": ["blog-002"],
         "featured": false,
         "isTestimonial": true
     },
@@ -245,7 +245,7 @@
         "testimonialsGiven": 1
         },
         "eventIds": ["event-013"],
-        "blogIds": ["blog-013", "blog-014"],
+        "blogIds": ["blog-007", "blog-005"],
         "featured": false,
         "isTestimonial": true
     },
@@ -265,7 +265,7 @@
         "testimonialsGiven": 1
         },
         "eventIds": ["event-014"],
-        "blogIds": ["blog-015"],
+        "blogIds": ["blog-003"],
         "featured": false,
         "isTestimonial": true
     },
@@ -285,7 +285,7 @@
         "testimonialsGiven": 1
         },
         "eventIds": ["event-015"],
-        "blogIds": ["blog-016"],
+        "blogIds": ["blog-006"],
         "featured": false,
         "isTestimonial": true
     }
