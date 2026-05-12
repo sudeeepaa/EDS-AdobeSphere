@@ -412,7 +412,7 @@ const Utils = {
 
   fetchData(name) {
     if (!(name in dataCache)) {
-      dataCache[name] = fetch(`/data/${name}.json`)
+      dataCache[name] = fetch(`/scripts/data/${name}.json`)
         .then((res) => {
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           return res.json();
