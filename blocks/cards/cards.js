@@ -341,7 +341,7 @@ function getFilteredItems(type, items, f) {
       if (!matchesText('blogs', b, f.q)) return false;
       if (f.category && b.category !== f.category) return false;
       if (f.author) {
-        const name = (b.author && b.author.name) || b.author_name || '';
+        const name = b.author_name || (b.author && b.author.name) || '';
         if (!name.toLowerCase().includes(f.author.toLowerCase())) return false;
       }
       return true;
