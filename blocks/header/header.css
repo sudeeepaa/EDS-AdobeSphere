@@ -1,6 +1,7 @@
 /*
  * AdobeSphere — header / navbar
- * Mobile-first: drawer below 900px, horizontal bar from 900px up.
+ * Mirrors the reference site (adobesphere.netlify.app): inline links + avatar
+ * dropdown on desktop, hamburger drawer at <=768px.
  */
 
 .header {
@@ -21,28 +22,23 @@
 }
 
 .header .nav-wrapper {
+  position: relative;
   height: 100%;
 }
 
 .header #nav {
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: space-between;
+  gap: 20px;
   width: 100%;
   max-width: var(--max-width);
   height: 100%;
   margin: 0 auto;
   padding: 0 24px;
-  justify-content: space-between;
 }
 
-/* flex order: brand | sections | tools | hamburger */
-.header .nav-brand    { order: 0; }
-.header .nav-sections { order: 1; }
-.header .nav-tools    { order: 2; }
-.header .nav-hamburger { order: 3; }
-
-/* brand wordmark */
+/* ── Brand ───────────────────────────────────────────── */
 .header .nav-brand {
   display: flex;
   align-items: center;
@@ -73,6 +69,7 @@
   letter-spacing: 0.02em;
   color: var(--text-primary);
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .header .nav-brand-link img,
@@ -88,9 +85,11 @@
   font-weight: inherit;
 }
 
-/* primary links — authored as a UL inside section 2 */
+/* ── Inline links (desktop) ──────────────────────────── */
 .header .nav-sections {
-  display: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: 1;
 }
 
@@ -98,8 +97,7 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  width: 100%;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
@@ -108,6 +106,7 @@
 .header .nav-sections a {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 8px 16px;
   border-radius: var(--radius-sm);
   font-family: var(--font-sans);
@@ -115,33 +114,40 @@
   font-weight: 500;
   color: var(--text-secondary);
   text-decoration: none;
-  transition: color var(--transition-fast), background var(--transition-fast);
+  transition: color var(--transition-fast);
 }
 
-.header .nav-sections a:hover,
+.header .nav-sections a:hover {
+  color: var(--red-primary);
+}
+
+.header .nav-sections a.active,
 .header .nav-sections a[aria-current="page"] {
   color: var(--red-primary);
-  background: rgba(227, 2, 32, 6%);
+  font-weight: 700;
 }
 
-/* tools (search + auth zone) */
+/* ── Tools (search + auth) ───────────────────────────── */
 .header .nav-tools {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: flex-end;
+  gap: 12px;
+  position: relative;
   flex-shrink: 0;
 }
 
-/* search icon button */
 .header .nav-search {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  border: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border-radius: var(--radius-sm);
   color: var(--text-secondary);
+  background: transparent;
+  cursor: pointer;
   transition: color var(--transition-fast), background var(--transition-fast);
 }
 
@@ -151,32 +157,31 @@
 }
 
 .header .nav-auth {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
 .header .nav-auth .button {
-  padding: 8px 16px;
+  padding: 8px 18px;
   font-size: 0.85rem;
 }
 
-/* logged-in user area */
+/* ── Logged-in user area (icon row + avatar) ─────────── */
 .header .nav-user {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
-/* svg action icon links */
 .header .nav-action-icon {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-sm);
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
   color: var(--text-secondary);
   text-decoration: none;
   transition: color var(--transition-fast), background var(--transition-fast);
@@ -187,7 +192,6 @@
   background: rgba(227, 2, 32, 6%);
 }
 
-/* tooltip */
 .header .nav-action-icon::after {
   content: attr(data-tooltip);
   position: absolute;
@@ -195,7 +199,7 @@
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   color: var(--white);
   background: var(--text-primary);
   padding: 4px 8px;
@@ -210,7 +214,6 @@
   opacity: 1;
 }
 
-/* avatar link */
 .header .nav-avatar-link {
   display: inline-flex;
   width: 40px;
@@ -233,111 +236,240 @@
   object-fit: cover;
 }
 
-/* hamburger */
+/* ── Hamburger (mobile only) ─────────────────────────── */
 .header .nav-hamburger {
-  display: inline-flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-  width: 36px;
-  height: 36px;
-  padding: 6px;
-  background: transparent;
+  width: 28px;
+  height: 28px;
+  position: relative;
+  display: none;
   border: 0;
-  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
   cursor: pointer;
+  margin-left: auto;
+}
+
+.header .nav-hamburger span,
+.header .nav-hamburger::before,
+.header .nav-hamburger::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  width: 22px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+  transition: transform var(--transition-base), opacity var(--transition-base), top var(--transition-base);
 }
 
 .header .nav-hamburger span {
-  display: block;
-  height: 2px;
-  background: var(--text-primary);
-  border-radius: 2px;
-  transition: transform var(--transition-fast), opacity var(--transition-fast);
+  top: 13px;
 }
 
-.header #nav[aria-expanded="true"] .nav-hamburger span:nth-child(1) {
-  transform: translateY(6px) rotate(45deg);
+.header .nav-hamburger::before {
+  top: 7px;
 }
 
-.header #nav[aria-expanded="true"] .nav-hamburger span:nth-child(2) {
+.header .nav-hamburger::after {
+  top: 19px;
+}
+
+.header .nav-hamburger.open span {
   opacity: 0;
 }
 
-.header #nav[aria-expanded="true"] .nav-hamburger span:nth-child(3) {
-  transform: translateY(-6px) rotate(-45deg);
+.header .nav-hamburger.open::before {
+  top: 13px;
+  transform: rotate(45deg);
 }
 
-/* mobile drawer (below 768px) */
-@media (max-width: 767px) {
-  .header #nav {
-    padding: 0 16px;
-  }
-
-  .header #nav .nav-sections {
-    display: block; /* override base display:none so transform can work */
-    position: fixed;
-    top: var(--nav-height);
-    left: 0;
-    width: 100%;
-    background: var(--white);
-    padding: 16px 24px;
-    box-shadow: var(--shadow-md);
-    transform: translateX(-100%);
-    transition: transform 300ms ease;
-    z-index: 899;
-    overflow-y: auto;
-    max-height: calc(100vh - var(--nav-height));
-  }
-
-  .header #nav[aria-expanded="true"] .nav-sections {
-    transform: translateX(0);
-  }
-
-  .header #nav .nav-sections ul {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 4px;
-  }
-
-  .header #nav .nav-sections a {
-    padding: 14px 16px;
-    font-size: 1rem;
-    justify-content: flex-start;
-    border-bottom: 1px solid var(--neutral-light);
-    border-radius: 0;
-  }
-
-  .header .nav-auth .button {
-    padding: 8px 12px;
-    font-size: 0.8rem;
-  }
+.header .nav-hamburger.open::after {
+  top: 13px;
+  transform: rotate(-45deg);
 }
 
-@media (min-width: 768px) {
-  .header .nav-hamburger {
-    display: none;
-  }
+/* ── Mobile drawer ───────────────────────────────────── */
+.header .nav-drawer {
+  position: fixed;
+  top: var(--nav-height);
+  left: 0;
+  width: 100%;
+  background: var(--white);
+  padding: 16px 24px;
+  box-shadow: var(--shadow-md);
+  transform: translateX(-100%);
+  transition: transform 300ms ease;
+  z-index: 899;
+  max-height: calc(100vh - var(--nav-height));
+  overflow-y: auto;
+}
 
-  .header #nav {
-    position: relative;
-  }
+.header .nav-drawer.open {
+  transform: translateX(0);
+}
 
-  .header .nav-sections {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    flex: none;
-    display: flex;
-    pointer-events: none;
-  }
+.header .nav-drawer-links {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+}
 
-  .header .nav-sections ul {
-    pointer-events: auto;
-  }
+.header .nav-drawer-links a {
+  display: block;
+  padding: 12px 8px;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-bottom: 1px solid var(--neutral-light);
+  transition: color var(--transition-fast), padding-left var(--transition-fast);
+}
+
+.header .nav-drawer-links a:last-child {
+  border-bottom: 0;
+}
+
+.header .nav-drawer-links a:hover {
+  color: var(--red-primary);
+  padding-left: 12px;
+}
+
+/* ── My Account collapsible (drawer only) ───────────── */
+.header .nav-drawer-account {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--neutral-light);
+}
+
+.header .nav-drawer-account-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 8px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: left;
+  transition: background var(--transition-fast);
+}
+
+.header .nav-drawer-account-toggle:hover {
+  background: var(--bg-off-white);
+}
+
+.header .nav-drawer-account-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 2px solid var(--neutral-light);
+  flex-shrink: 0;
+}
+
+.header .nav-drawer-account-label {
+  flex: 1;
+}
+
+.header .nav-drawer-account-chevron {
+  color: var(--text-muted);
+  transition: transform var(--transition-base);
+  flex-shrink: 0;
+}
+
+.header .nav-drawer-account.open .nav-drawer-account-chevron {
+  transform: rotate(180deg);
+}
+
+.header .nav-drawer-account-menu {
+  display: none;
+  flex-direction: column;
+  margin-top: 4px;
+  padding-left: 8px;
+}
+
+.header .nav-drawer-account.open .nav-drawer-account-menu {
+  display: flex;
+}
+
+.header .nav-drawer-account-menu a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.header .nav-drawer-account-menu a svg {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+
+.header .nav-drawer-account-menu a:hover {
+  color: var(--red-primary);
+  background: var(--bg-off-white);
+}
+
+.header .nav-drawer-account-menu a:hover svg {
+  color: var(--red-primary);
+}
+
+.header .nav-drawer-signout {
+  margin-top: 4px;
+  border-top: 1px solid var(--neutral-light);
+  padding-top: 14px !important;
+  color: #dc2626 !important;
+}
+
+.header .nav-drawer-signout svg {
+  color: #dc2626 !important;
 }
 
 /* push page content below the fixed header */
 body > header {
   height: var(--nav-height);
+}
+
+/* ── Mobile breakpoint ───────────────────────────────── */
+@media (max-width: 768px) {
+  .header #nav {
+    padding: 0 16px;
+    gap: 8px;
+  }
+
+  .header .nav-sections {
+    display: none;
+  }
+
+  /* Tools collapse to just the search icon; auth lives inside the drawer. */
+  .header .nav-tools {
+    flex: 0 0 auto;
+    gap: 4px;
+    margin-left: auto;
+  }
+
+  .header .nav-auth,
+  .header .nav-user {
+    display: none;
+  }
+
+  .header .nav-hamburger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0;
+  }
 }
