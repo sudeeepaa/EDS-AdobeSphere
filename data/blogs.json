@@ -438,5 +438,239 @@
     ],
     "featured": false,
     "userSubmitted": false
+  },
+  {
+    "id": "blog-011",
+    "title": "Designing product experiences that keep creative workflows connected",
+    "category": "Creative Tools & Product Updates",
+    "author": {
+      "id": "creator-009",
+      "name": "Maya Chen",
+      "designation": "Product Designer",
+      "avatar": "/assets/images/profiles/maya-chen-testimonial.jpg",
+      "bio": "Maya designs product experiences that keep creative workflows simple and connected."
+    },
+    "publishedDate": "2025-10-15",
+    "coverImage": "/assets/images/blogs/designing-product-experiences-that-keep.jpg",
+    "excerpt": "How thoughtful product design reduces friction between creative tools and keeps teams in flow across the entire workflow.",
+    "content": [
+      {
+        "type": "heading",
+        "text": "Continuity is the new convenience"
+      },
+      {
+        "type": "paragraph",
+        "text": "Creative teams jump between research, ideation, production, and review constantly. Every handoff is a moment where momentum can be lost."
+      },
+      {
+        "type": "paragraph",
+        "text": "The best product design today focuses on continuity: keeping context, assets, and intent intact as users move across tools."
+      },
+      {
+        "type": "heading",
+        "text": "Designing for the in-between"
+      },
+      {
+        "type": "paragraph",
+        "text": "Small details like shared selection state, persistent comments, and consistent shortcuts let teams stay focused on the work itself."
+      }
+    ],
+    "featured": false,
+    "userSubmitted": false
+  },
+  {
+    "id": "blog-012",
+    "title": "Building fast creative interfaces that scale with your team",
+    "category": "Creative Tools & Product Updates",
+    "author": {
+      "id": "creator-010",
+      "name": "Arjun Patel",
+      "designation": "Frontend Developer",
+      "avatar": "/assets/images/profiles/arjun-patel-testimonial.jpg",
+      "bio": "Arjun builds fast interfaces that help creators stay current with less effort."
+    },
+    "publishedDate": "2025-09-08",
+    "coverImage": "/assets/images/blogs/building-fast-creative-interfaces-that.jpg",
+    "excerpt": "Performance is a creative feature. Here is how thoughtful frontend choices help teams iterate faster without sacrificing polish.",
+    "content": [
+      {
+        "type": "heading",
+        "text": "Speed unlocks iteration"
+      },
+      {
+        "type": "paragraph",
+        "text": "Every interaction that lags by a few hundred milliseconds compounds across a creative session, eroding focus and exploration."
+      },
+      {
+        "type": "paragraph",
+        "text": "Designing fast interfaces starts at the data layer: predictable loading patterns, intentional caching, and progressive rendering."
+      },
+      {
+        "type": "heading",
+        "text": "Accessibility makes everyone faster"
+      },
+      {
+        "type": "paragraph",
+        "text": "Accessible interfaces are usually faster interfaces. Clear hierarchy, keyboard support, and reduced motion benefit every creator."
+      }
+    ],
+    "featured": false,
+    "userSubmitted": false
+  },
+  {
+    "id": "blog-013",
+    "title": "Spotting creative trends early with curated insights",
+    "category": "Industry Trends & Thought Leadership",
+    "author": {
+      "id": "creator-011",
+      "name": "Sofia Martinez",
+      "designation": "Digital Marketing Manager",
+      "avatar": "/assets/images/profiles/sofia-martinez-testimonial.jpg",
+      "bio": "Sofia leads campaign strategy using curated insights to spot trends quickly."
+    },
+    "publishedDate": "2025-08-22",
+    "coverImage": "/assets/images/blogs/spotting-creative-trends-early-with.jpg",
+    "excerpt": "Cutting through the noise is harder than ever. A simple framework for separating signal from hype in modern creative trends.",
+    "content": [
+      {
+        "type": "heading",
+        "text": "Signal vs. hype"
+      },
+      {
+        "type": "paragraph",
+        "text": "Every week brings a new visual style, tool, or platform claiming to redefine creativity. Most fade quickly. A few reshape the industry."
+      },
+      {
+        "type": "paragraph",
+        "text": "Distinguishing the two requires consistent sources, cross-discipline conversations, and pattern recognition over time."
+      },
+      {
+        "type": "heading",
+        "text": "Building a personal insight feed"
+      },
+      {
+        "type": "paragraph",
+        "text": "Curate a mix of voices from design, technology, culture, and adjacent industries. Patterns emerge faster when sources overlap."
+      }
+    ],
+    "featured": false,
+    "userSubmitted": false
+  },
+  {
+    "id": "blog-014",
+    "title": "How campaign strategy is shifting in an AI-assisted creative landscape",
+    "category": "AI & Emerging Technology",
+    "author": {
+      "id": "creator-011",
+      "name": "Sofia Martinez",
+      "designation": "Digital Marketing Manager",
+      "avatar": "/assets/images/profiles/sofia-martinez-testimonial.jpg",
+      "bio": "Sofia leads campaign strategy using curated insights to spot trends quickly."
+    },
+    "publishedDate": "2025-06-14",
+    "coverImage": "/assets/images/blogs/how-campaign-strategy-is-shifting.jpg",
+    "excerpt": "AI changes the inputs and outputs of campaign work — but the strategic core stays remarkably human. Here is what is shifting and what is not.",
+    "content": [
+      {
+        "type": "heading",
+        "text": "Strategy still leads"
+      },
+      {
+        "type": "paragraph",
+        "text": "AI accelerates production, but the questions of who, why, and what we are saying remain firmly in human hands."
+      },
+      {
+        "type": "paragraph",
+        "text": "Marketers who lean into clearer briefs and sharper positioning will get more value out of AI tooling than those who chase output volume."
+      },
+      {
+        "type": "heading",
+        "text": "Practical workflow updates"
+      },
+      {
+        "type": "paragraph",
+        "text": "Treat AI as a first-draft partner: faster variants, faster comps, faster localization. Keep human review on tone, claims, and rights."
+      }
+    ],
+    "featured": false,
+    "userSubmitted": false
+  },
+  {
+    "id": "blog-015",
+    "title": "Sharpening commercial photography with practical editing workflows",
+    "category": "Creative Tools & Product Updates",
+    "author": {
+      "id": "creator-012",
+      "name": "Noah Williams",
+      "designation": "Commercial Photographer",
+      "avatar": "/assets/images/profiles/noah-williams-testimonial.jpg",
+      "bio": "Noah captures commercial stories and sharpens practical editing workflows."
+    },
+    "publishedDate": "2025-05-30",
+    "coverImage": "/assets/images/blogs/sharpening-commercial-photography-with-practical.jpg",
+    "excerpt": "From culling to color, a practical editing workflow that helps commercial photographers deliver consistent results under tight deadlines.",
+    "content": [
+      {
+        "type": "heading",
+        "text": "Cull ruthlessly, edit deliberately"
+      },
+      {
+        "type": "paragraph",
+        "text": "The first round of culling is where time is won or lost. Trust your first read and avoid revisiting maybes more than twice."
+      },
+      {
+        "type": "paragraph",
+        "text": "When the selects are tight, edits become deliberate decisions rather than reactive corrections."
+      },
+      {
+        "type": "heading",
+        "text": "Consistency for commercial work"
+      },
+      {
+        "type": "paragraph",
+        "text": "Build a small library of base presets aligned to common brief types. Adjust per shot, but start from a known, calibrated baseline."
+      }
+    ],
+    "featured": false,
+    "userSubmitted": false
+  },
+  {
+    "id": "blog-016",
+    "title": "Creating motion systems that scale across creative teams",
+    "category": "Creative Tools & Product Updates",
+    "author": {
+      "id": "creator-013",
+      "name": "Leila Hassan",
+      "designation": "Motion Graphics Artist",
+      "avatar": "/assets/images/profiles/leila-hassan-testimonial.jpg",
+      "bio": "Leila creates motion systems and finds practical inspiration across creators and events."
+    },
+    "publishedDate": "2025-04-18",
+    "coverImage": "/assets/images/blogs/creating-motion-systems-that-scale.jpg",
+    "excerpt": "Motion is no longer a polish layer — it is part of the design system. Here is how to define motion principles that survive contact with real work.",
+    "content": [
+      {
+        "type": "heading",
+        "text": "Motion as a system, not a decoration"
+      },
+      {
+        "type": "paragraph",
+        "text": "Treating motion like typography or color means defining tokens, principles, and reusable patterns instead of one-off treatments."
+      },
+      {
+        "type": "paragraph",
+        "text": "When motion is systematized, teams move faster and the experience feels coherent across surfaces."
+      },
+      {
+        "type": "heading",
+        "text": "Start with intent, not curves"
+      },
+      {
+        "type": "paragraph",
+        "text": "Define what each motion should communicate first — emphasis, continuity, feedback — and let easing and duration follow that intent."
+      }
+    ],
+    "featured": false,
+    "userSubmitted": false
   }
 ]
