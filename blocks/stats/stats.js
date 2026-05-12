@@ -43,7 +43,15 @@ async function resolveTarget(source) {
     const data = await window.AdobeSphere.Utils.fetchData('creators');
     if (!Array.isArray(data)) return 0;
     const creator = data.find((c) => c.id === urlId);
-    return (creator && creator.stats && creator.stats.testimonialsGiven) || 0;
+    const stats = (creator && creator.stats) || {};
+    return parseInt(stats.testimonialsGiven || (creator && creator.stats_testimonialsGiven) || 0, 10) || 0;
+  }
+
+  if (source === 'blogs') {
+    const data = await window.AdobeSphere.Utils.fetchData('blogs');
+    const jsonCount = Array.isArray(data) ? data.length : 0;
+    const userBlogsCount = window.AdobeSphere.Storage.getAllUserBlogs?.()?.length || 0;
+    return jsonCount + userBlogsCount;
   }
 
   const file = source === 'events' ? 'campaigns' : source;
