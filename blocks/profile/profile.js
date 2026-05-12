@@ -328,10 +328,24 @@ async function renderCreator(block, cfg) {
   const avatar = Utils.normaliseAsset(creator.avatar, '/assets/images/profiles/default-user.jpg');
   const stats = creator.stats || {};
 
-  // Derive counts from ID arrays (always accurate; stats field may be stale on the CDN).
-  const blogCount = Array.isArray(creator.blogIds) ? creator.blogIds.length : (stats.blogsPublished || 0);
-  const eventCount = Array.isArray(creator.eventIds) ? creator.eventIds.length : (stats.eventsHosted || 0);
-  const testimonialCount = stats.testimonialsGiven || 0;
+  // AEM EDS flattens nested objects/arrays from spreadsheets, so blogIds/eventIds
+  // can arrive as bracket-comma strings ("[blog-001,blog-009]") and stats becomes
+  // flat fields like stats_blogsPublished.
+  const parseList = (v) => {
+    if (Array.isArray(v)) return v;
+    if (typeof v !== 'string') return [];
+    const s = v.trim().replace(/^\[|\]$/g, '').trim();
+    return s ? s.split(',').map((x) => x.trim()).filter(Boolean) : [];
+  };
+  const num = (v) => {
+    const n = parseInt(v, 10);
+    return Number.isNaN(n) ? 0 : n;
+  };
+  const blogIds = parseList(creator.blogIds);
+  const eventIds = parseList(creator.eventIds);
+  const blogCount = blogIds.length || num(stats.blogsPublished || creator.stats_blogsPublished);
+  const eventCount = eventIds.length || num(stats.eventsHosted || creator.stats_eventsHosted);
+  const testimonialCount = num(stats.testimonialsGiven || creator.stats_testimonialsGiven);
 
   const wrap = el('div', 'profile-creator');
 

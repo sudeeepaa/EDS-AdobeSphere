@@ -39,6 +39,17 @@ function asAsset(src, fallback) {
   return window.AdobeSphere.Utils.normaliseAsset(src, fallback);
 }
 
+// Parses an id list that may be a real array (local JSON) or a bracket-comma
+// string like "[blog-001,blog-009]" (AEM EDS flattens arrays in spreadsheets).
+function parseIdList(v) {
+  if (Array.isArray(v)) return v;
+  if (typeof v !== 'string') return null;
+  const stripped = v.trim().replace(/^\[|\]$/g, '').trim();
+  if (!stripped) return null;
+  const ids = stripped.split(',').map((s) => s.trim()).filter(Boolean);
+  return ids.length ? ids : null;
+}
+
 // Filters items by a key=value expression string.
 function applyFilter(items, filter) {
   if (!filter) return items;
@@ -418,7 +429,7 @@ async function hydrateFromData(block, type, cfg, opts) {
     if (!refEntity && refSource === 'creators' && urlId) {
       refEntity = window.AdobeSphere.Storage.getLocalCreator?.(urlId) || null;
     }
-    if (refEntity && Array.isArray(refEntity[refField])) idsFromList = refEntity[refField];
+    if (refEntity) idsFromList = parseIdList(refEntity[refField]);
   }
 
   if (cfg.ids) {
