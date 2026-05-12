@@ -306,8 +306,14 @@ function qualityScore(type, filteredItems, q) {
 }
 
 // Returns a reliable timestamp for a blog item, falling back to 0 if missing/invalid.
+// Handles ISO (YYYY-MM-DD) and DD-MM-YYYY / DD/MM/YYYY shapes from AEM spreadsheets.
 function blogTs(b) {
-  const d = new Date(b.publishedDate || b.date || 0);
+  const raw = b.publishedDate || b.date || 0;
+  let d = new Date(raw);
+  if (Number.isNaN(d.getTime()) && typeof raw === 'string') {
+    const m = raw.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+    if (m) d = new Date(`${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`);
+  }
   return Number.isNaN(d.getTime()) ? 0 : d.getTime();
 }
 
