@@ -352,8 +352,13 @@ const Utils = {
   },
 
   // Formats an ISO date string using the given Intl options or a default long format.
+  // Accepts ISO (YYYY-MM-DD) and DD-MM-YYYY / DD/MM/YYYY shapes from AEM spreadsheets.
   formatDate(iso, opts) {
-    const d = new Date(iso);
+    let d = new Date(iso);
+    if (Number.isNaN(d.getTime()) && typeof iso === 'string') {
+      const m = iso.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+      if (m) d = new Date(`${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`);
+    }
     if (Number.isNaN(d.getTime())) return '';
     return new Intl.DateTimeFormat('en-US', opts || {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
