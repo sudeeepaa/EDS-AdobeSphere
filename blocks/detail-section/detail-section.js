@@ -626,7 +626,7 @@ async function renderComments(block, cfg, source, entity) {
     Storage.addComment(id, {
       author: user.name || 'Anonymous',
       authorId: user.email || '',
-      avatar: user.avatarSrc || user.avatar || '',
+      avatar: user.avatarSrc || user.avatar || '/assets/images/profiles/default-user.jpg',
       text,
       timestamp: new Date().toISOString(),
     });
