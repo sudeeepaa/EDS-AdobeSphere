@@ -103,7 +103,7 @@ function buildEventCard(event, opts) {
   article.className = 'card card-event reveal';
 
   const id = event.id || '';
-  const href = `/events/${encodeURIComponent(id)}`;
+  const href = `/events/template?id=${encodeURIComponent(id)}`;
   const thumb = asAsset(event.thumbnail, FALLBACK_THUMB);
   const location = [event.location && event.location.city, event.location && event.location.state]
     .filter(Boolean).join(', ');
