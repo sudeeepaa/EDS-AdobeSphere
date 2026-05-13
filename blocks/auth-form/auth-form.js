@@ -1,6 +1,15 @@
 const EYE_OPEN_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
 const EYE_CLOSED_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19C5 19 1 12 1 12a21.77 21.77 0 0 1 5.06-6.94"></path><path d="M9.9 4.24A10.94 10.94 0 0 1 12 5c7 0 11 7 11 7a21.8 21.8 0 0 1-3.16 4.19"></path><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
 
+// Hashes password using SHA-256
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
 // Reads key-value config rows and stores a reference to the help cell.
 function readConfig(block) {
   const cfg = {};
@@ -184,7 +193,7 @@ function wireSignin({ form, errorBox, emailInput, pwdInput, cfg }) {
   const { Utils, Storage } = window.AdobeSphere;
   const showErr = makeShowErr(errorBox);
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     clearAllErrors(form, errorBox);
 
@@ -203,7 +212,10 @@ function wireSignin({ form, errorBox, emailInput, pwdInput, cfg }) {
       try { return JSON.parse(localStorage.getItem('adobesphere_users') || '{}'); } catch { return {}; }
     })();
     const record = users[emailInput.value.toLowerCase()];
-    if (!record || record.password !== pwdInput.value) {
+
+    // Hash the input password and compare with stored hash
+    const passwordHash = await hashPassword(pwdInput.value);
+    if (!record || record.password !== passwordHash) {
       showErr('Invalid email or password. Please try again.');
       Utils.toast('Invalid email or password.', 'error');
       return;
@@ -536,7 +548,7 @@ function wireSignup(refs, cfg) {
   // Load saved data when form loads
   loadFromSession();
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     clearAllErrors(form, errorBox);
 
@@ -599,8 +611,11 @@ function wireSignup(refs, cfg) {
       return;
     }
 
+    // Hash password before storing
+    const passwordHash = await hashPassword(password);
+
     const newUser = {
-      email, name, designation, password,
+      email, name, designation, password: passwordHash,
       bio, socials: { linkedin }, avatarSrc,
       createdAt: new Date().toISOString(),
     };
