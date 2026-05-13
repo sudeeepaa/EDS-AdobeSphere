@@ -75,6 +75,8 @@ export default function decorate(block) {
   });
 
   const { Utils, Storage } = window.AdobeSphere;
+  const isLoggedIn = Storage.isLoggedIn();
+  const currentUser = isLoggedIn ? Storage.getCurrentUser() : null;
 
   const successBanner = document.createElement('div');
   successBanner.className = 'cf-success';
@@ -88,10 +90,20 @@ export default function decorate(block) {
 
   const nameGrp = makeGroup('cf-name', cfg['label-name'] || 'Full Name');
   const nameI = makeInput('cf-name', 'text', 'name');
+  nameI.required = !isLoggedIn;
+  if (isLoggedIn) {
+    nameGrp.group.hidden = true;
+    nameI.value = currentUser?.fullName || '';
+  }
   nameGrp.group.append(nameI, nameGrp.err);
 
   const emailGrp = makeGroup('cf-email', cfg['label-email'] || 'Email Address');
   const emailI = makeInput('cf-email', 'email', 'email');
+  emailI.required = !isLoggedIn;
+  if (isLoggedIn) {
+    emailGrp.group.hidden = true;
+    emailI.value = currentUser?.email || '';
+  }
   emailGrp.group.append(emailI, emailGrp.err);
 
   const subjectGrp = makeGroup('cf-subject', cfg['label-subject'] || 'Subject');
@@ -157,8 +169,8 @@ export default function decorate(block) {
     const message = msgI.value.trim();
     let valid = true;
 
-    if (!name) { setErr('cf-name', 'Please enter your name.'); valid = false; }
-    if (!Utils.validateEmail(email)) { setErr('cf-email', 'Please enter a valid email.'); valid = false; }
+    if (!isLoggedIn && !name) { setErr('cf-name', 'Please enter your name.'); valid = false; }
+    if (!isLoggedIn && !Utils.validateEmail(email)) { setErr('cf-email', 'Please enter a valid email.'); valid = false; }
     if (!subject) { setErr('cf-subject', 'Please enter a subject.'); valid = false; }
     if (!category) { setErr('cf-category', 'Please select a category.'); valid = false; }
     if (!message || message.length < 20) { setErr('cf-message', 'Message must be at least 20 characters.'); valid = false; }
