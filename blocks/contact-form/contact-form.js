@@ -93,7 +93,7 @@ export default function decorate(block) {
   nameI.required = !isLoggedIn;
   if (isLoggedIn) {
     nameGrp.group.hidden = true;
-    nameI.value = currentUser?.fullName || '';
+    nameI.value = currentUser?.name || '';
   }
   nameGrp.group.append(nameI, nameGrp.err);
 
