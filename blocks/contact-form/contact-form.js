@@ -1,15 +1,3 @@
-const CATEGORIES = [
-  ['', 'Select a category'],
-  ['general', 'General Inquiry'],
-  ['event-registration', 'Event Registration Help'],
-  ['blog-submission', 'Blog Submission'],
-  ['login-issue', 'Sign Up / Login Issue'],
-  ['account-help', 'Account / Profile Help'],
-  ['technical', 'Technical Issue'],
-  ['creator-profile', 'Creator Profile'],
-  ['other', 'Other'],
-];
-
 // Creates a form group with a label and error span for the given field id.
 function makeGroup(id, labelText) {
   const group = document.createElement('div');
@@ -27,7 +15,7 @@ function makeGroup(id, labelText) {
   return { group, err };
 }
 
-// Creates a required input element with optional autocomplete.
+// Creates an input element with optional autocomplete.
 function makeInput(id, type, autocomplete) {
   const input = document.createElement('input');
   input.id = id;
@@ -38,7 +26,7 @@ function makeInput(id, type, autocomplete) {
   return input;
 }
 
-// Creates a required select element populated with the given choices.
+// Creates a select element populated with the given choices.
 function makeSelect(id, choices) {
   const sel = document.createElement('select');
   sel.id = id;
@@ -53,7 +41,7 @@ function makeSelect(id, choices) {
   return sel;
 }
 
-// Creates a required textarea element with the given row count and max length.
+// Creates a textarea element with the given row count and max length.
 function makeTextarea(id, rows, maxlength) {
   const ta = document.createElement('textarea');
   ta.id = id;
@@ -67,16 +55,33 @@ function makeTextarea(id, rows, maxlength) {
 // Decorates the contact-form block with a validated submission form.
 export default function decorate(block) {
   const cfg = {};
+  const categoryOptions = [];
+  let currentKey = '';
+
   [...block.children].forEach((row) => {
     if (row.children.length !== 2) return;
     const k = row.children[0].textContent.trim().toLowerCase().replace(/\s+/g, '-');
-    cfg[k] = row.children[1].textContent.trim();
+    const v = row.children[1].textContent.trim();
+
+    // Handle multi-row category options
+    if (k === 'category-options' || (!k && currentKey === 'category-options')) {
+      if (k === 'category-options') currentKey = 'category-options';
+      if (v) categoryOptions.push([v.toLowerCase().replace(/\s+/g, '-'), v]);
+    } else {
+      cfg[k] = v;
+      currentKey = k;
+    }
     row.remove();
   });
 
   const { Utils, Storage } = window.AdobeSphere;
   const isLoggedIn = Storage.isLoggedIn();
   const currentUser = isLoggedIn ? Storage.getCurrentUser() : null;
+
+  // Parse which fields to show based on login status
+  const guestFields = cfg['show-for-guests']?.split(',').map(f => f.trim()) || [];
+  const loggedInFields = cfg['show-for-logged-in']?.split(',').map(f => f.trim()) || [];
+  const fieldsToShow = isLoggedIn ? loggedInFields : guestFields;
 
   const successBanner = document.createElement('div');
   successBanner.className = 'cf-success';
@@ -88,63 +93,76 @@ export default function decorate(block) {
   form.className = 'cf-form';
   form.setAttribute('novalidate', '');
 
-  const nameGrp = makeGroup('cf-name', cfg['label-name'] || 'Full Name');
-  const nameI = makeInput('cf-name', 'text', 'name');
-  nameI.required = !isLoggedIn;
-  if (isLoggedIn) {
-    nameGrp.group.hidden = true;
-    nameI.value = currentUser?.name || '';
+  // Build form fields dynamically based on config
+  const fields = {};
+
+  // Name field
+  if (fieldsToShow.includes('name')) {
+    const nameGrp = makeGroup('cf-name', cfg['label-name'] || 'Full Name');
+    const nameI = makeInput('cf-name', 'text', 'name');
+    if (isLoggedIn) nameI.value = currentUser?.name || '';
+    nameGrp.group.append(nameI, nameGrp.err);
+    form.append(nameGrp.group);
+    fields.name = { input: nameI, id: 'cf-name' };
   }
-  nameGrp.group.append(nameI, nameGrp.err);
 
-  const emailGrp = makeGroup('cf-email', cfg['label-email'] || 'Email Address');
-  const emailI = makeInput('cf-email', 'email', 'email');
-  emailI.required = !isLoggedIn;
-  if (isLoggedIn) {
-    emailGrp.group.hidden = true;
-    emailI.value = currentUser?.email || '';
+  // Email field
+  if (fieldsToShow.includes('email')) {
+    const emailGrp = makeGroup('cf-email', cfg['label-email'] || 'Email Address');
+    const emailI = makeInput('cf-email', 'email', 'email');
+    if (isLoggedIn) emailI.value = currentUser?.email || '';
+    emailGrp.group.append(emailI, emailGrp.err);
+    form.append(emailGrp.group);
+    fields.email = { input: emailI, id: 'cf-email' };
   }
-  emailGrp.group.append(emailI, emailGrp.err);
 
-  const subjectGrp = makeGroup('cf-subject', cfg['label-subject'] || 'Subject');
-  const subjectI = makeInput('cf-subject', 'text', '');
-  subjectGrp.group.append(subjectI, subjectGrp.err);
+  // Subject field
+  if (fieldsToShow.includes('subject')) {
+    const subjectGrp = makeGroup('cf-subject', cfg['label-subject'] || 'Subject');
+    const subjectI = makeInput('cf-subject', 'text', '');
+    subjectGrp.group.append(subjectI, subjectGrp.err);
+    form.append(subjectGrp.group);
+    fields.subject = { input: subjectI, id: 'cf-subject' };
+  }
 
-  const categoryGrp = makeGroup('cf-category', cfg['label-category'] || 'Category');
-  const categoryI = makeSelect('cf-category', CATEGORIES);
-  categoryGrp.group.append(categoryI, categoryGrp.err);
+  // Category field
+  if (fieldsToShow.includes('category')) {
+    const categories = [['', 'Select a category'], ...categoryOptions];
+    const categoryGrp = makeGroup('cf-category', cfg['label-category'] || 'Category');
+    const categoryI = makeSelect('cf-category', categories);
+    categoryGrp.group.append(categoryI, categoryGrp.err);
+    form.append(categoryGrp.group);
+    fields.category = { input: categoryI, id: 'cf-category' };
+  }
 
-  const msgGrp = makeGroup('cf-message', cfg['label-message'] || 'Message');
-  const msgI = makeTextarea('cf-message', 4, 500);
+  // Message field
+  if (fieldsToShow.includes('message')) {
+    const msgGrp = makeGroup('cf-message', cfg['label-message'] || 'Message');
+    const msgI = makeTextarea('cf-message', 4, 500);
 
-  const counter = document.createElement('small');
-  counter.className = 'cf-counter';
-  counter.textContent = '0 / 500';
+    const counter = document.createElement('small');
+    counter.className = 'cf-counter';
+    counter.textContent = '0 / 500';
 
-  msgGrp.group.append(msgI, counter, msgGrp.err);
+    msgGrp.group.append(msgI, counter, msgGrp.err);
+    form.append(msgGrp.group);
+    fields.message = { input: msgI, id: 'cf-message', counter };
+
+    msgI.addEventListener('input', () => {
+      const len = msgI.value.length;
+      counter.textContent = `${len} / 500`;
+      counter.classList.toggle('cf-counter-over', len > 500);
+    });
+  }
 
   const submitBtn = document.createElement('button');
   submitBtn.type = 'submit';
   submitBtn.className = 'button primary';
   submitBtn.textContent = cfg['submit'] || 'Send Message';
-
-  form.append(
-    nameGrp.group,
-    emailGrp.group,
-    subjectGrp.group,
-    categoryGrp.group,
-    msgGrp.group,
-    submitBtn,
-  );
+  form.append(submitBtn);
 
   block.textContent = '';
   block.append(successBanner, form);
-
-  msgI.addEventListener('input', () => {
-    const len = msgI.value.length;
-    counter.textContent = `${len} / 500`;
-    counter.classList.toggle('cf-counter-over', len > 500);
-  });
 
   const setErr = (id, msg) => {
     const errEl = form.querySelector(`[data-field="${id}"]`);
@@ -162,24 +180,36 @@ export default function decorate(block) {
     e.preventDefault();
     clearErrors();
 
-    const name = nameI.value.trim();
-    const email = emailI.value.trim();
-    const subject = subjectI.value.trim();
-    const category = categoryI.value;
-    const message = msgI.value.trim();
+    const payload = {};
     let valid = true;
 
-    if (!isLoggedIn && !name) { setErr('cf-name', 'Please enter your name.'); valid = false; }
-    if (!isLoggedIn && !Utils.validateEmail(email)) { setErr('cf-email', 'Please enter a valid email.'); valid = false; }
-    if (!subject) { setErr('cf-subject', 'Please enter a subject.'); valid = false; }
-    if (!category) { setErr('cf-category', 'Please select a category.'); valid = false; }
-    if (!message || message.length < 20) { setErr('cf-message', 'Message must be at least 20 characters.'); valid = false; }
+    // Validate all visible fields
+    Object.entries(fields).forEach(([key, field]) => {
+      const value = field.input.value.trim();
+      payload[key] = value;
+
+      if (key === 'name' && !value) {
+        setErr(field.id, 'Please enter your name.');
+        valid = false;
+      } else if (key === 'email' && !Utils.validateEmail(value)) {
+        setErr(field.id, 'Please enter a valid email.');
+        valid = false;
+      } else if (key === 'subject' && !value) {
+        setErr(field.id, 'Please enter a subject.');
+        valid = false;
+      } else if (key === 'category' && !value) {
+        setErr(field.id, 'Please select a category.');
+        valid = false;
+      } else if (key === 'message' && (!value || value.length < 20)) {
+        setErr(field.id, 'Message must be at least 20 characters.');
+        valid = false;
+      }
+    });
+
     if (!valid) { Utils.toast('Please fix the highlighted fields.', 'error'); return; }
 
     submitBtn.disabled = true;
     submitBtn.textContent = 'Sending…';
-
-    const payload = { name, email, subject, category, message };
 
     try {
       if (cfg['form-action']) {
@@ -197,7 +227,7 @@ export default function decorate(block) {
 
       Utils.toast('Message sent!', 'success');
       form.reset();
-      counter.textContent = '0 / 500';
+      if (fields.message?.counter) fields.message.counter.textContent = '0 / 500';
 
       successBanner.textContent = cfg['success'] || 'Thanks — we\'ll get back to you within 24–48 hours.';
       successBanner.hidden = false;
