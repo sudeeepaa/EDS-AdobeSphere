@@ -749,6 +749,26 @@ async function loadLazy(doc) {
 
 }
 
+// Removes duplicate meta tags that AEM auto-generates
+function cleanupMetaTags() {
+  const head = document.head;
+  const seenProps = new Set();
+
+  // Iterate from end to start so removal doesn't affect iteration
+  const metas = Array.from(head.querySelectorAll('meta[property], meta[name]'));
+  metas.reverse().forEach((meta) => {
+    const key = meta.getAttribute('property') || meta.getAttribute('name');
+    if (!key) return;
+
+    // Skip if already seen (keep the last occurrence, which is ours)
+    if (seenProps.has(key)) {
+      meta.remove();
+    } else {
+      seenProps.add(key);
+    }
+  });
+}
+
 // Updates Open Graph and Twitter meta tags based on page content
 function updateMetaTags() {
   const pathname = window.location.pathname.toLowerCase();
@@ -807,6 +827,7 @@ function loadDelayed() {
 
 // Runs the full page load sequence: eager, lazy, then delayed.
 async function loadPage() {
+  cleanupMetaTags();
   await loadEager(document);
   await loadLazy(document);
   loadDelayed();
