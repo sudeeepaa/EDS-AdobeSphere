@@ -698,6 +698,9 @@ async function applyDynamicRoute(doc) {
 
 // Runs the eager decoration and first-section load.
 async function loadEager(doc) {
+  // Update meta tags immediately to prevent flash
+  updateMetaTags();
+
   document.documentElement.lang = 'en';
   decorateTemplateAndTheme();
 
@@ -741,9 +744,6 @@ async function loadLazy(doc) {
   loadFooter(doc.querySelector('footer'));
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
   loadFonts();
-
-  // Update meta tags for social sharing
-  updateMetaTags();
 
   Utils.initRevealObserver();
 
