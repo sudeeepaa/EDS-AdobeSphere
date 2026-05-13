@@ -100,7 +100,8 @@ export default function decorate(block) {
   if (fieldsToShow.includes('name')) {
     const nameGrp = makeGroup('cf-name', cfg['label-name'] || 'Full Name');
     const nameI = makeInput('cf-name', 'text', 'name');
-    if (isLoggedIn) nameI.value = currentUser?.name || '';
+    nameI.value = currentUser?.name || '';
+    if (isLoggedIn) nameI.readOnly = true;
     nameGrp.group.append(nameI, nameGrp.err);
     form.append(nameGrp.group);
     fields.name = { input: nameI, id: 'cf-name' };
@@ -110,7 +111,8 @@ export default function decorate(block) {
   if (fieldsToShow.includes('email')) {
     const emailGrp = makeGroup('cf-email', cfg['label-email'] || 'Email Address');
     const emailI = makeInput('cf-email', 'email', 'email');
-    if (isLoggedIn) emailI.value = currentUser?.email || '';
+    emailI.value = currentUser?.email || '';
+    if (isLoggedIn) emailI.readOnly = true;
     emailGrp.group.append(emailI, emailGrp.err);
     form.append(emailGrp.group);
     fields.email = { input: emailI, id: 'cf-email' };
@@ -182,6 +184,12 @@ export default function decorate(block) {
 
     const payload = {};
     let valid = true;
+
+    // For logged-in users, always include name and email from user data
+    if (isLoggedIn) {
+      payload.name = currentUser?.name || '';
+      payload.email = currentUser?.email || '';
+    }
 
     // Validate all visible fields
     Object.entries(fields).forEach(([key, field]) => {
