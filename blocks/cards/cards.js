@@ -161,7 +161,7 @@ function buildBlogCard(blog, opts) {
   article.className = 'card card-blog reveal';
 
   const id = blog.id || '';
-  const href = `/blog/${encodeURIComponent(id)}`;
+  const href = `/blog/template?id=${encodeURIComponent(id)}`;
   const cover = asAsset(blog.coverImage, FALLBACK_THUMB);
   const author = blog.author || {
     id: blog.author_id || '',
