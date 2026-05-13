@@ -488,6 +488,54 @@ function wireSignup(refs, cfg) {
   const { Utils, Storage } = window.AdobeSphere;
   const showErr = makeShowErr(errorBox);
 
+  // Session storage key for signup form
+  const SESSION_KEY = 'adobesphere_signup_form';
+
+  // Load saved form data from session storage
+  const loadFromSession = () => {
+    const saved = sessionStorage.getItem(SESSION_KEY);
+    if (!saved) return;
+    try {
+      const data = JSON.parse(saved);
+      if (data.name) nameInput.value = data.name;
+      if (data.designation) desigInput.value = data.designation;
+      if (data.email) emailInput.value = data.email;
+      if (data.password) pwdInput.value = data.password;
+      if (data.confirmPassword) confirmInput.value = data.confirmPassword;
+      if (data.bio) bioInput.value = data.bio;
+      if (data.linkedin) linkedinInput.value = data.linkedin;
+    } catch (e) {
+      // Ignore parsing errors
+    }
+  };
+
+  // Save form data to session storage
+  const saveToSession = () => {
+    const data = {
+      name: nameInput.value,
+      designation: desigInput.value,
+      email: emailInput.value,
+      password: pwdInput.value,
+      confirmPassword: confirmInput.value,
+      bio: bioInput.value,
+      linkedin: linkedinInput.value,
+    };
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(data));
+  };
+
+  // Clear session storage on successful submission
+  const clearSession = () => {
+    sessionStorage.removeItem(SESSION_KEY);
+  };
+
+  // Add event listeners to save form data
+  [nameInput, desigInput, emailInput, pwdInput, confirmInput, bioInput, linkedinInput].forEach((input) => {
+    input.addEventListener('input', saveToSession);
+  });
+
+  // Load saved data when form loads
+  loadFromSession();
+
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     clearAllErrors(form, errorBox);
@@ -559,6 +607,7 @@ function wireSignup(refs, cfg) {
     Storage.upsertUser(newUser);
     if (typeof Storage.upsertLocalCreator === 'function') Storage.upsertLocalCreator(newUser);
     Storage.setSession({ email, name });
+    clearSession();
     Utils.toast(`Welcome to Adobesphere, ${name}!`, 'success');
     setTimeout(() => { window.location.href = cfg.after || '/user-profile'; }, 1500);
   });

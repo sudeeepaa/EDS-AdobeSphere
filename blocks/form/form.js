@@ -90,13 +90,74 @@ function renderEventRegistration(block, cfg) {
   const openModal = () => { overlay.classList.add('open'); document.body.style.overflow = 'hidden'; };
   const closeModal = () => { overlay.classList.remove('open'); document.body.style.overflow = ''; };
 
+  // Session storage for event registration form
+  const SESSION_KEY = 'adobesphere_event_registration';
+
+  // Load saved form data from session storage
+  const loadFromSession = () => {
+    const saved = sessionStorage.getItem(SESSION_KEY);
+    if (!saved) return;
+    try {
+      const data = JSON.parse(saved);
+      const foodSelect = form.querySelector('#r-food');
+      if (data.food && foodSelect) foodSelect.value = data.food;
+      const companionRadios = form.querySelectorAll('[name="companion"]');
+      if (data.companion) {
+        companionRadios.forEach((r) => {
+          if (r.value === data.companion) r.checked = true;
+        });
+        compFields.hidden = data.companion === 'no';
+      }
+      if (data.companionData) {
+        Object.entries(data.companionData).forEach(([key, value]) => {
+          const input = form.querySelector(`[data-companion="${key}"]`);
+          if (input) input.value = value;
+        });
+      }
+    } catch (e) {
+      // Ignore parsing errors
+    }
+  };
+
+  // Save form data to session storage
+  const saveToSession = () => {
+    const food = form.querySelector('#r-food');
+    const companion = form.querySelector('[name="companion"]:checked');
+    const companionData = {};
+    form.querySelectorAll('[data-companion]').forEach((input) => {
+      if (input.value) companionData[input.dataset.companion] = input.value;
+    });
+    const data = {
+      food: food ? food.value : '',
+      companion: companion ? companion.value : 'no',
+      companionData,
+    };
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(data));
+  };
+
+  // Clear session storage on successful submission
+  const clearSession = () => {
+    sessionStorage.removeItem(SESSION_KEY);
+  };
+
+  // Add event listeners to save form data
+  form.querySelectorAll('input, select, textarea').forEach((input) => {
+    input.addEventListener('change', saveToSession);
+    input.addEventListener('input', saveToSession);
+  });
+
+  // Load saved data when modal opens
+  window.addEventListener('adobesphere:show-registration', () => {
+    loadFromSession();
+    openModal();
+  });
+
   overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
   block.querySelector('.form-reg-close').addEventListener('click', closeModal);
 
-  window.addEventListener('adobesphere:show-registration', openModal);
-
   form.querySelectorAll('[name="companion"]').forEach((r) => r.addEventListener('change', (e) => {
     compFields.hidden = e.target.value === 'no';
+    saveToSession();
   }));
 
   form.addEventListener('submit', (e) => {
@@ -119,6 +180,7 @@ function renderEventRegistration(block, cfg) {
       || window.location.pathname.split('/').filter(Boolean).pop();
     Storage.registerForEvent(eventId, { food: food.value });
     Utils.toast(cfg.success || 'You\'re registered. See you there!', 'success');
+    clearSession();
     closeModal();
     window.dispatchEvent(new CustomEvent('adobesphere:registration-changed', { detail: eventId }));
     if (cfg.after) setTimeout(() => { window.location.href = cfg.after; }, 800);
@@ -319,6 +381,49 @@ async function renderBlogEditor(block, cfg) {
 
   await buildCategorySelect(catSel, otherI);
 
+  // Session storage for blog editor
+  const SESSION_KEY = 'adobesphere_blog_editor';
+
+  // Load saved form data from session storage
+  const loadFromSession = () => {
+    const saved = sessionStorage.getItem(SESSION_KEY);
+    if (!saved) return;
+    try {
+      const data = JSON.parse(saved);
+      if (data.title) titleI.value = data.title;
+      if (data.body) bodyI.value = data.body;
+      if (data.category) catSel.value = data.category;
+      if (data.image) imageI.value = data.image;
+    } catch (e) {
+      // Ignore parsing errors
+    }
+  };
+
+  // Save form data to session storage
+  const saveToSession = () => {
+    const data = {
+      title: titleI.value,
+      body: bodyI.value,
+      category: catSel.value,
+      image: imageI.value,
+    };
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(data));
+  };
+
+  // Clear session storage on successful submission
+  const clearSession = () => {
+    sessionStorage.removeItem(SESSION_KEY);
+  };
+
+  // Add event listeners to save form data
+  [titleI, bodyI, catSel, imageI, otherI].forEach((input) => {
+    input.addEventListener('input', saveToSession);
+    input.addEventListener('change', saveToSession);
+  });
+
+  // Load saved data on page load
+  loadFromSession();
+
   const editId = new URLSearchParams(window.location.search).get('id') || '';
   if (editId) {
     loadBlogForEdit(editId, { titleI, bodyI, catSel, otherI, imageI, submitBtn });
@@ -402,6 +507,7 @@ async function renderBlogEditor(block, cfg) {
 
     submitBtn.disabled = true;
     submitBtn.textContent = editId ? 'Updated!' : 'Published!';
+    clearSession();
     Utils.toast(editId ? 'Blog updated.' : 'Blog published!', 'success');
     setTimeout(() => {
       window.location.href = `/creator-profile/template?id=${encodeURIComponent(ownerIdentity)}`;
