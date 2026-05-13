@@ -72,7 +72,7 @@ export default async function decorate(block) {
   updateSaveUI(isSaved);
 
   saveBtn.addEventListener('click', () => {
-    if (!Storage.isLoggedIn()) { window.location.href = '/login'; return; }
+    if (!Storage.isLoggedIn()) { window.AdobeSphere.Utils.showAuthModal({ redirect: window.location.pathname + window.location.search }); return; }
     const wasSaved = Storage.isSaved('events', eventId);
     Storage.toggleSaved('events', eventId);
     updateSaveUI(!wasSaved);
@@ -99,7 +99,7 @@ export default async function decorate(block) {
     updateRegUI(isReg());
 
     regBtn.addEventListener('click', () => {
-      if (!Storage.isLoggedIn()) { window.location.href = '/login'; return; }
+      if (!Storage.isLoggedIn()) { window.AdobeSphere.Utils.showAuthModal({ redirect: window.location.pathname + window.location.search }); return; }
       if (isReg()) {
         Storage.cancelRegistration(eventId);
         updateRegUI(false);

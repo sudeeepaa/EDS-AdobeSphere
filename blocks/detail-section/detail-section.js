@@ -231,13 +231,13 @@ function renderBlogHeader(block, cfg, entity) {
   block.append(inner, coverWrap);
 
   writeBtn.addEventListener('click', () => {
-    if (!Storage.isLoggedIn()) { window.location.href = '/login?redirect=/blog-editor'; return; }
+    if (!Storage.isLoggedIn()) { Utils.showAuthModal({ redirect: '/blog-editor' }); return; }
     window.location.href = '/blog-editor';
   });
 
   saveBtn.addEventListener('click', () => {
     if (!Storage.isLoggedIn()) {
-      window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+      Utils.showAuthModal({ redirect: window.location.pathname + window.location.search });
       return;
     }
     const id = saveBtn.dataset.id;
