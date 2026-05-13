@@ -404,7 +404,7 @@ async function renderBlogEditor(block, cfg) {
     submitBtn.textContent = editId ? 'Updated!' : 'Published!';
     Utils.toast(editId ? 'Blog updated.' : 'Blog published!', 'success');
     setTimeout(() => {
-      window.location.href = `/creator-profile?id=${encodeURIComponent(ownerIdentity)}`;
+      window.location.href = `/creator-profile/template?id=${encodeURIComponent(ownerIdentity)}`;
     }, 900);
   });
 }

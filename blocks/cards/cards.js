@@ -181,7 +181,7 @@ function buildBlogCard(blog, opts) {
       <div class="card-meta">
         <span class="card-author">
           ${author.id
-    ? `<a href="/creator-profile?id=${escapeHtml(encodeURIComponent(author.id))}" class="card-author-link" aria-label="View author profile"><img src="${escapeHtml(avatar)}" alt="${escapeHtml(author.name || 'Author')}">${escapeHtml(author.name || 'Author')}</a>`
+    ? `<a href="/creator-profile/template?id=${escapeHtml(encodeURIComponent(author.id))}" class="card-author-link" aria-label="View author profile"><img src="${escapeHtml(avatar)}" alt="${escapeHtml(author.name || 'Author')}">${escapeHtml(author.name || 'Author')}</a>`
     : `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(author.name || 'Author')}">${escapeHtml(author.name || 'Author')}`}
         </span>
         <span>${escapeHtml(date)}</span>
@@ -222,7 +222,7 @@ function buildCreatorCard(creator) {
   article.className = 'card card-creator reveal';
 
   const id = creator.id || '';
-  const href = `/creator-profile?id=${encodeURIComponent(id)}`;
+  const href = `/creator-profile/template?id=${encodeURIComponent(id)}`;
   const avatar = asAsset(creator.avatar, FALLBACK_AVATAR);
   const bio = window.AdobeSphere.Utils.truncate(creator.bio || creator.fullBio || '', 100);
 

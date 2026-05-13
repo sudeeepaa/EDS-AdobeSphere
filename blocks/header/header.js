@@ -104,7 +104,7 @@ const ACCOUNT_ITEMS = [
   },
   {
     label: 'My Creator Profile',
-    hrefFn: (user) => `/creator-profile?id=${encodeURIComponent(user.email || '')}`,
+    hrefFn: (user) => `/creator-profile/template?id=${encodeURIComponent(user.email || '')}`,
     svg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.8"/>
       <path d="M5 20C5 17.24 8.13 15 12 15C15.87 15 19 17.24 19 20"

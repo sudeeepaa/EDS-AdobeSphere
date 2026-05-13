@@ -119,7 +119,7 @@ function renderBlogHeader(block, cfg, entity) {
   const coverSrc = Utils.normaliseAsset(entity.coverImage, '/assets/images/blogs/blog-card-fallback.jpg');
   const rawAuthorId = author.id || '';
   const profileId = rawAuthorId.startsWith('user:') ? rawAuthorId.slice(5) : rawAuthorId;
-  const profileUrl = profileId ? `/creator-profile?id=${encodeURIComponent(profileId)}` : '';
+  const profileUrl = profileId ? `/creator-profile/template?id=${encodeURIComponent(profileId)}` : '';
   const saved = Storage.isLoggedIn() && entity.id ? Storage.isBlogSaved?.(String(entity.id)) : false;
 
   const inner = document.createElement('div');
@@ -315,7 +315,7 @@ async function renderPeople(block, cfg, entity) {
   people.forEach((person) => {
     const avatar = Utils.normaliseAsset(person.avatar, '/icons/user-default.svg');
     const creatorId = creatorMap[(person.name || '').toLowerCase()];
-    const href = creatorId ? `/creator-profile?id=${encodeURIComponent(creatorId)}` : '';
+    const href = creatorId ? `/creator-profile/template?id=${encodeURIComponent(creatorId)}` : '';
 
     const img = document.createElement('img');
     img.src = avatar;
@@ -568,7 +568,7 @@ async function renderComments(block, cfg, source, entity) {
       article.className = 'detail-comment';
 
       const profileUrl = c.authorId
-        ? `/creator-profile?id=${encodeURIComponent(c.authorId)}`
+        ? `/creator-profile/template?id=${encodeURIComponent(c.authorId)}`
         : '';
 
       const img = document.createElement('img');

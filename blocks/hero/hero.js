@@ -263,7 +263,7 @@ function hydrateCompactFromEntity(entity, content) {
     const authorId = entity.author && entity.author.id;
     if (authorName) {
       const link = authorId
-        ? `<a href="/creator-profile?id=${encodeURIComponent(authorId.replace(/^user:/, ''))}">${Utils.escapeHtml(authorName)}</a>`
+        ? `<a href="/creator-profile/template?id=${encodeURIComponent(authorId.replace(/^user:/, ''))}">${Utils.escapeHtml(authorName)}</a>`
         : Utils.escapeHtml(authorName);
       parts.push(`<span>By ${link}</span>`);
     }
