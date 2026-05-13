@@ -175,10 +175,35 @@ function renderEventRegistration(block, cfg) {
       return;
     }
 
+    // Collect companion details
+    const companion = form.querySelector('[name="companion"]:checked');
+    const registrationData = { food: food.value };
+
+    if (companion && companion.value === 'yes') {
+      const companions = [];
+      [1, 2].forEach((num) => {
+        const nameInput = form.querySelector(`[data-companion="${num}-name"]`);
+        const emailInput = form.querySelector(`[data-companion="${num}-email"]`);
+        const ageInput = form.querySelector(`[data-companion="${num}-age"]`);
+
+        if (nameInput && nameInput.value.trim()) {
+          companions.push({
+            number: num,
+            name: nameInput.value.trim(),
+            email: emailInput ? emailInput.value.trim() : '',
+            age: ageInput ? parseInt(ageInput.value, 10) : null,
+          });
+        }
+      });
+      if (companions.length > 0) {
+        registrationData.companions = companions;
+      }
+    }
+
     const eventId = new URLSearchParams(window.location.search).get('id')
       || document.querySelector('meta[name="event-id"]')?.content
       || window.location.pathname.split('/').filter(Boolean).pop();
-    Storage.registerForEvent(eventId, { food: food.value });
+    Storage.registerForEvent(eventId, registrationData);
     Utils.toast(cfg.success || 'You\'re registered. See you there!', 'success');
     clearSession();
     closeModal();
