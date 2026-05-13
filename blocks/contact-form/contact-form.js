@@ -185,32 +185,44 @@ export default function decorate(block) {
     const payload = {};
     let valid = true;
 
-    // For logged-in users, always include name and email from user data
-    if (isLoggedIn) {
+    // Always collect name and email (either from fields or from logged-in user)
+    if (fieldsToShow.includes('name') || fieldsToShow.includes('email')) {
+      if (fieldsToShow.includes('name')) {
+        payload.name = fields.name.input.value.trim();
+        if (!payload.name) {
+          setErr('cf-name', 'Please enter your name.');
+          valid = false;
+        }
+      }
+      if (fieldsToShow.includes('email')) {
+        payload.email = fields.email.input.value.trim();
+        if (!Utils.validateEmail(payload.email)) {
+          setErr('cf-email', 'Please enter a valid email.');
+          valid = false;
+        }
+      }
+    } else if (isLoggedIn) {
+      // For logged-in users, auto-include from profile
       payload.name = currentUser?.name || '';
       payload.email = currentUser?.email || '';
     }
 
-    // Validate all visible fields
+    // Collect other visible fields
     Object.entries(fields).forEach(([key, field]) => {
-      const value = field.input.value.trim();
-      payload[key] = value;
+      if (key !== 'name' && key !== 'email') {
+        const value = field.input.value.trim();
+        payload[key] = value;
 
-      if (key === 'name' && !value) {
-        setErr(field.id, 'Please enter your name.');
-        valid = false;
-      } else if (key === 'email' && !Utils.validateEmail(value)) {
-        setErr(field.id, 'Please enter a valid email.');
-        valid = false;
-      } else if (key === 'subject' && !value) {
-        setErr(field.id, 'Please enter a subject.');
-        valid = false;
-      } else if (key === 'category' && !value) {
-        setErr(field.id, 'Please select a category.');
-        valid = false;
-      } else if (key === 'message' && (!value || value.length < 20)) {
-        setErr(field.id, 'Message must be at least 20 characters.');
-        valid = false;
+        if (key === 'subject' && !value) {
+          setErr(field.id, 'Please enter a subject.');
+          valid = false;
+        } else if (key === 'category' && !value) {
+          setErr(field.id, 'Please select a category.');
+          valid = false;
+        } else if (key === 'message' && (!value || value.length < 20)) {
+          setErr(field.id, 'Message must be at least 20 characters.');
+          valid = false;
+        }
       }
     });
 
