@@ -560,7 +560,7 @@ async function renderComments(block, cfg, source, entity) {
 
   // Re-renders the comment count and list from storage.
   function refresh() {
-    const comments = id ? Storage.getComments(id).sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt)) : [];
+    const comments = id ? Storage.getComments(id).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) : [];
     countP.textContent = `${comments.length} comment${comments.length === 1 ? '' : 's'}`;
     list.textContent = '';
     comments.forEach((c) => {
