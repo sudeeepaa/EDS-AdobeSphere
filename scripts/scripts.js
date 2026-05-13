@@ -742,8 +742,62 @@ async function loadLazy(doc) {
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
   loadFonts();
 
+  // Update meta tags for social sharing
+  updateMetaTags();
+
   Utils.initRevealObserver();
 
+}
+
+// Updates Open Graph and Twitter meta tags based on page content
+function updateMetaTags() {
+  const pathname = window.location.pathname.toLowerCase();
+  let title = 'AdobeSphere';
+  let description = 'Discover events, blogs, and creators across Adobe\'s creative ecosystem with AdobeSphere.';
+  let image = 'https://main--eds-adobesphere--sudeeepaa.aem.live/assets/images/adobesphere-og-image.jpg';
+
+  // For blog detail pages
+  if (pathname.includes('/blog/')) {
+    const h1 = document.querySelector('h1');
+    if (h1) title = h1.textContent.trim();
+    const img = document.querySelector('.article-cover');
+    if (img && img.src) image = img.src;
+    const bodyText = document.querySelector('.detail-body') || document.querySelector('article p');
+    if (bodyText) description = bodyText.textContent.trim().substring(0, 160);
+  }
+
+  // For event detail pages
+  if (pathname.includes('/events/')) {
+    const h1 = document.querySelector('h1');
+    if (h1) title = h1.textContent.trim();
+    const dateEl = document.querySelector('.detail-facts dd');
+    if (dateEl) description = `Event: ${dateEl.textContent.trim()}`;
+  }
+
+  // For creator profile pages
+  if (pathname.includes('/creator-profile')) {
+    const h1 = document.querySelector('h1') || document.querySelector('.detail-bio h3');
+    if (h1) title = h1.textContent.trim();
+    const img = document.querySelector('.detail-bio-avatar');
+    if (img && img.src) image = img.src;
+  }
+
+  // Update meta tags
+  document.title = title;
+  const updateMetaTag = (property, content) => {
+    let meta = document.querySelector(`meta[property="${property}"]`);
+    if (!meta) meta = document.querySelector(`meta[name="${property}"]`);
+    if (meta) {
+      meta.setAttribute('content', content);
+    }
+  };
+
+  updateMetaTag('og:title', title);
+  updateMetaTag('og:description', description);
+  updateMetaTag('og:image', image);
+  updateMetaTag('twitter:title', title);
+  updateMetaTag('twitter:description', description);
+  updateMetaTag('twitter:image', image);
 }
 
 // Schedules the delayed.js import after 3 seconds.
