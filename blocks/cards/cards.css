@@ -108,7 +108,6 @@
 
 .cards .card-meta {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
   margin: 0;
@@ -116,10 +115,24 @@
   color: var(--text-muted);
 }
 
+.cards .card-meta > span:last-child {
+  margin-left: auto;
+}
+
 .cards .card-author {
   display: inline-flex;
   align-items: center;
   gap: 7px;
+}
+
+.cards .card-author a {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.cards .card-author p {
+  margin: 0;
 }
 
 .cards .card-author img {
