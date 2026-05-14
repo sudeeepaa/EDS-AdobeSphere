@@ -438,7 +438,7 @@ function renderReachOut(block, cfg, entity) {
     a.target = '_blank';
     a.rel = 'noopener';
     const iconSpan = document.createElement('span');
-    iconSpan.className = 'reach-out-icon';
+    iconSpan.className = `reach-out-icon reach-out-icon-${l.type}`;
     const icon = makeReachOutIcon(l.type);
     if (icon) iconSpan.append(icon);
     const textSpan = document.createElement('span');

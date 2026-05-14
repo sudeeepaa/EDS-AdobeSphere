@@ -378,6 +378,10 @@ a.detail-person-link:hover h3 {
   flex-shrink: 0;
 }
 
+.detail-section .reach-out-icon-linkedin {
+  color: #0a66c2;
+}
+
 /* comments */
 .detail-section .detail-comments-composer {
   display: flex;
