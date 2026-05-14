@@ -57,6 +57,27 @@ footer .footer-col p {
   max-width: 32ch;
 }
 
+footer .footer-col p:first-child {
+  margin: 0 0 28px;
+}
+
+footer .footer-col p:first-child a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  letter-spacing: 0.02em;
+  color: var(--white);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+footer .footer-col p:first-child a strong {
+  color: var(--red-primary);
+  font-weight: inherit;
+}
+
 footer .footer-col p strong {
   font-family: var(--font-display);
   font-size: 1.8rem;
