@@ -34,7 +34,6 @@
 
 .filters .filter-clear {
     margin-left: auto;
-    min-width: 140px;
     background: var(--white);
     border: 1px solid var(--neutral-light);
     color: var(--text-primary);
