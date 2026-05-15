@@ -67,6 +67,25 @@
   color: rgba(255, 255, 255, 86%);
 }
 
+body.page-about .hero.hero-video .hero-content {
+  max-width: none;
+}
+
+body.page-about .hero.hero-video .hero-content h1 {
+  white-space: nowrap;
+}
+
+body.page-about .hero.hero-video .hero-content p {
+  text-align: justify;
+  max-width: 880px;
+}
+
+@media (max-width: 1100px) {
+  body.page-about .hero.hero-video .hero-content h1 {
+    white-space: normal;
+  }
+}
+
 .hero .hero-bg {
   position: absolute;
   inset: 0;

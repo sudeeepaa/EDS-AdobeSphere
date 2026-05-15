@@ -712,6 +712,8 @@ async function loadEager(doc) {
       });
     }
     document.body.classList.add('appear');
+    const slug = window.location.pathname.replace(/^\/+|\/+$/g, '').split('/')[0] || 'home';
+    if (slug) document.body.classList.add(`page-${slug.toLowerCase()}`);
     await loadSection(main.querySelector('.section'), waitForFirstImage);
   }
   try {
