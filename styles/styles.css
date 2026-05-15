@@ -234,11 +234,6 @@ main .section.no-pad-bottom {
   padding-bottom: 0;
 }
 
-/* center content wrapper */
-.default-content-wrapper {
-  text-align: center;
-}
-
 /* utility: section heading with red underline (used everywhere) */
 .section-heading,
 main h2.section-heading,
