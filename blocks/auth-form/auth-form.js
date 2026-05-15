@@ -286,7 +286,7 @@ function compressAvatar(file, callback) {
 
 // Creates the avatar upload field with a live preview image.
 function buildAvatarField(cfg) {
-  const DEFAULT = '/assets/images/profiles/default-user.jpg';
+  const DEFAULT = window.AdobeSphere.Utils.DEFAULT_AVATAR;
   const group = el('div', 'form-group');
   const lbl = el('label', 'auth-label', cfg['label-avatar'] || 'Profile Picture (optional)');
 

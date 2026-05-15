@@ -209,7 +209,7 @@ const Storage = {
       designation: user.designation || '',
       bio: user.bio || '',
       fullBio: user.bio || '',
-      avatar: user.avatarSrc || user.avatar || '/assets/images/profiles/default-user.jpg',
+      avatar: user.avatarSrc || user.avatar || DEFAULT_AVATAR_SVG,
       socials: user.socials || {},
       stats: {
         blogsPublished: userBlogs.length,
@@ -237,7 +237,7 @@ const Storage = {
           designation: u.designation || '',
           bio: u.bio || '',
           fullBio: u.bio || '',
-          avatar: u.avatarSrc || u.avatar || '/assets/images/profiles/default-user.jpg',
+          avatar: u.avatarSrc || u.avatar || DEFAULT_AVATAR_SVG,
           socials: u.socials || {},
           stats: { blogsPublished: blogs.length, eventsHosted: 0, testimonialsGiven: 0 },
           blogIds: blogs.map((b) => b.id),
@@ -340,7 +340,11 @@ function normaliseCreator(c) {
   return result;
 }
 
+const DEFAULT_AVATAR_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='100' fill='%23e5e5e5'/%3E%3Ccircle cx='100' cy='82' r='34' fill='%239ca3af'/%3E%3Cpath d='M36 186c0-34 28-60 64-60s64 26 64 60z' fill='%239ca3af'/%3E%3C/svg%3E";
+
 const Utils = {
+  DEFAULT_AVATAR: DEFAULT_AVATAR_SVG,
+
   // Escapes HTML special characters to prevent XSS.
   escapeHtml(value) {
     return String(value ?? '')

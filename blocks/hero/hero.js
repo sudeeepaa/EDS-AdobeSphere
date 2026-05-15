@@ -314,7 +314,7 @@ async function renderCreatorVariant(block) {
 
   if (entity.name) document.title = `${entity.name} — AdobeSphere`;
 
-  const DEFAULT_AVATAR = '/assets/images/profiles/default-user.jpg';
+  const DEFAULT_AVATAR = Utils.DEFAULT_AVATAR;
   const avatar = Utils.normaliseAsset(entity.avatar, DEFAULT_AVATAR);
   const stats = entity.stats || {};
   const blogCount = Array.isArray(entity.blogIds) ? entity.blogIds.length : (stats.blogsPublished || 0);

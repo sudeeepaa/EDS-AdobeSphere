@@ -511,7 +511,7 @@ async function renderBlogEditor(block, cfg) {
         id: `user:${ownerIdentity}`,
         name: user.name || 'Community Author',
         designation: user.designation || 'Community Contributor',
-        avatar: Utils.normaliseAsset(user.avatarSrc || user.avatar, '/assets/images/profiles/default-user.jpg'),
+        avatar: Utils.normaliseAsset(user.avatarSrc || user.avatar, Utils.DEFAULT_AVATAR),
         bio: user.bio || 'Adobesphere community member.',
         socials: user.socials || {},
       },

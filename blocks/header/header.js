@@ -34,7 +34,7 @@ function buildSignedOutAuth() {
 // Builds the inline action icons + avatar shown on desktop when logged in.
 function buildUserMenu(user) {
   const { Utils } = window.AdobeSphere;
-  const DEFAULT_AVATAR = '/assets/images/profiles/default-user.jpg';
+  const DEFAULT_AVATAR = Utils.DEFAULT_AVATAR;
   const avatarSrc = Utils.escapeHtml(user.avatarSrc || user.avatar || DEFAULT_AVATAR);
   const displayName = Utils.escapeHtml(user.name || 'User');
 
@@ -125,7 +125,7 @@ const SIGN_OUT_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none
 // Builds the collapsible "My Account" section inside the mobile drawer.
 function buildDrawerAccountSection(user) {
   const { Utils, Storage } = window.AdobeSphere;
-  const DEFAULT_AVATAR = '/assets/images/profiles/default-user.jpg';
+  const DEFAULT_AVATAR = Utils.DEFAULT_AVATAR;
   const avatarSrc = Utils.escapeHtml(user.avatarSrc || user.avatar || DEFAULT_AVATAR);
   const displayName = Utils.escapeHtml(user.name || 'User');
 

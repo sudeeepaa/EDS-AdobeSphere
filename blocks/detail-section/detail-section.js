@@ -115,7 +115,7 @@ function renderBlogHeader(block, cfg, entity) {
   if (!entity) { block.append(emptyP(cfg.empty || 'Article not found.')); return; }
 
   const author = entity.author || {};
-  const avatarSrc = Utils.normaliseAsset(author.avatar, '/assets/images/profiles/default-user.jpg');
+  const avatarSrc = Utils.normaliseAsset(author.avatar, Utils.DEFAULT_AVATAR);
   const coverSrc = Utils.normaliseAsset(entity.coverImage, '/assets/images/blogs/blog-card-fallback.jpg');
   const rawAuthorId = author.id || '';
   const profileId = rawAuthorId.startsWith('user:') ? rawAuthorId.slice(5) : rawAuthorId;
@@ -626,7 +626,7 @@ async function renderComments(block, cfg, source, entity) {
     Storage.addComment(id, {
       author: user.name || 'Anonymous',
       authorId: user.email || '',
-      avatar: user.avatarSrc || user.avatar || '/assets/images/profiles/default-user.jpg',
+      avatar: user.avatarSrc || user.avatar || Utils.DEFAULT_AVATAR,
       text,
       timestamp: new Date().toISOString(),
     });

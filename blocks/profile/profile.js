@@ -106,7 +106,7 @@ function renderUser(block, cfg) {
 
   const avatarWrap = el('div', 'profile-avatar-wrap');
   const avatarImg = el('img', 'profile-avatar');
-  avatarImg.src = user.avatarSrc || user.avatar || '/assets/images/profiles/default-user.jpg';
+  avatarImg.src = user.avatarSrc || user.avatar || Utils.DEFAULT_AVATAR;
   avatarImg.alt = `${user.name || 'User'} avatar`;
   const avatarOverlay = el('label', 'profile-avatar-overlay', cfg['avatar-label'] || 'Upload Photo');
   avatarOverlay.htmlFor = 'profile-avatar-input';
@@ -325,7 +325,7 @@ async function renderCreator(block, cfg) {
 
   if (!creator) { block.append(el('p', 'profile-empty', 'Creator not found.')); return; }
 
-  const avatar = Utils.normaliseAsset(creator.avatar, '/assets/images/profiles/default-user.jpg');
+  const avatar = Utils.normaliseAsset(creator.avatar, Utils.DEFAULT_AVATAR);
   const stats = creator.stats || {};
 
   // AEM EDS flattens nested objects/arrays from spreadsheets, so blogIds/eventIds
