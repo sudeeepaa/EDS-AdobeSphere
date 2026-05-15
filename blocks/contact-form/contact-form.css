@@ -6,11 +6,6 @@
  * same section with Section Metadata Style = contact-split.
  */
 
-/* ── Content wrapper (heading + description) ────────────────────────── */
-.contact-form-wrapper .default-content-wrapper {
-  text-align: center;
-}
-
 /* ── Form wrapper ────────────────────────────────────────────────────── */
 .contact-form {
   max-width: 680px;

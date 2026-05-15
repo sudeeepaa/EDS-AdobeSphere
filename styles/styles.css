@@ -245,6 +245,11 @@ main .section .default-content-wrapper h2 {
   line-height: 1;
 }
 
+/* center the Get in Touch section */
+main > div:has(#get-in-touch) {
+  text-align: center;
+}
+
 .text-red {
   color: var(--red-primary);
 }
