@@ -91,9 +91,8 @@ Every block follows the same pattern:
 - **`detail-section`** — *variants: overview · agenda · people · quote · bio · reach-out · comments · blog-header · article-body · mission* — event detail (overview, agenda, people, quote, reach-out, comments), blog detail (blog-header, article-body, bio, comments), creator-profile (bio, reach-out, quote), about (mission — "Made With Purpose" contributor card grid)
 - **`profile`** — *variants: user · creator* — user-profile (editable profile card with avatar upload, bio, LinkedIn), creator-profile (read-only stats hero)
 - **`event-actions`** — event detail (save toggle + register/unregister button; opens the registration modal)
-- **`marquee`** — home (auto-scrolling category pill strip that links into the explore Events tab)
+- **`marquee`** — *variants: default · timeline* — home (auto-scrolling category pill strip; categories generated dynamically from `blogs.json` + `campaigns.json`; links into the explore tabs), about (timeline — horizontally scrollable platform milestone ribbon with draggable progress bar)
 - **`faq`** — about (collapsible question/answer accordion)
-- **`timeline`** — about (horizontally scrollable platform milestone timeline)
 
 ---
 

@@ -1,26 +1,35 @@
 /*
  * AdobeSphere — marquee block.
- * Auto-scrolling category pills. Hover/focus pauses; reduced-motion gets a
- * regular horizontal scroller.
+ *
+ * Variants:
+ *   - default: auto-scrolling category pills. Hover/focus pauses;
+ *     reduced-motion gets a regular horizontal scroller.
+ *   - `marquee (timeline)`: horizontal milestone ribbon (Platform Journey).
+ *     Progress bar is interactive: click to seek, drag to scrub, arrow keys
+ *     for keyboard access. JS drives scrollLeft each rAF frame.
  */
 
 .marquee {
-  --marquee-duration: 28s;
-
   position: relative;
-  overflow: hidden;
   padding: 8px 0;
 }
 
-.marquee .marquee-track {
+/* ─── default (pills) variant ───────────────────────────────────────────── */
+.marquee:not(.timeline) {
+  --marquee-duration: 28s;
+
+  overflow: hidden;
+}
+
+.marquee:not(.timeline) .marquee-track {
   display: flex;
   width: max-content;
   will-change: transform;
   animation: marquee-scroll var(--marquee-duration) linear infinite;
 }
 
-.marquee:hover .marquee-track,
-.marquee:focus-within .marquee-track {
+.marquee:not(.timeline):hover .marquee-track,
+.marquee:not(.timeline):focus-within .marquee-track {
   animation-play-state: paused;
 }
 
@@ -30,11 +39,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .marquee {
+  .marquee:not(.timeline) {
     overflow-x: auto;
   }
 
-  .marquee .marquee-track {
+  .marquee:not(.timeline) .marquee-track {
     animation: none;
     width: max-content;
   }
@@ -74,4 +83,174 @@
   padding: 16px;
   text-align: center;
   color: var(--text-muted);
+}
+
+/* ─── timeline variant ──────────────────────────────────────────────────── */
+
+/* Progress bar — outer wrap; extra padding expands the click/touch target */
+.marquee.timeline .timeline-progress-wrap {
+  position: relative;
+  padding: 10px 0;
+  margin: 0 0 12px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  outline: none;
+}
+
+.marquee.timeline .timeline-progress-wrap:focus-visible {
+  outline: 2px solid var(--red-primary);
+  outline-offset: 6px;
+  border-radius: 4px;
+}
+
+.marquee.timeline .timeline-progress-track {
+  height: 4px;
+  background: rgba(0, 0, 0, 8%);
+  border-radius: 2px;
+  overflow: hidden;
+  transition: height 150ms ease;
+}
+
+.marquee.timeline .timeline-progress-wrap:hover .timeline-progress-track,
+.marquee.timeline .timeline-progress-wrap:focus-visible .timeline-progress-track,
+.marquee.timeline .timeline-progress-wrap.scrubbing .timeline-progress-track {
+  height: 6px;
+}
+
+.marquee.timeline .timeline-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--red-primary);
+  border-radius: 2px;
+}
+
+/* Circular handle — visible on hover / focus / scrub */
+.marquee.timeline .timeline-progress-thumb {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--red-primary);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 25%);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 150ms ease;
+  pointer-events: none;
+}
+
+.marquee.timeline .timeline-progress-wrap:hover .timeline-progress-thumb,
+.marquee.timeline .timeline-progress-wrap:focus-visible .timeline-progress-thumb,
+.marquee.timeline .timeline-progress-wrap.scrubbing .timeline-progress-thumb {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Scrollable card wrapper */
+.marquee.timeline .timeline-track-wrap {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  transition: opacity var(--transition-base, 280ms ease);
+}
+
+.marquee.timeline .timeline-track-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+/* Inner track — one row of cards */
+.marquee.timeline .timeline-track {
+  display: flex;
+  flex-direction: row;
+  gap: 28px;
+  padding: 12px 16px;
+  width: max-content;
+}
+
+/* Individual card */
+.marquee.timeline .timeline-item {
+  flex-shrink: 0;
+  width: 300px;
+}
+
+.marquee.timeline .timeline-card {
+  padding: 22px;
+  background: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.marquee.timeline .timeline-header {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--red-primary);
+}
+
+.marquee.timeline .timeline-header h3 {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: var(--text-primary);
+}
+
+.marquee.timeline .timeline-header time {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--red-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.marquee.timeline .timeline-bullets {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.marquee.timeline .timeline-bullets li {
+  margin: 4px 0;
+}
+
+.marquee.timeline .timeline-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* Mobile — narrower cards */
+@media (max-width: 600px) {
+  .marquee.timeline .timeline-item {
+    width: 240px;
+  }
+
+  .marquee.timeline .timeline-card {
+    padding: 16px;
+  }
+
+  .marquee.timeline .timeline-track {
+    gap: 16px;
+    padding: 8px 12px;
+  }
+
+  .marquee.timeline .timeline-progress-thumb {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Reduced-motion: static swipeable list, no animation */
+@media (prefers-reduced-motion: reduce) {
+  .marquee.timeline .timeline-track-wrap {
+    overflow-x: auto;
+    transition: none;
+  }
+
+  .marquee.timeline .timeline-progress-wrap {
+    display: none;
+  }
 }
