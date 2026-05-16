@@ -82,7 +82,7 @@ Every block follows the same pattern:
 - **`footer`** — all pages
 - **`fragment`** — all pages (loads the `/nav` and `/footer` fragments for header and footer; also loads auth and employee-only modals)
 - **`hero`** — *variants: default · search · media · compact · creator* — home (default), about (default), explore (search), event detail (media), blog detail (compact), creator-profile (creator)
-- **`cards`** — *variants: events · blogs · creators · testimonials · with-save · with-actions · horizontal; user sources: saved-events · saved-blogs · registered-events · user-blogs* — home (featured grids + testimonials), explore (paginated grids), user-profile (saved items / registered events / published blogs), creator-profile (creator's blog list)
+- **`cards`** — *variants: events · blogs · creators · testimonials · stats · with-save · with-actions · horizontal; user sources: saved-events · saved-blogs · registered-events · user-blogs* — home (featured grids + testimonials), explore (paginated grids), user-profile (saved items / registered events / published blogs), creator-profile (creator's blog list), about (stats — animated count-up numbers)
 - **`tabs`** — explore (wraps the Events / Blogs / Creators tab panels; coordinates `filters` + `cards` inside each via custom events)
 - **`filters`** — *source-driven: events · blogs · creators* — explore (one filter bar per tab; emits `adobesphere:filter` for `cards` to consume)
 - **`form`** — *variants: event-registration · blog-editor* — event detail (registration modal, hidden until `event-actions` opens it), blog-editor (create and edit form)
@@ -93,7 +93,6 @@ Every block follows the same pattern:
 - **`event-actions`** — event detail (save toggle + register/unregister button; opens the registration modal)
 - **`marquee`** — home (auto-scrolling category pill strip that links into the explore Events tab)
 - **`faq`** — about (collapsible question/answer accordion)
-- **`stats`** — about (animated count-up numbers)
 - **`timeline`** — about (horizontally scrollable platform milestone timeline)
 
 ---

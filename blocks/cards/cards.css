@@ -314,3 +314,107 @@
   text-align: center;
 }
 
+/* ─── stats variant ──────────────────────────────────────────────────────────
+ * `cards (stats)` — animated counter grid. Independent layout from regular
+ * cards: each box is a stats-box, not a .card.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.cards.stats .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+@media (min-width: 700px) {
+  .cards.stats .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+}
+
+/* default (light bg) stats box */
+.cards.stats .stats-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 32px 16px;
+  background: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.cards.stats .stats-box:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+/* dark-section variant — transparent boxes with dividers */
+.section.dark .cards.stats .stats-grid {
+  gap: 0;
+}
+
+.section.dark .cards.stats .stats-box {
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  border-right: 1px solid rgba(255, 255, 255, 10%);
+  padding: 32px 16px;
+}
+
+.section.dark .cards.stats .stats-box:last-child {
+  border-right: 0;
+}
+
+.section.dark .cards.stats .stats-box:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* on mobile, stack 2×2 with bottom borders instead of right */
+@media (max-width: 699px) {
+  .section.dark .cards.stats .stats-box {
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 10%);
+  }
+
+  .section.dark .cards.stats .stats-box:last-child {
+    border-bottom: 0;
+  }
+}
+
+.cards.stats .stats-number {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 4vw, 4rem);
+  font-weight: 400;
+  color: var(--red-primary);
+  line-height: 1;
+}
+
+.cards.stats .stats-label {
+  margin: 8px 0 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+/* in dark sections the label colour is lighter */
+.section.dark .cards.stats .stats-label {
+  color: rgba(255, 255, 255, 65%);
+}
+
+.cards.stats .stats-link {
+  margin-top: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--red-primary);
+}
+
+.cards.stats .stats-link:hover {
+  color: var(--red-deep);
+  text-decoration: underline;
+}
+
