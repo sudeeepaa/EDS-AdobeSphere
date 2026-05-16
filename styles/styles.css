@@ -496,6 +496,6 @@ main>.section:has(.hero) {
 }
 
 /* Hide raw block config rows before JS removes them (prevents flash of "source / pagination" text). */
-.cards > div:not(.cards-grid):not(.explore-pagination) {
+.cards > div:not(.cards-grid):not(.explore-pagination):not(.stats-grid) {
   display: none;
 }
