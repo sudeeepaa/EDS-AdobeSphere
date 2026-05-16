@@ -1,4 +1,4 @@
-// Decorates the FAQ block as an accessible accordion with single-open behaviour.
+// Decorates the accordion block as an accessible collapsible list with single-open behaviour.
 export default function decorate(block) {
   const items = [];
   [...block.children].forEach((row) => {
@@ -15,22 +15,22 @@ export default function decorate(block) {
 
   items.forEach((item, i) => {
     const div = document.createElement('div');
-    div.className = 'faq-item';
+    div.className = 'accordion-item';
 
     const btn = document.createElement('button');
-    btn.className = 'faq-question';
+    btn.className = 'accordion-question';
     btn.type = 'button';
     btn.setAttribute('aria-expanded', 'false');
-    btn.setAttribute('aria-controls', `faq-answer-${i}`);
+    btn.setAttribute('aria-controls', `accordion-answer-${i}`);
     btn.textContent = item.question;
 
     const panel = document.createElement('div');
-    panel.className = 'faq-answer';
-    panel.id = `faq-answer-${i}`;
+    panel.className = 'accordion-answer';
+    panel.id = `accordion-answer-${i}`;
     panel.setAttribute('role', 'region');
-    panel.setAttribute('aria-labelledby', `faq-btn-${i}`);
+    panel.setAttribute('aria-labelledby', `accordion-btn-${i}`);
 
-    btn.id = `faq-btn-${i}`;
+    btn.id = `accordion-btn-${i}`;
 
     [...item.answerNode.childNodes].forEach((node) => panel.append(node.cloneNode(true)));
 
@@ -39,14 +39,14 @@ export default function decorate(block) {
   });
 
   block.addEventListener('click', (e) => {
-    const btn = e.target.closest('.faq-question');
+    const btn = e.target.closest('.accordion-question');
     if (!btn) return;
-    const item = btn.closest('.faq-item');
+    const item = btn.closest('.accordion-item');
     const wasOpen = item.classList.contains('open');
 
-    block.querySelectorAll('.faq-item').forEach((el) => {
+    block.querySelectorAll('.accordion-item').forEach((el) => {
       el.classList.remove('open');
-      el.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+      el.querySelector('.accordion-question').setAttribute('aria-expanded', 'false');
     });
 
     if (!wasOpen) {

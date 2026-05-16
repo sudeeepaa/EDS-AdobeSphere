@@ -31,7 +31,7 @@ This project is built on **Adobe Edge Delivery Services (EDS)**, which is a CDN-
 | Creator profile | `/creator-profile?id={email}` | Creator bio, their published blogs and events |
 | User profile | `/user-profile` | Edit your profile, view saved items and registrations |
 | Blog editor | `/blog-editor` | Write or edit a blog post |
-| About | `/about` | Mission, timeline, team stats, FAQ |
+| About | `/about` | Mission, timeline, team stats |
 | Contact | `/contact` | Contact form |
 | Login | `/login` | Sign in |
 | Signup | `/signup` | Create an account |
@@ -92,7 +92,7 @@ Every block follows the same pattern:
 - **`profile`** — *variants: user · creator* — user-profile (editable profile card with avatar upload, bio, LinkedIn), creator-profile (read-only stats hero)
 - **`event-actions`** — event detail (save toggle + register/unregister button; opens the registration modal)
 - **`marquee`** — *variants: default · timeline* — home (auto-scrolling category pill strip; categories generated dynamically from `blogs.json` + `campaigns.json`; links into the explore tabs), about (timeline — horizontally scrollable platform milestone ribbon with draggable progress bar)
-- **`faq`** — about (collapsible question/answer accordion)
+- **`accordion`** — contact (collapsible FAQ list in the side panel)
 
 ---
 

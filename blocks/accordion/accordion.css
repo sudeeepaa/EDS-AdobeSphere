@@ -1,17 +1,18 @@
 /*
- * AdobeSphere — faq block (accordion).
+ * AdobeSphere — accordion block.
+ * Collapsible question/answer list. Single-open behaviour.
  * Reusable on any page. Heading is authored above the block in DA.live.
  */
 
-.faq .faq-item {
+.accordion .accordion-item {
   border-bottom: 1px solid var(--neutral-light);
 }
 
-.faq .faq-item:first-child {
+.accordion .accordion-item:first-child {
   border-top: 1px solid var(--neutral-light);
 }
 
-.faq .faq-question {
+.accordion .accordion-question {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -29,12 +30,12 @@
   transition: color var(--transition-fast);
 }
 
-.faq .faq-question:hover {
+.accordion .accordion-question:hover {
   color: var(--red-primary);
 }
 
 /* +/× icon */
-.faq .faq-question::after {
+.accordion .accordion-question::after {
   content: "+";
   flex-shrink: 0;
   font-size: 1.3rem;
@@ -43,13 +44,13 @@
   transition: color var(--transition-fast), transform var(--transition-fast);
 }
 
-.faq .faq-item.open .faq-question::after {
+.accordion .accordion-item.open .accordion-question::after {
   content: "×";
   color: var(--red-primary);
 }
 
 /* Collapsed answer panel */
-.faq .faq-answer {
+.accordion .accordion-answer {
   max-height: 0;
   overflow: hidden;
   transition: max-height 320ms ease;
@@ -58,25 +59,25 @@
   color: var(--text-secondary);
 }
 
-.faq .faq-item.open .faq-answer {
+.accordion .accordion-item.open .accordion-answer {
   max-height: 480px;
   padding-bottom: 18px;
 }
 
 /* Preserve link styling in authored answers */
-.faq .faq-answer a {
+.accordion .accordion-answer a {
   color: var(--red-primary);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-.faq .faq-answer a:hover {
+.accordion .accordion-answer a:hover {
   color: var(--red-deep);
 }
 
 /* ── Mobile ──────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
-  .faq .faq-question {
+  .accordion .accordion-question {
     font-size: 0.9rem;
     padding: 16px 0;
   }
