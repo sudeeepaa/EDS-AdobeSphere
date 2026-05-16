@@ -24,7 +24,7 @@ This project is built on **Adobe Edge Delivery Services (EDS)**, which is a CDN-
 
 | Page | URL | What it does |
 |---|---|---|
-| Home | `/` | Featured events, blogs, creators, category pills, mission, stats |
+| Home | `/` | Featured events, blogs, creators, category pills, stats |
 | Explore | `/explore` | Tabbed, filterable, paginated listings of all events, blogs, and creators |
 | Event detail | `/events/{id}` | Full event info, agenda, speakers, registration |
 | Blog detail | `/blog/{id}` | Full blog post, author bio, comments |
@@ -88,11 +88,10 @@ Every block follows the same pattern:
 - **`form`** — *variants: event-registration · blog-editor* — event detail (registration modal, hidden until `event-actions` opens it), blog-editor (create and edit form)
 - **`auth-form`** — *variants: signin · signup* — login, signup
 - **`contact-form`** — contact
-- **`detail-section`** — *variants: overview · agenda · people · quote · bio · reach-out · comments · blog-header · article-body* — event detail (overview, agenda, people, quote, reach-out, comments), blog detail (blog-header, article-body, bio, comments), creator-profile (bio, reach-out, quote)
+- **`detail-section`** — *variants: overview · agenda · people · quote · bio · reach-out · comments · blog-header · article-body · mission* — event detail (overview, agenda, people, quote, reach-out, comments), blog detail (blog-header, article-body, bio, comments), creator-profile (bio, reach-out, quote), about (mission — "Made With Purpose" contributor card grid)
 - **`profile`** — *variants: user · creator* — user-profile (editable profile card with avatar upload, bio, LinkedIn), creator-profile (read-only stats hero)
 - **`event-actions`** — event detail (save toggle + register/unregister button; opens the registration modal)
 - **`marquee`** — home (auto-scrolling category pill strip that links into the explore Events tab)
-- **`mission`** — about (mission statement with a rotating row of creator avatar images)
 - **`faq`** — about (collapsible question/answer accordion)
 - **`stats`** — about (animated count-up numbers)
 - **`timeline`** — about (horizontally scrollable platform milestone timeline)

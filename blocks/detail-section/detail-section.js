@@ -639,6 +639,156 @@ async function renderComments(block, cfg, source, entity) {
   refresh();
 }
 
+// Extracts or builds an <img> element from an authored avatar cell.
+function resolveAuthoredAvatar(cell) {
+  if (!cell) return null;
+  const img = cell.querySelector('img');
+  if (img) return img;
+  const a = cell.querySelector('a[href]');
+  if (a) {
+    const newImg = document.createElement('img');
+    newImg.src = window.AdobeSphere.Utils.normaliseAsset(a.href, '');
+    newImg.alt = a.textContent.trim();
+    newImg.loading = 'lazy';
+    return newImg;
+  }
+  const text = cell.textContent.trim();
+  if (text) {
+    const newImg = document.createElement('img');
+    newImg.src = window.AdobeSphere.Utils.normaliseAsset(text, '');
+    newImg.alt = '';
+    newImg.loading = 'lazy';
+    return newImg;
+  }
+  return null;
+}
+
+// Builds a single mission card from an avatar element and a body element.
+function buildMissionCard(avatarImg, bodyEl) {
+  const card = document.createElement('article');
+  card.className = 'detail-mission-card reveal';
+
+  const avatarWrap = document.createElement('div');
+  avatarWrap.className = 'detail-mission-avatar';
+  if (avatarImg) avatarWrap.append(avatarImg);
+  card.append(avatarWrap);
+
+  const body = document.createElement('div');
+  body.className = 'detail-mission-body';
+  if (bodyEl) body.append(...bodyEl.childNodes);
+  card.append(body);
+
+  return card;
+}
+
+// Classifies authored body children into name/role/bio/socials slots.
+function classifyMissionBody(body) {
+  [...body.children].forEach((el, idx, arr) => {
+    const tag = el.tagName.toLowerCase();
+    if (el.className) return;
+    if (tag === 'h2' || tag === 'h3' || tag === 'h4') {
+      el.className = 'detail-mission-name';
+      return;
+    }
+    if (tag === 'p' && el.querySelector('a')) {
+      el.className = 'detail-mission-socials';
+      return;
+    }
+    if (tag === 'div' && el.querySelector('a')) {
+      el.className = 'detail-mission-socials';
+      return;
+    }
+    if (tag === 'p') {
+      const prev = arr[idx - 1];
+      if (prev && prev.classList.contains('detail-mission-name')
+        && !prev.classList.contains('detail-mission-role-done')) {
+        el.className = 'detail-mission-role text-muted';
+        prev.classList.add('detail-mission-role-done');
+      } else {
+        el.className = 'detail-mission-bio';
+      }
+    }
+  });
+
+  // Fallback: if no heading was found, treat first p as name and second as role.
+  if (!body.querySelector('.detail-mission-name')) {
+    const paras = [...body.children];
+    if (paras[0]) paras[0].className = 'detail-mission-name';
+    if (paras[1]) paras[1].className = 'detail-mission-role text-muted';
+  }
+}
+
+// Builds a data-driven mission card from a creator entity.
+function buildMissionCardFromEntity(entity) {
+  const { Utils } = window.AdobeSphere;
+  const avatar = document.createElement('img');
+  avatar.src = Utils.normaliseAsset(entity.avatar, '/icons/user-default.svg');
+  avatar.alt = entity.name || '';
+  avatar.loading = 'lazy';
+
+  const body = document.createElement('div');
+  const h3 = document.createElement('h3');
+  h3.className = 'detail-mission-name';
+  h3.textContent = entity.name || '';
+  body.append(h3);
+
+  if (entity.designation) {
+    const role = document.createElement('p');
+    role.className = 'detail-mission-role text-muted';
+    role.textContent = entity.designation;
+    body.append(role);
+  }
+
+  const bioText = entity.fullBio || entity.bio || '';
+  bioText.split(/\n\n+/).filter((p) => p.trim()).forEach((para) => {
+    const p = document.createElement('p');
+    p.className = 'detail-mission-bio';
+    p.textContent = para;
+    body.append(p);
+  });
+
+  const linkedin = entity.socials && entity.socials.linkedin;
+  if (linkedin) {
+    const wrap = document.createElement('p');
+    wrap.className = 'detail-mission-socials';
+    const a = document.createElement('a');
+    a.href = linkedin;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = 'LinkedIn';
+    wrap.append(a);
+    body.append(wrap);
+  }
+
+  return buildMissionCard(avatar, body);
+}
+
+// Renders the mission variant — a card grid of contributors.
+// Two data flows:
+//   1. Authored: each row in `authoredRows` produces one card (avatar | body cells).
+//   2. Entity-driven: when cfg.id_source is set, renders a single card from the loaded entity.
+function renderMission(block, cfg, entity, authoredRows) {
+  const grid = document.createElement('div');
+  grid.className = 'detail-mission-grid';
+  block.append(grid);
+
+  if (cfg.id_source) {
+    if (!entity) { grid.append(emptyP(cfg.empty || 'Profile unavailable.')); return; }
+    grid.append(buildMissionCardFromEntity(entity));
+    return;
+  }
+
+  if (!authoredRows || !authoredRows.length) return;
+
+  authoredRows.forEach((row) => {
+    const cells = [...row.children];
+    const avatar = resolveAuthoredAvatar(cells[0]);
+    const card = buildMissionCard(avatar, cells[1]);
+    classifyMissionBody(card.querySelector('.detail-mission-body'));
+    grid.append(card);
+  });
+}
+
 // Renders the article-body variant by iterating over content blocks.
 function renderArticleBody(block, cfg, entity) {
   if (!entity || !Array.isArray(entity.content) || !entity.content.length) {
@@ -685,17 +835,25 @@ export default async function decorate(block) {
   const flatVariants = variants.flatMap((c) => c.split('-'));
 
   const variant = ['blog-header', 'overview', 'agenda', 'people', 'quote', 'comments', 'bio', 'reach-out',
-    'presenters', 'speakers', 'hosts', 'article-body'].find((v) =>
+    'presenters', 'speakers', 'hosts', 'article-body', 'mission'].find((v) =>
     variants.includes(v) || flatVariants.includes(v)
   ) || 'overview';
 
   const source = cfg.id_source
     || (['blog-header', 'article-body'].includes(variant) ? 'blogs' : null)
+    || (variant === 'mission' ? 'creators' : null)
     || (variant === 'comments' ? detectCommentSource(cfg, cfg.id || getEntityId()) : null)
     || 'events';
 
+  // Capture authored content rows for variants that consume them (mission)
+  // before block.textContent clears the block below.
+  const authoredRows = variant === 'mission' ? [...block.children] : null;
+
   let entity = null;
-  if (['blog-header', 'overview', 'agenda', 'people', 'presenters', 'speakers', 'hosts', 'quote', 'bio', 'reach-out', 'article-body', 'comments'].includes(variant)) {
+  const needsEntity = ['blog-header', 'overview', 'agenda', 'people', 'presenters', 'speakers',
+    'hosts', 'quote', 'bio', 'reach-out', 'article-body', 'comments'].includes(variant)
+    || (variant === 'mission' && cfg.id_source);
+  if (needsEntity) {
     const id = cfg.id || getEntityId();
     if (id) entity = await loadEntity(source, id);
   }
@@ -720,4 +878,5 @@ export default async function decorate(block) {
   else if (variant === 'reach-out') renderReachOut(block, cfg, entity);
   else if (variant === 'comments') await renderComments(block, cfg, source, entity);
   else if (variant === 'article-body') renderArticleBody(block, cfg, entity);
+  else if (variant === 'mission') renderMission(block, cfg, entity, authoredRows);
 }
