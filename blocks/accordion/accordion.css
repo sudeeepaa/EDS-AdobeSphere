@@ -34,19 +34,22 @@
   color: var(--red-primary);
 }
 
-/* +/× icon */
+/* Chevron icon — points down when collapsed, flips up when open. */
 .accordion .accordion-question::after {
-  content: "+";
+  content: "";
   flex-shrink: 0;
-  font-size: 1.3rem;
-  line-height: 1;
-  color: var(--text-muted);
-  transition: color var(--transition-fast), transform var(--transition-fast);
+  width: 8px;
+  height: 8px;
+  margin-right: 4px;
+  border: solid var(--text-muted);
+  border-width: 0 2px 2px 0;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
 }
 
 .accordion .accordion-item.open .accordion-question::after {
-  content: "×";
-  color: var(--red-primary);
+  border-color: var(--red-primary);
+  transform: translateY(2px) rotate(-135deg);
 }
 
 /* Collapsed answer panel */
