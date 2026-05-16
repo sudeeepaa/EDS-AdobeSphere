@@ -884,40 +884,42 @@ function countUp(el, target) {
 // Renders the `stats` variant — a grid of animated counter boxes that trigger on scroll.
 async function hydrateStats(block) {
   const rows = readStatsRows(block);
-  block.textContent = '';
 
+  // Resolve all targets first so DOM insertion preserves the authored row order.
+  const targets = await Promise.all(rows.map((r) => resolveStatTarget(r.source)));
+
+  block.textContent = '';
   const grid = document.createElement('div');
   grid.className = 'stats-grid';
   block.append(grid);
 
-  const tasks = rows.map(async (r) => {
-    const target = await resolveStatTarget(r.source);
+  const boxes = rows.map((r, i) => {
     const box = document.createElement('div');
     box.className = 'stats-box reveal';
-    box.dataset.target = String(target);
+    box.dataset.target = String(targets[i]);
     box.innerHTML = `
       <span class="stats-number">0</span>
       <p class="stats-label">${escapeHtml(r.label)}</p>
       ${r.href ? `<a class="stats-link" href="${escapeHtml(r.href)}">${escapeHtml(r.cta || 'View →')}</a>` : ''}`;
     grid.append(box);
-    return { box, target };
+    return box;
   });
 
-  const results = await Promise.all(tasks);
-
+  // Single observer drives both the fade-in (`.visible`) and the count-up animation.
+  // Self-contained so visibility never depends on the global initRevealObserver
+  // catching late-added elements.
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((e) => {
-      if (e.isIntersecting) {
-        const box = e.target;
-        const target = parseInt(box.dataset.target, 10) || 0;
-        const numEl = box.querySelector('.stats-number');
-        countUp(numEl, target);
-        observer.unobserve(box);
-      }
+      if (!e.isIntersecting) return;
+      const box = e.target;
+      box.classList.add('visible');
+      const target = parseInt(box.dataset.target, 10) || 0;
+      countUp(box.querySelector('.stats-number'), target);
+      observer.unobserve(box);
     });
-  }, { threshold: 0.4 });
+  }, { threshold: 0.2 });
 
-  results.forEach(({ box }) => observer.observe(box));
+  boxes.forEach((box) => observer.observe(box));
 }
 
 // Dispatches to the correct hydration path based on the source configuration.
