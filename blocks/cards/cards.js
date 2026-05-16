@@ -895,10 +895,7 @@ async function hydrateStats(block) {
 
   const boxes = rows.map((r, i) => {
     const box = document.createElement('div');
-    // Intentionally no `.reveal` here — boxes must be visible immediately, since
-    // the global reveal observer has been unreliable for this late-decorated block.
-    // The count-up animation below provides the only entrance effect.
-    box.className = 'stats-box';
+    box.className = 'stats-box reveal';
     box.dataset.target = String(targets[i]);
     box.innerHTML = `
       <span class="stats-number">0</span>
@@ -908,28 +905,20 @@ async function hydrateStats(block) {
     return box;
   });
 
-  // Count-up fires when each box enters the viewport. A fallback timer guarantees
-  // numbers still resolve even if the observer never fires (e.g. on layouts where
-  // the box is never intersecting at threshold 0.2).
-  const started = new WeakSet();
-  const start = (box) => {
-    if (started.has(box)) return;
-    started.add(box);
-    countUp(box.querySelector('.stats-number'), parseInt(box.dataset.target, 10) || 0);
-  };
-
+  // Single observer drives both the fade-in (`.visible`) and the count-up animation.
+  // Self-contained so visibility never depends on the global initRevealObserver
+  // catching late-added elements.
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((e) => {
       if (!e.isIntersecting) return;
-      start(e.target);
-      observer.unobserve(e.target);
+      const box = e.target;
+      box.classList.add('visible');
+      countUp(box.querySelector('.stats-number'), parseInt(box.dataset.target, 10) || 0);
+      observer.unobserve(box);
     });
   }, { threshold: 0.2 });
 
   boxes.forEach((box) => observer.observe(box));
-
-  // Belt-and-braces: kick off any boxes the observer hasn't fired for after 1.5s.
-  setTimeout(() => boxes.forEach(start), 1500);
 }
 
 // Dispatches to the correct hydration path based on the source configuration.
