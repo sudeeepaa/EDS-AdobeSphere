@@ -431,6 +431,34 @@ const Utils = {
     return dataCache[name];
   },
 
+  // Loads the DA.live `/placeholder.json` sheet once and returns a {key: text} map.
+  // Cached after first call; subsequent calls return the same Promise.
+  getPlaceholders() {
+    if (!('placeholders' in dataCache)) {
+      dataCache.placeholders = fetch('/placeholder.json')
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then((json) => {
+          const rows = Array.isArray(json && json.data) ? json.data : [];
+          const map = {};
+          rows.forEach((r) => { if (r && r.Key) map[r.Key] = r.Text || ''; });
+          return map;
+        })
+        .catch(() => ({}));
+    }
+    return dataCache.placeholders;
+  },
+
+  // Returns the Text for a placeholder Key, or `fallback` if the sheet hasn't
+  // loaded yet or the key is missing. Useful when a block needs synchronous
+  // access during render (await `getPlaceholders()` first to guarantee a hit).
+  async getPlaceholder(key, fallback = '') {
+    const map = await this.getPlaceholders();
+    return map[key] || fallback;
+  },
+
   // Attaches an IntersectionObserver to all .reveal elements to animate them into view.
   initRevealObserver() {
     const nodes = document.querySelectorAll('.reveal:not(.visible)');

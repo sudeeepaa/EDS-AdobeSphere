@@ -49,7 +49,11 @@ export default async function decorate(block) {
   const source = cfg.source || 'events';
 
   const dataFile = source === 'events' ? 'campaigns' : source;
-  const data = await window.AdobeSphere.Utils.fetchData(dataFile);
+  const [data, ph] = await Promise.all([
+    window.AdobeSphere.Utils.fetchData(dataFile),
+    window.AdobeSphere.Utils.getPlaceholders(),
+  ]);
+  const t = (key, fallback) => ph[key] || fallback;
   const items = Array.isArray(data) ? data.slice() : [];
 
   if (source === 'blogs') {
@@ -117,7 +121,7 @@ export default async function decorate(block) {
         const sel = document.createElement('select');
         sel.className = 'form-input';
         sel.dataset.filter = 'category';
-        sel.innerHTML = `<option value="">All Categories</option>${cats.map((c) => `<option value="${escapeHtml(c)}"${state.category === c ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('')}`;
+        sel.innerHTML = `<option value="">${escapeHtml(t('all_categories', 'All Categories'))}</option>${cats.map((c) => `<option value="${escapeHtml(c)}"${state.category === c ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('')}`;
         sel.addEventListener('change', (e) => { state.category = e.target.value; state.page = 1; dispatchFilter(source, { ...state }); });
         row.append(sel);
         block.append(row);
@@ -128,17 +132,17 @@ export default async function decorate(block) {
         row.className = 'filter-row filter-row-split';
         const fs = document.createElement('fieldset');
         fs.className = 'filter-radios';
-        fs.setAttribute('aria-label', 'Date');
+        fs.setAttribute('aria-label', t('date', 'Date'));
         fs.innerHTML = `
-          <label><input type="radio" name="filter-date-${source}" value="all"${state.date === 'all' ? ' checked' : ''}> All</label>
-          <label><input type="radio" name="filter-date-${source}" value="upcoming"${state.date === 'upcoming' ? ' checked' : ''}> Upcoming</label>
-          <label><input type="radio" name="filter-date-${source}" value="past"${state.date === 'past' ? ' checked' : ''}> Past</label>`;
+          <label><input type="radio" name="filter-date-${source}" value="all"${state.date === 'all' ? ' checked' : ''}> ${escapeHtml(t('date_all', 'All'))}</label>
+          <label><input type="radio" name="filter-date-${source}" value="upcoming"${state.date === 'upcoming' ? ' checked' : ''}> ${escapeHtml(t('upcoming', 'Upcoming'))}</label>
+          <label><input type="radio" name="filter-date-${source}" value="past"${state.date === 'past' ? ' checked' : ''}> ${escapeHtml(t('past', 'Past'))}</label>`;
         fs.querySelectorAll('input').forEach((r) => r.addEventListener('change', (e) => { state.date = e.target.value; dispatchFilter(source, { ...state }); }));
 
         const clearBtn = document.createElement('button');
         clearBtn.type = 'button';
         clearBtn.className = 'button ghost filter-clear';
-        clearBtn.textContent = 'Clear Filters';
+        clearBtn.textContent = t('clear_filters', 'Clear Filters');
         clearBtn.addEventListener('click', () => {
           Object.assign(state, { category: '', location: [], date: 'all' });
           render();
@@ -154,9 +158,9 @@ export default async function decorate(block) {
         row.className = 'filter-row filter-row-full';
         const fs = document.createElement('fieldset');
         fs.className = 'filter-checkboxes';
-        fs.setAttribute('aria-label', 'Location');
+        fs.setAttribute('aria-label', t('location', 'Location'));
         const legend = document.createElement('legend');
-        legend.textContent = 'Filter by location';
+        legend.textContent = t('filter_by_location', 'Filter by location');
         const grid = document.createElement('div');
         grid.className = 'filter-checkbox-grid';
         grid.innerHTML = cities.map((c) => `<label><input type="checkbox" value="${escapeHtml(c)}"${state.location.includes(c) ? ' checked' : ''}> ${escapeHtml(c)}</label>`).join('');
@@ -180,7 +184,7 @@ export default async function decorate(block) {
         const sel = document.createElement('select');
         sel.className = 'form-input';
         sel.dataset.filter = 'category';
-        sel.innerHTML = `<option value="">All Categories</option>${cats.map((c) => `<option value="${escapeHtml(c)}"${state.category === c ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('')}`;
+        sel.innerHTML = `<option value="">${escapeHtml(t('all_categories', 'All Categories'))}</option>${cats.map((c) => `<option value="${escapeHtml(c)}"${state.category === c ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('')}`;
         sel.addEventListener('change', (e) => { state.category = e.target.value; dispatchFilter(source, { ...state }); });
         row.append(sel);
       }
@@ -189,7 +193,7 @@ export default async function decorate(block) {
         const input = document.createElement('input');
         input.type = 'text';
         input.className = 'form-input';
-        input.placeholder = 'Search by author';
+        input.placeholder = t('search_by_author', 'Search by author');
         input.dataset.filter = 'author';
         input.value = state.author || '';
         input.addEventListener('input', (e) => { state.author = e.target.value; dispatchFilter(source, { ...state }); });
@@ -200,7 +204,7 @@ export default async function decorate(block) {
         const sel = document.createElement('select');
         sel.className = 'form-input';
         sel.dataset.filter = 'sort';
-        sel.innerHTML = `<option value="newest"${state.sort === 'newest' ? ' selected' : ''}>Newest</option><option value="oldest"${state.sort === 'oldest' ? ' selected' : ''}>Oldest</option>`;
+        sel.innerHTML = `<option value="newest"${state.sort === 'newest' ? ' selected' : ''}>${escapeHtml(t('newest', 'Newest'))}</option><option value="oldest"${state.sort === 'oldest' ? ' selected' : ''}>${escapeHtml(t('oldest', 'Oldest'))}</option>`;
         sel.addEventListener('change', (e) => { state.sort = e.target.value; dispatchFilter(source, { ...state }); });
         row.append(sel);
       }
@@ -208,7 +212,7 @@ export default async function decorate(block) {
       const clearBtn = document.createElement('button');
       clearBtn.type = 'button';
       clearBtn.className = 'button ghost filter-clear';
-      clearBtn.textContent = 'Clear Filters';
+      clearBtn.textContent = t('clear_filters', 'Clear Filters');
       clearBtn.addEventListener('click', () => {
         Object.assign(state, { category: '', author: '', sort: 'newest' });
         render();
@@ -229,9 +233,9 @@ export default async function decorate(block) {
         sel.className = 'form-input';
         sel.dataset.filter = 'sort';
         sel.innerHTML = `
-          <option value="name-asc"${state.sort === 'name-asc' ? ' selected' : ''}>Name A–Z</option>
-          <option value="name-desc"${state.sort === 'name-desc' ? ' selected' : ''}>Name Z–A</option>
-          <option value="testimonials"${state.sort === 'testimonials' ? ' selected' : ''}>Has Testimonials</option>`;
+          <option value="name-asc"${state.sort === 'name-asc' ? ' selected' : ''}>${escapeHtml(t('name_asc', 'Name A–Z'))}</option>
+          <option value="name-desc"${state.sort === 'name-desc' ? ' selected' : ''}>${escapeHtml(t('name_desc', 'Name Z–A'))}</option>
+          <option value="testimonials"${state.sort === 'testimonials' ? ' selected' : ''}>${escapeHtml(t('has_testimonials', 'Has Testimonials'))}</option>`;
         sel.addEventListener('change', (e) => { state.sort = e.target.value; dispatchFilter(source, { ...state }); });
         row.append(sel);
       }
@@ -239,7 +243,7 @@ export default async function decorate(block) {
       const clearBtn = document.createElement('button');
       clearBtn.type = 'button';
       clearBtn.className = 'button ghost filter-clear';
-      clearBtn.textContent = 'Clear Filters';
+      clearBtn.textContent = t('clear_filters', 'Clear Filters');
       clearBtn.addEventListener('click', () => {
         Object.assign(state, { designation: [], sort: 'name-asc' });
         render();
@@ -253,9 +257,9 @@ export default async function decorate(block) {
         row2.className = 'filter-row filter-row-full';
         const fs = document.createElement('fieldset');
         fs.className = 'filter-checkboxes';
-        fs.setAttribute('aria-label', 'Designation');
+        fs.setAttribute('aria-label', t('designation', 'Designation'));
         const legend = document.createElement('legend');
-        legend.textContent = 'Filter by designation';
+        legend.textContent = t('filter_by_designation', 'Filter by designation');
         const grid = document.createElement('div');
         grid.className = 'filter-checkbox-grid';
         grid.innerHTML = designations.map((d) => `<label><input type="checkbox" value="${escapeHtml(d)}"${state.designation.includes(d) ? ' checked' : ''}> ${escapeHtml(d)}</label>`).join('');
