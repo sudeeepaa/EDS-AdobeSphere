@@ -322,6 +322,7 @@ button.button.secondary {
   background: transparent;
   border-color: var(--red-primary);
   color: var(--red-primary);
+  margin-top: 12px;
 }
 
 a.button.secondary:hover,
