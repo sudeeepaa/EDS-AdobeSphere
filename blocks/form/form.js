@@ -540,9 +540,281 @@ async function renderBlogEditor(block, cfg) {
   });
 }
 
+// ── contact variant ─────────────────────────────────────────────────────────
+
+// Reads the contact-form's config rows. Handles the multi-row `category-options`
+// shape where the first row labels the group and subsequent rows have an empty
+// label cell with just an option value in cell 2.
+function readContactConfig(block) {
+  const cfg = {};
+  const categoryOptions = [];
+  let currentKey = '';
+
+  [...block.children].forEach((row) => {
+    if (row.children.length !== 2) return;
+    const k = row.children[0].textContent.trim().toLowerCase().replace(/\s+/g, '-');
+    const v = row.children[1].textContent.trim();
+
+    if (k === 'category-options' || (!k && currentKey === 'category-options')) {
+      if (k === 'category-options') currentKey = 'category-options';
+      if (v) categoryOptions.push([v.toLowerCase().replace(/\s+/g, '-'), v]);
+    } else {
+      cfg[k] = v;
+      currentKey = k;
+    }
+    row.remove();
+  });
+
+  return { cfg, categoryOptions };
+}
+
+// Builds a label + (later) error-span pair for a contact-form field.
+function makeContactGroup(id, labelText) {
+  const group = document.createElement('div');
+  group.className = 'cf-group';
+
+  const label = document.createElement('label');
+  label.htmlFor = id;
+  label.textContent = labelText;
+
+  const err = document.createElement('span');
+  err.className = 'form-error';
+  err.dataset.field = id;
+
+  group.append(label);
+  return { group, err };
+}
+
+// Creates a required <input> for the contact form.
+function makeContactInput(id, type, autocomplete) {
+  const input = document.createElement('input');
+  input.id = id;
+  input.className = 'form-input';
+  input.type = type;
+  input.required = true;
+  if (autocomplete) input.autocomplete = autocomplete;
+  return input;
+}
+
+// Creates a required <select> populated with the given [value, label] pairs.
+function makeContactSelect(id, choices) {
+  const sel = document.createElement('select');
+  sel.id = id;
+  sel.className = 'form-input';
+  sel.required = true;
+  choices.forEach(([v, t]) => {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = t;
+    sel.append(opt);
+  });
+  return sel;
+}
+
+// Creates a required <textarea> with a row count and max length.
+function makeContactTextarea(id, rows, maxlength) {
+  const ta = document.createElement('textarea');
+  ta.id = id;
+  ta.className = 'form-input';
+  ta.rows = rows;
+  ta.maxLength = maxlength;
+  ta.required = true;
+  return ta;
+}
+
+// Renders the contact variant: name/email/subject/category/message form
+// with login-aware field visibility and a configurable success banner.
+function renderContact(block) {
+  const { cfg, categoryOptions } = readContactConfig(block);
+  const { Utils, Storage } = window.AdobeSphere;
+
+  const isLoggedIn = Storage.isLoggedIn();
+  const currentUser = isLoggedIn ? Storage.getCurrentUser() : null;
+
+  const guestFields = cfg['show-for-guests']?.split(',').map((f) => f.trim()) || [];
+  const loggedInFields = cfg['show-for-logged-in']?.split(',').map((f) => f.trim()) || [];
+  const fieldsToShow = isLoggedIn ? loggedInFields : guestFields;
+
+  const successBanner = document.createElement('div');
+  successBanner.className = 'cf-success';
+  successBanner.setAttribute('role', 'status');
+  successBanner.setAttribute('aria-live', 'polite');
+  successBanner.hidden = true;
+
+  const form = document.createElement('form');
+  form.className = 'cf-form';
+  form.setAttribute('novalidate', '');
+
+  const fields = {};
+
+  if (fieldsToShow.includes('name')) {
+    const grp = makeContactGroup('cf-name', cfg['label-name'] || 'Full Name');
+    const input = makeContactInput('cf-name', 'text', 'name');
+    input.value = currentUser?.name || '';
+    if (isLoggedIn) input.readOnly = true;
+    grp.group.append(input, grp.err);
+    form.append(grp.group);
+    fields.name = { input, id: 'cf-name' };
+  }
+
+  if (fieldsToShow.includes('email')) {
+    const grp = makeContactGroup('cf-email', cfg['label-email'] || 'Email Address');
+    const input = makeContactInput('cf-email', 'email', 'email');
+    input.value = currentUser?.email || '';
+    if (isLoggedIn) input.readOnly = true;
+    grp.group.append(input, grp.err);
+    form.append(grp.group);
+    fields.email = { input, id: 'cf-email' };
+  }
+
+  if (fieldsToShow.includes('subject')) {
+    const grp = makeContactGroup('cf-subject', cfg['label-subject'] || 'Subject');
+    const input = makeContactInput('cf-subject', 'text', '');
+    grp.group.append(input, grp.err);
+    form.append(grp.group);
+    fields.subject = { input, id: 'cf-subject' };
+  }
+
+  if (fieldsToShow.includes('category')) {
+    const choices = [['', 'Select a category'], ...categoryOptions];
+    const grp = makeContactGroup('cf-category', cfg['label-category'] || 'Category');
+    const input = makeContactSelect('cf-category', choices);
+    grp.group.append(input, grp.err);
+    form.append(grp.group);
+    fields.category = { input, id: 'cf-category' };
+  }
+
+  if (fieldsToShow.includes('message')) {
+    const grp = makeContactGroup('cf-message', cfg['label-message'] || 'Message');
+    const input = makeContactTextarea('cf-message', 4, 500);
+
+    const counter = document.createElement('small');
+    counter.className = 'cf-counter';
+    counter.textContent = '0 / 500';
+
+    grp.group.append(input, counter, grp.err);
+    form.append(grp.group);
+    fields.message = { input, id: 'cf-message', counter };
+
+    input.addEventListener('input', () => {
+      const len = input.value.length;
+      counter.textContent = `${len} / 500`;
+      counter.classList.toggle('cf-counter-over', len > 500);
+    });
+  }
+
+  const submitBtn = document.createElement('button');
+  submitBtn.type = 'submit';
+  submitBtn.className = 'button primary';
+  submitBtn.textContent = cfg.submit || 'Send Message';
+  form.append(submitBtn);
+
+  block.textContent = '';
+  block.append(successBanner, form);
+
+  const setErr = (id, msg) => {
+    const errEl = form.querySelector(`[data-field="${id}"]`);
+    const inputEl = form.querySelector(`#${id}`);
+    inputEl?.classList.toggle('error', !!msg);
+    if (errEl) errEl.textContent = msg || '';
+  };
+
+  const clearErrors = () => {
+    form.querySelectorAll('[data-field]').forEach((el) => { el.textContent = ''; });
+    form.querySelectorAll('.form-input').forEach((el) => el.classList.remove('error'));
+  };
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearErrors();
+
+    const payload = {};
+    let valid = true;
+
+    if (fieldsToShow.includes('name') || fieldsToShow.includes('email')) {
+      if (fieldsToShow.includes('name')) {
+        payload.name = fields.name.input.value.trim();
+        if (!payload.name) {
+          setErr('cf-name', 'Please enter your name.');
+          valid = false;
+        }
+      }
+      if (fieldsToShow.includes('email')) {
+        payload.email = fields.email.input.value.trim();
+        if (!Utils.validateEmail(payload.email)) {
+          setErr('cf-email', 'Please enter a valid email.');
+          valid = false;
+        }
+      }
+    } else if (isLoggedIn) {
+      payload.name = currentUser?.name || '';
+      payload.email = currentUser?.email || '';
+    }
+
+    Object.entries(fields).forEach(([key, field]) => {
+      if (key !== 'name' && key !== 'email') {
+        const value = field.input.value.trim();
+        payload[key] = value;
+
+        if (key === 'subject' && !value) {
+          setErr(field.id, 'Please enter a subject.');
+          valid = false;
+        } else if (key === 'category' && !value) {
+          setErr(field.id, 'Please select a category.');
+          valid = false;
+        } else if (key === 'message' && (!value || value.length < 20)) {
+          setErr(field.id, 'Message must be at least 20 characters.');
+          valid = false;
+        }
+      }
+    });
+
+    if (!valid) { Utils.toast('Please fix the highlighted fields.', 'error'); return; }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending…';
+
+    try {
+      if (cfg['form-action']) {
+        const res = await fetch(cfg['form-action'], {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error('Server error');
+      } else {
+        Storage.addContactSubmission?.({
+          id: Date.now(), ...payload, submittedAt: new Date().toISOString(),
+        });
+      }
+
+      Utils.toast('Message sent!', 'success');
+      form.reset();
+      if (fields.message?.counter) fields.message.counter.textContent = '0 / 500';
+
+      successBanner.textContent = cfg.success || 'Thanks — we\'ll get back to you within 24–48 hours.';
+      successBanner.hidden = false;
+      setTimeout(() => { successBanner.hidden = true; }, 6000);
+    } catch {
+      Utils.toast('Failed to send. Please try again.', 'error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = cfg.submit || 'Send Message';
+    }
+  });
+}
+
 // Dispatches to the correct form variant based on the block class.
 export default async function decorate(block) {
   const variants = [...block.classList];
+
+  // Contact variant has its own multi-row config schema (category-options);
+  // short-circuit before the generic readConfig pipeline.
+  if (variants.includes('contact')) {
+    renderContact(block);
+    return;
+  }
+
   const cfg = readConfig(block);
   block.textContent = '';
 

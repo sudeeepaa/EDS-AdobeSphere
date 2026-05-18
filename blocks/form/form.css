@@ -1,5 +1,10 @@
 /*
- * AdobeSphere — form block (contact / login / signup / registration / blog-editor).
+ * AdobeSphere — form block.
+ * Variants: event-registration · blog-editor · contact.
+ *
+ * Also defines the .contact-split section layout that makes the
+ * `form (contact)` and `accordion` blocks sit side-by-side when both are in
+ * the same section with Section Metadata Style = contact-split.
  */
 
 .form .form {
@@ -176,4 +181,108 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 25%);
 }
 
+/* ─── contact variant ───────────────────────────────────────────────────────
+ * `form (contact)` — name/email/subject/category/message contact form with
+ * login-aware field visibility and a configurable success banner.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.form.contact {
+  max-width: 680px;
+  margin: 0 auto;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 20px 24px;
+}
 
+/* Compact inputs for this variant */
+.form.contact .form-input {
+  padding: 8px 12px;
+  font-size: 0.88rem;
+}
+
+/* Field groups */
+.form.contact .cf-group {
+  margin-bottom: 12px;
+}
+
+.form.contact .cf-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Character counter */
+.form.contact .cf-counter {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  text-align: right;
+  color: var(--text-muted);
+}
+
+.form.contact .cf-counter.cf-counter-over {
+  color: #dc2626;
+}
+
+/* Submit button */
+.form.contact .cf-form .button {
+  margin-top: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
+/* Success banner */
+.form.contact .cf-success {
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  color: #15803d;
+  border-radius: var(--radius-md);
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+/* Two-column section layout — applied when the DA.live section containing
+ * `form (contact)` + `accordion` has Section Metadata: Style | contact-split */
+main .section.contact-split {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 40px;
+  align-items: flex-start;
+  padding: 32px 24px;
+  max-width: 960px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+main .section.contact-split > .form-wrapper {
+  flex: 0 0 56%;
+  min-width: 0;
+}
+
+main .section.contact-split > .accordion-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Mobile: stack vertically */
+@media (max-width: 780px) {
+  .form.contact {
+    padding: 16px;
+  }
+
+  main .section.contact-split {
+    flex-direction: column;
+    gap: 24px;
+    padding: 24px 16px;
+  }
+
+  main .section.contact-split > .form-wrapper,
+  main .section.contact-split > .accordion-wrapper {
+    flex: none;
+    width: 100%;
+  }
+}

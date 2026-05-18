@@ -85,9 +85,8 @@ Every block follows the same pattern:
 - **`cards`** — *variants: events · blogs · creators · testimonials · stats · with-save · with-actions · horizontal; user sources: saved-events · saved-blogs · registered-events · user-blogs* — home (featured grids + testimonials), explore (paginated grids), user-profile (saved items / registered events / published blogs), creator-profile (creator's blog list), about (stats — animated count-up numbers)
 - **`tabs`** — explore (wraps the Events / Blogs / Creators tab panels; coordinates `filters` + `cards` inside each via custom events)
 - **`filters`** — *source-driven: events · blogs · creators* — explore (one filter bar per tab; emits `adobesphere:filter` for `cards` to consume)
-- **`form`** — *variants: event-registration · blog-editor* — event detail (registration modal, hidden until `event-actions` opens it), blog-editor (create and edit form)
+- **`form`** — *variants: event-registration · blog-editor · contact* — event detail (registration modal, hidden until `event-actions` opens it), blog-editor (create and edit form), contact (contact-form with login-aware fields + category dropdown)
 - **`auth-form`** — *variants: signin · signup* — login, signup
-- **`contact-form`** — contact
 - **`detail-section`** — *variants: overview · agenda · people · quote · bio · reach-out · comments · blog-header · article-body · mission* — event detail (overview, agenda, people, quote, reach-out, comments), blog detail (blog-header, article-body, bio, comments), creator-profile (bio, reach-out, quote), about (mission — "Made With Purpose" contributor card grid)
 - **`profile`** — *variants: user · creator* — user-profile (editable profile card with avatar upload, bio, LinkedIn), creator-profile (read-only stats hero)
 - **`event-actions`** — event detail (save toggle + register/unregister button; opens the registration modal)
