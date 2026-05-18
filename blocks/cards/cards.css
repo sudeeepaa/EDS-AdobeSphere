@@ -91,6 +91,10 @@
   pointer-events: auto;
 }
 
+.cards .card-body .badge {
+  justify-content: center;
+}
+
 .cards .card-title {
   margin: 0;
   font-family: var(--font-display);
