@@ -493,6 +493,7 @@ a.detail-person-link:hover h3 {
 }
 
 .detail-section.mission .detail-mission-bio {
+  text-align: justify;
   margin: 0 0 16px;
   font-size: 0.95rem;
   line-height: 1.65;
