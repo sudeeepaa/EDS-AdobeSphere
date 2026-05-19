@@ -1,579 +1,422 @@
 # AdobeSphere — da.live Authoring Reference
 
-Every block in this project is authored in [da.live](https://da.live/) using a simple table. The first row of the table is **always** the block name (with optional variant in parentheses). Subsequent rows are either **content rows** (your actual copy / images) or **config rows** in `Key | Value` form. Config rows are consumed by the block code and never rendered.
+Every block in this project is authored in [da.live](https://da.live/) using a simple **table**. The first row of the table is **always** the block name, optionally followed by one or more variants in parentheses (e.g. `cards (events horizontal)`). Subsequent rows are either:
 
-If you've never authored an EDS page before, the [aem.live tutorial](https://www.aem.live/developer/tutorial) is the right starting point — this doc assumes you've already learned the basics.
+- **Config rows** — `Key | Value` pairs read by the block JS and never rendered (e.g. `Source | events`, `Limit | 6`).
+- **Content rows** — actual copy, images, or links that get rendered as part of the block.
 
----
-
-## Page setup checklist
-
-Every page should have, in order:
-
-1. **Hero** (any variant)
-2. **Body sections** (one or more — events grid, detail sections, forms…)
-3. (optional) **Section Metadata** rows preceding a section to swap its background (`style | light`, `style | dark`, `style | flush`)
-
-The header (`/nav`) and footer (`/footer`) are loaded from fragments — author them once and they apply everywhere.
+If you've never authored an EDS page before, read the [aem.live tutorial](https://www.aem.live/developer/tutorial) first — this document assumes you already know how to log into da.live, create a page, and insert a block table.
 
 ---
 
-## 1. Header (`/nav` fragment)
+## 1. Document tree
 
-The header block always reads from `/nav`. Author the nav as a regular page with three top-level sections:
+The full content surface lives at the root of the da.live project. Each entry below is a separate da.live document.
 
-**Section 1 — Brand:**
+```
+/
+├── index                  ← Home
+├── nav                    ← Header (loaded as fragment)
+├── footer                 ← Footer (loaded as fragment)
+├── explore                ← Explore (tabbed listings)
+├── about                  ← About
+├── contact                ← Contact
+├── login                  ← Sign-in form
+├── signup                 ← Sign-up form
+├── blog-editor            ← Blog authoring form (empty page; the block is auto-injected)
+├── user-profile           ← Logged-in user dashboard
+├── metadata               ← Site-wide page metadata (titles, descriptions, OG tags)
+│
+├── scripts/data/          ← Static JSON content served at /scripts/data/<name>.json
+│   ├── campaigns.json     ← Events (Source `events` reads this file)
+│   ├── blogs.json
+│   └── creators.json
+│
+├── events/
+│   └── template           ← Shared layout rendered for every /events/{id} URL
+│
+├── blog/
+│   └── template           ← Shared layout rendered for every /blog/{id} URL
+│
+└── creator-profile/
+    └── template           ← Shared layout rendered for every /creator-profile?id={email}
+```
 
-| (just author the brand — no block needed) |
-|---|
-| ![logo](image-link) [**Adobe**sphere](/) |
+> **Dynamic detail pages.** Events, blogs, and creator profiles do not get one document per item. Author the `…/template` document once with the right blocks and `Id Source | …` config; at runtime the block code reads the entity id from the URL and hydrates the page from the matching JSON file.
 
-The `<strong>Adobe</strong>` part is what gets coloured red. The image becomes the wordmark icon.
-
-**Section 2 — Primary links:**
-
-| (UL of links, no block) |
-|---|
-| - [Home](/) |
-| - [Explore](/explore) |
-| - [About](/about) |
-| - [Contact](/contact) |
-
-**Section 3** is optional and reserved for future utilities. Leave it empty unless you have a reason.
-
-> The auth zone (Sign In / Sign Up vs avatar dropdown) is rendered by code based on the user's session — don't author it.
-
----
-
-## 2. Footer (`/footer` fragment)
-
-Author at `/footer`. Each top-level section becomes one footer column. The **last** section becomes the bottom strip (copyright line).
-
-| Section 1 — brand |
-|---|
-| **Adobe**sphere |
-| A student-built destination for discovering Adobe events, insights, and the creators shaping modern digital craft. |
-
-| Section 2 — Quick Links |
-|---|
-| ### Quick Links |
-| - [Home](/) |
-| - [Explore](/explore) |
-| - [About](/about) |
-| - [Contact](/contact) |
-
-| Section 3 — Content |
-|---|
-| ### Content |
-| - [Campaigns & Events](/explore?tab=events) |
-| - [Blogs & Articles](/explore?tab=blogs) |
-| - [Creator Profiles](/explore?tab=creators) |
-
-| Section 4 — bottom strip |
-|---|
-| © 2026 AdobeSphere. Built by Sudeepa Santhanam. |
+> **Source naming.** When a block has `Source | events`, the code resolves that to `/scripts/data/campaigns.json`. The other two (`blogs`, `creators`) map 1:1 to their file names.
 
 ---
 
-## 3. Hero
+## 2. Page-by-page recipes
 
-### 3.1 Hero — default (centred title + paragraphs + buttons)
-
-| Hero |
-|---|
-| # About the AdobeSphere Platform |
-| AdobeSphere is a student-built platform that brings Adobe's creative world… |
-| **[Explore All](/explore)** *[Join](/signup)* |
-
-### 3.2 Hero (video) — Home
-
-| Hero (video) |
-|---|
-| ![video bg](/assets/videos/home-hero-background.mp4) |
-| # Where Adobe's Creative Universe Comes Alive |
-| Discover signature events, insightful articles, and standout creators shaping the future of digital creativity. |
-| **[Explore All](/explore)** *[Join the Community](/signup)* |
-
-> The picture row at the top can be a real image or an `.mp4` / `.webm` link — the block detects the extension and promotes it to a `<video autoplay muted loop playsinline>`.
-
-### 3.3 Hero (search) — Explore
-
-| Hero (search) |
-|---|
-| # Explore the AdobeSphere |
-| Find events, stories, and creators shaping the next wave of digital creativity. |
-| Placeholder | Search events, blogs, creators… |
-
-### 3.4 Hero (media) — Event detail banner
-
-| Hero (media) |
-|---|
-| ![banner](/assets/images/events/adobe-summit.jpg) |
-| # Event Title |
-| Meta | Saturday, April 18, 2026 · Houston Convention Center |
-
-### 3.5 Hero (gradient) — Creator profile (alternative to using the `profile (creator)` block)
-
-| Hero (gradient) |
-|---|
-| Avatar | ![ariana](/assets/images/profiles/ariana-flores-creator.jpg) |
-| # Ariana Flores |
-| Senior Creative Director |
-| Stats | <ul><li>**12** Blogs Published</li><li>**8** Events Hosted</li><li>**5** Testimonials</li></ul> |
-
-### 3.6 Hero (compact) — Blog detail title strip
-
-| Hero (compact) |
-|---|
-| # Article Title |
+Each subsection shows the **da.live screenshot** of the live authoring (so you can match what's on screen), followed by a brief **block list** with notes on what each block does and what config rows it accepts.
 
 ---
 
-## 4. Cards
+### 2.1 Home — `/` (index)
 
-### 4.1 Cards (events) — featured events grid
+![Home page authoring — top](docs/authoring-screenshots/home-1.png)
+![Home page authoring — bottom](docs/authoring-screenshots/home-2.png)
 
-| Cards (events) |
-|---|
-| Title | Featured Events & Campaigns |
-| Source | events |
-| Filter | featured=true |
-| Limit | 6 |
+| # | Block | Purpose |
+|---|---|---|
+| 1 | `Section Metadata` (`style | flush`) | Removes default top padding so the hero sits flush against the navbar. |
+| 2 | `hero` (video) | Full-bleed red hero. Row 1 is the background — paste a `.mp4` / `.webm` URL and the block promotes it to a looping muted `<video>`. Row 2 is the H1, row 3 the lede, row 4 the CTA buttons (`Explore All`, `Join the Community`). |
+| 3 | `marquee` | Auto-scrolling category pill strip. Authored rows are ignored — pills are generated dynamically from the categories present in `blogs.json` + `campaigns.json`, and each pill links into the matching Explore tab. |
+| 4 | `cards (events)` | Featured Events & Campaigns. Config: `Source | events`, `Filter | featured=true`, `Limit | 6`. |
+| 5 | `cards (blogs)` | From the Adobe Blog. Config: `Source | blogs`, `Filter | featured=true`, `Limit | 3`. |
+| 6 | `Section Metadata` (`style | light`) | Switches the next section's background to the light off-white tone. |
+| 7 | `cards (creators)` | Meet the Creators. Config: `Source | creators`, `Filter | featured=true`, `Limit | 4`. |
 
-### 4.2 Cards (blogs)
+---
 
-| Cards (blogs) |
-|---|
-| Title | From the Adobe Blog |
-| Source | blogs |
-| Filter | featured=true |
-| Limit | 4 |
+### 2.2 Header / Navbar — `/nav` (fragment)
 
-### 4.3 Cards (creators)
+![Nav authoring](docs/authoring-screenshots/nav.png)
 
-| Cards (creators) |
-|---|
-| Title | Meet the Creators |
-| Source | creators |
-| Filter | featured=true |
-| Limit | 4 |
+The `header` block always loads `/nav` as a fragment, so the nav document doesn't need a `header` block of its own — author the contents at the page level and the framework wraps them.
 
-### 4.4 Cards (events with-save) — saved items grid (user profile)
+| Section | What to put in it |
+|---|---|
+| **Brand** | A single image (the Adobe wordmark) followed by a link whose text becomes the brand label. The `<strong>` portion (`**Adobe**sphere`) is the part rendered in red. |
+| **Primary links** | A simple UL of in-app routes: Home, Explore, About, Contact. |
 
-| Cards (events with-save) |
-|---|
-| Title | Saved Events |
-| Source | events |
-| Empty | You haven't saved any events yet. |
+> The **sign-in / sign-up buttons** (logged-out) and the **avatar dropdown** (logged-in) are injected by the `header` block from `Storage.getSession()` — never author them.
 
-### 4.5 Cards (events with-actions) — registrations grid
+---
 
-| Cards (events with-actions) |
-|---|
-| Title | My Registrations |
-| Source | events |
-| Empty | You haven't registered for anything yet. |
+### 2.3 Footer — `/footer` (fragment)
 
-### 4.6 Cards (blogs with-actions) — published blogs grid
+![Footer authoring](docs/authoring-screenshots/footer.png)
 
-| Cards (blogs with-actions) |
-|---|
-| Title | My Published Blogs |
-| Source | blogs |
-| Empty | You haven't published any blogs yet. |
+Authored at `/footer` and loaded as a fragment by the `footer` block. Each top-level **section** in the document becomes one footer column. The **final section** becomes the slim bottom copyright strip.
 
-### 4.7 Cards (events horizontal) — side-by-side layout
+| Column | Contents |
+|---|---|
+| Brand | The wordmark and a one-line tagline describing the project. |
+| Quick Links | UL of navigation routes (Home, Explore, About, Contact). |
+| Content | UL of deep links into the Explore tabs (`/explore?tab=events`, `?tab=blogs`, `?tab=creators`). |
+| Bottom strip | `© 2026 AdobeSphere. Built by Sudeepa Santhanam.` |
 
-| Cards (events horizontal) |
-|---|
-| Source | events |
-| Filter | category=Workshops |
-| Limit | 4 |
+---
 
-### 4.8 Cards (events) — by explicit ids ("you might also like")
+### 2.4 Explore — `/explore`
 
-| Cards (events) |
-|---|
-| Title | You Might Also Like |
-| Source | events |
-| Ids | event-005, event-007, event-012 |
+![Explore authoring — top](docs/authoring-screenshots/explore-1.png)
+![Explore authoring — bottom](docs/authoring-screenshots/explore-2.png)
 
-### 4.9 Cards (testimonials) — statically authored (no data layer)
+Explore is composed of several cooperating blocks rather than one monolithic component. The `tabs` block treats the three sibling sections beneath it as tab panels and switches them based on `?tab=…` in the URL.
 
-| Cards (testimonials) |
-|---|
-| Maya Chen | Senior Product Designer | AdobeSphere makes it effortless to find the right event… | ![maya](/assets/images/profiles/maya-chen-testimonial.jpg) |
-| Arjun Patel | Motion Designer | Following creators here is genuinely useful. I learn… | ![arjun](/assets/images/profiles/arjun-patel-testimonial.jpg) |
-| Leila Hassan | Brand Strategist | Saving events and reading the discussion threads turned… | ![leila](/assets/images/profiles/leila-hassan-testimonial.jpg) |
+| # | Block | Purpose |
+|---|---|---|
+| 1 | `Section Metadata` (`style | flush`) | Flush top padding so the hero locks under the nav. |
+| 2 | `hero (search)` | Search bar hero. Row 1 = H1, row 2 = lede, row 3 = `Placeholder | Search events, blogs, creators…`. Typing into the bar fires `adobesphere:search` for the `cards` blocks below. |
+| 3 | `tabs` | Three rows — each row is `Tab Label | source` (e.g. `Events & Campaigns | events`). The right cell is the data source key that selects which sibling section to show. |
+| 4 | `filters (events)` + `cards (events)` | Events tab body. The `cards` block accepts `Source`, `Pagination | 6`, and the matching `filters` emits `adobesphere:filter` events to it. |
+| 5 | `filters (blogs)` + `cards (blogs)` | Blogs tab body. Same shape, `Source | blogs`. |
+| 6 | `filters (creators)` + `cards (creators)` | Creators tab body. Filters supports `Designation Filter | true` and `Sort | true` to enable the designation dropdown and sort menu. |
 
-### 4.10 Cards (events) — Ids From (creator's events)
+URL parameters: `?tab=blogs` opens the Blogs tab on load. `?q=foo` pre-fills the search field. `?category=Workshops` pre-applies a filter.
 
-| Cards (events) |
-|---|
-| Title | Events |
-| Source | events |
-| Ids From | creators.eventIds |
+---
 
-### 4.11 Cards (blogs) — Ids From (creator's blogs)
+### 2.5 Login — `/login`
 
-| Cards (blogs) |
-|---|
-| Title | Blog Posts |
-| Source | blogs |
-| Ids From | creators.blogIds |
+![Login authoring](docs/authoring-screenshots/login.png)
 
-### Recognised config rows
+| # | Block | Purpose |
+|---|---|---|
+| 1 | `Hero` | Two-row centred hero — `Welcome Back` H1 + sub-line. (Default variant, no media.) |
+| 2 | `Section Metadata` (`style | light`) | Light background under the form card. |
+| 3 | `Form (login)` | Auth form. Config: `Title | Welcome back`, `Subtitle | Sign in to save events…`, `Submit | Sign In`, `After | /` (redirect target on success). The "Don't have an account? Sign up" link is rendered by the block, not authored. |
+
+---
+
+### 2.6 Sign Up — `/signup`
+
+![Sign up authoring](docs/authoring-screenshots/signup.png)
+
+Identical pattern to `/login` but with the `signup` variant.
+
+| # | Block | Purpose |
+|---|---|---|
+| 1 | `Hero` | `Join the AdobeSphere` H1 + sub-line. |
+| 2 | `Section Metadata` (`style | light`) | Light background. |
+| 3 | `Form (signup)` | Config: `Title | Create your account`, `Subtitle | Free, takes 30 seconds…`, `Submit | Create Account`, `After | /`. |
+
+---
+
+### 2.7 About — `/about`
+
+![About authoring — top](docs/authoring-screenshots/about-1.png)
+![About authoring — testimonials](docs/authoring-screenshots/about-2-testimonials.png)
+![About authoring — mission + timeline](docs/authoring-screenshots/about-3-mission-timeline.png)
+![About authoring — timeline continued](docs/authoring-screenshots/about-4-timeline-continued.png)
+
+| # | Block | Purpose |
+|---|---|---|
+| 1 | `Section Metadata` (`style | flush`) | Flush top padding. |
+| 2 | `hero (video)` | Background `.mp4` row + H1 (`About the AdobeSphere Platform`) + several body paragraphs. |
+| 3 | `cards (stats)` | Animated count-up counters. Each row: `Label | source | href | CTA-label`. `source` is one of `creators`, `events`, `blogs`, `users` (counts unique localStorage signups) or a literal number. |
+| 4 | `cards (testimonials)` | Five-up testimonial grid. Each row: `Name | Role | Quote | Headshot`. Authored statically — no data layer. |
+| 5 | `detail-section (mission)` | "Made With Purpose" contributor card grid. Cards are authored inside the block body. |
+| 6 | `marquee (timeline)` | Horizontally scrollable platform-milestone ribbon with a draggable progress bar. Each row: `Milestone Title | Date | UL of bullets`. |
+
+---
+
+### 2.8 Contact — `/contact`
+
+![Contact authoring](docs/authoring-screenshots/contact.png)
+
+| # | Block | Purpose |
+|---|---|---|
+| 1 | (heading + paragraphs) | "Get in Touch" H1, two intro lines, and the author signature link — plain authored content, no block. |
+| 2 | `form (contact)` | Contact form. Config: `form-action | https://formspree.io/f/YOUR_FORM_ID`. The block also auto-fills name/email from the current session if signed in, and provides a category dropdown sourced from a built-in list. |
+| 3 | `accordion` | Collapsible FAQ list. Each row: `Question | Answer`. |
+
+> The screenshot still uses the legacy `contact-form` and `faq` names. The current blocks are `form (contact)` and `accordion` — re-author when you next touch this page.
+
+---
+
+### 2.9 User Profile — `/user-profile`
+
+![User profile authoring](docs/authoring-screenshots/user-profile.png)
+
+A logged-in dashboard. Every grid reads from the current session's localStorage — no authored data.
+
+| # | Block | Purpose |
+|---|---|---|
+| 1 | `Section Metadata` (`style | flush`) | Flush top padding so the profile header sits under the nav. |
+| 2 | `profile (user)` | Editable card: avatar (uploads stored as base64), name, bio, LinkedIn URL. Zero config. |
+| 3 | `Cards (events with-save)` | "Saved Events". Config: `Source | events`, `Empty | You haven't saved any events yet.` |
+| 4 | `Cards (blogs with-save)` | "Saved Blogs". Same shape, `Source | blogs`. |
+| 5 | `Cards (events with-actions)` | "My Registrations" — each card has a Cancel button. |
+| 6 | `Cards (blogs with-actions)` | "My Published Blogs" — Edit / Delete buttons per card. |
+| 7 | `Section Metadata` (`style | light`) | Light background under the recommendations. |
+| 8 | `Cards (events)` | "Recommended Events". Config: `Source | events`, `Limit | 3`. |
+| 9 | `Cards (blogs)` | "Recommended Blogs". Same shape. |
+
+---
+
+### 2.10 Blog Editor — `/blog-editor`
+
+![Blog editor authoring](docs/authoring-screenshots/blog-editor.png)
+
+The blog editor page is **deliberately empty**. The page route is detected by the `form` block (via the URL path) and the `form (blog-editor)` UI is mounted automatically. Leave the page body empty in da.live.
+
+If you need to override the form's title or CTA, add a `Form (blog-editor)` block:
+
+| Key | Value |
+|---|---|
+| `Title` | `New Blog Post` |
+| `Submit` | `Publish Blog` |
+| `Success` | `Blog published!` |
+
+---
+
+### 2.11 Blog detail — `/blog/template`
+
+Rendered for every URL of the form `/blog/{id}`. The block code reads `{id}` from the URL and hydrates each `Id Source | blogs` block from `/scripts/data/blogs.json`.
+
+![Blog template authoring — top](docs/authoring-screenshots/blog-template-1.png)
+![Blog template authoring — bottom](docs/authoring-screenshots/blog-template-2.png)
+
+| # | Block | Purpose |
+|---|---|---|
+| 1 | (Article Title placeholder) | "Article Title", "Category — Date", "Author Name" — these are placeholder strings replaced by the hero block at runtime. |
+| 2 | `hero (compact)` | Slim title strip showing category · date · author + H1. Config: `Source | blogs`. |
+| 3 | `detail-section (article-body)` | Renders the `content[]` array from `blogs.json`. Each `{type: heading}` becomes `<h2>`, `{type: paragraph}` → `<p>`, `{type: image}` → `<figure>`. Config: `Id Source | blogs`. |
+| 4 | `detail-section (bio-blog)` | Author bio card. Cross-references `creators.json` by the blog's `authorEmail`. Config: `Title | About the Author`, `Id Source | blogs`. |
+| 5 | `Section Metadata` (`style | light`) | Light bg under the comments section. |
+| 6 | `detail-section (comments)` | Discussion thread (comments persist in `Storage`). Config: `Title | Discussion`. No `Id Source` needed — the URL id is used directly. |
+| 7 | `cards (blogs)` | "More from the Blog". Config: `Source | blogs`, `Limit | 3`. |
+
+---
+
+### 2.12 Event detail — `/events/template`
+
+Rendered for every `/events/{id}` URL.
+
+![Event template authoring — top](docs/authoring-screenshots/event-template-1.png)
+![Event template authoring — bottom](docs/authoring-screenshots/event-template-2.png)
+
+| # | Block | Purpose |
+|---|---|---|
+| 1 | `hero (media)` | Big banner image at the top + title row + meta row. Config: rows are `Event Title` and `Meta | Saturday, April 18, 2026 · Houston Convention Center`. |
+| 2 | `event-actions` | Save toggle + Register CTA bar. Rows: `Save Event` and `Register for this Event`. Clicking Register fires `adobesphere:show-registration` to open the modal form below. |
+| 3 | `detail-section (overview)` | Description paragraphs from `campaigns.json`. Config: `Title | Event Overview`, `Id Source | events`. |
+| 4 | `Section Metadata` (`style | light`) | Light bg under the agenda. |
+| 5 | `detail-section (agenda)` | Time-blocked schedule. Config: `Title | Schedule & Agenda`, `Id Source | events`. |
+| 6 | `detail-section (people presenters)` | Presenter cards from the event's `presenters[]`. |
+| 7 | `detail-section (people speakers)` | Guest speaker cards. |
+| 8 | `detail-section (people hosts)` | Event host cards. |
+| 9 | `detail-section (quote)` | Reads `closingQuote` from the event record. Config: `Id Source | events`. |
+| 10 | `Section Metadata` (`style | light`) | |
+| 11 | `Form (event-registration)` | Modal registration form, hidden by default and opened by `event-actions`. Config: `Title | Confirm Your Spot`, `Submit | Register Now`, `Success | You're successfully registered for this event!`. |
+| 12 | `cards (events)` | "You Might Also Like" — related events by explicit id list. Config: `Source | events`, `Ids | event-005, event-007, event-012`, `Limit | 3`. |
+
+---
+
+### 2.13 Creator profile — `/creator-profile/template`
+
+Rendered for every `/creator-profile?id={email}` URL.
+
+![Creator profile template authoring — top](docs/authoring-screenshots/creator-profile-template-1.png)
+![Creator profile template authoring — bottom](docs/authoring-screenshots/creator-profile-template-2.png)
+
+| # | Block | Purpose |
+|---|---|---|
+| 1 | `Section Metadata` (`style | flush`) | Flush top padding so the profile hero sits under the nav. |
+| 2 | `profile (creator)` | Creator hero header — large avatar, name, designation, stats strip. Reads the creator id from the URL, hydrates from `/scripts/data/creators.json`. Zero config. |
+| 3 | `detail-section (bio-creator)` | "About" — bio paragraphs from the creator record. Config: `Title | About`, `Id Source | creators`. |
+| 4 | `detail-section (reach-out)` | Email + LinkedIn card. Config: `Title | Reach Out`, `Id Source | creators`. |
+| 5 | `Section Metadata` (`style | light`) | Light bg under the related content. |
+| 6 | `cards (events)` | The creator's events. Config: `Source | events`, `Ids From | creators.eventIds` (resolves the URL creator's `eventIds` array and filters down to those ids). |
+| 7 | `cards (blogs)` | The creator's blogs. Config: `Source | blogs`, `Ids From | creators.blogIds`. |
+| 8 | `detail-section (quote-creator)` | Reads `featuredQuote` from the creator record. Config: `Id Source | creators`. |
+
+---
+
+## 3. Block reference (all variants)
+
+The page recipes above show real-world usage. The tables below catalogue every variant and the config rows each accepts.
+
+### 3.1 `hero`
+
+Variants: `default · video · search · media · compact · gradient · creator`.
+
+| Row format | Effect |
+|---|---|
+| First text row in the block | H1 (page title) |
+| Following text rows | Paragraph(s) under the title |
+| Image / video row (`.mp4`/`.webm`/`.png`/`.jpg`) | Becomes background media — `.mp4`/`.webm` promoted to autoplay-muted-loop `<video>` |
+| `Placeholder | …` | Search-variant input placeholder |
+| `Meta | …` | Subtitle / meta row (media variant) |
+| Bold link in a row | Primary CTA button |
+| Italic link in a row | Secondary CTA button |
+| `Id Source | events|blogs|creators` | Hydrate hero from the entity record in the matching JSON (used on detail templates) |
+
+### 3.2 `cards`
+
+Variants: `events · blogs · creators · testimonials · stats · with-save · with-actions · horizontal`. Multiple variants can be combined (`cards (events with-save)`).
 
 | Key | Effect |
 |---|---|
-| `Source` | One of `events`, `blogs`, `creators`. Hydrates from `/data/{name}.json` (campaigns.json for events). |
+| `Source` | One of `events`, `blogs`, `creators`. Hydrates from `/scripts/data/{name}.json` (with `events` → `campaigns.json`). |
 | `Filter` | `field=value` (e.g. `featured=true`, `category=Workshops`). |
-| `Ids` | Comma-separated list of ids — wins over `Filter`. |
-| `Ids From` | Cross-reference pattern like `creators.eventIds`. Reads the current URL entity from `{source}`, takes `{field}` as an id list, and filters the cards to those ids only. |
+| `Ids` | Comma-separated list of explicit ids — wins over `Filter`. |
+| `Ids From` | Cross-reference pattern like `creators.eventIds`. Reads the URL entity from `{source}`, takes `{field}` as an id list, filters cards to those ids. |
 | `Limit` | Max number of cards to render. |
 | `Title` | Optional `<h2>` rendered above the grid. |
 | `Empty` | Message shown when the filtered list is empty. |
+| `Pagination` | (Explore only) Page size — turns the grid into a paginated view. |
+| `Filters` | (Explore only) `true` to render the filter bar above the grid. |
 
----
+The `testimonials` and `stats` variants are **content-row driven** — each row is one card / counter:
+- `testimonials`: `Name | Role | Quote | Headshot`
+- `stats`: `Label | source-or-number | href | CTA-label`
 
-## 5. Explore
+### 3.3 `tabs`
 
-The Explore page is authored using a combination of blocks rather than a single monolithic block. This allows complete control over the layout.
+Each row is one tab: `Tab Label | source-key`. The block treats the next *n* sibling sections as the tab panels (in order).
 
-### Recommended Document Structure for Explore Page
+### 3.4 `filters`
 
-```markdown
-# Explore the AdobeSphere
-Find events, stories, and creators shaping the next wave of digital creativity.
-
-| hero (search) |
-|---|
-| Placeholder | Search events, blogs, creators… |
-
----
-
-| tabs |
-|---|
-| Events & Campaigns |
-| Blogs & Articles |
-| Creators |
-
----
-
-| cards (events) |
-|---|
-| Source | events |
-| Pagination | 6 |
-| Filters | true |
-
----
-
-| cards (blogs) |
-|---|
-| Source | blogs |
-| Pagination | 6 |
-| Filters | true |
-
----
-
-| cards (creators) |
-|---|
-| Source | creators |
-| Pagination | 6 |
-| Filters | true |
-```
-
-The `tabs` block automatically treats the subsequent sections as its tab panels. 
-The `cards` block supports `Pagination | X` and `Filters | true` to render interactive grids without needing a dedicated "explore" block. URL params like `?tab=blogs` or `?q=text` are honored.
-
----
-
-## 6. Form
-
-### 6.1 Form (default = contact)
-
-| Form |
-|---|
-| Title | Send us a message |
-| Submit | Send Message |
-| Success | Thanks — we'll get back to you within 24–48 hours. |
-
-### 6.2 Form (login)
-
-| Form (login) |
-|---|
-| Title | Welcome back |
-| Subtitle | Sign in to save events, write blogs, and join the discussion. |
-| Submit | Sign In |
-| After | / |
-
-### 6.3 Form (signup)
-
-| Form (signup) |
-|---|
-| Title | Join the community |
-| Subtitle | Free, takes 30 seconds, and unlocks saving + commenting + publishing. |
-| Submit | Create Account |
-| After | / |
-
-### 6.4 Form (event-registration) — used inside the event detail template
-
-| Form (event-registration) |
-|---|
-| Title | Confirm Registration |
-| Submit | Confirm Registration |
-| Success | You're registered. See you there! |
-
-### 6.5 Form (blog-editor)
-
-| Form (blog-editor) |
-|---|
-| Title | New Blog Post |
-| Submit | Publish Blog |
-| Success | Blog published! |
-
-### Recognised config rows
+Variants: `events · blogs · creators`. Config rows:
 
 | Key | Effect |
 |---|---|
-| `Title` | Form heading / brand title (auth variants). |
+| `Source` | One of `events`, `blogs`, `creators`. |
+| `Designation Filter` | `true` to render the designation dropdown (creators only). |
+| `Sort` | `true` to render the sort menu. |
+
+### 3.5 `form`
+
+Variants: `contact · login · signup · event-registration · blog-editor` (the default variant is `contact`).
+
+| Key | Effect |
+|---|---|
+| `Title` | Form heading / brand title. |
 | `Subtitle` | Sub-line shown under the title (auth variants). |
 | `Submit` | CTA button label. |
 | `Success` | Toast message on successful submit. |
-| `After` | Path to redirect to after success (auth + registration). |
+| `After` | Path to redirect to after success (auth + event-registration). |
+| `form-action` | Endpoint URL (contact variant — Formspree, etc.). |
 
----
+### 3.6 `detail-section`
 
-## 7. Detail-section
-
-The most variant-heavy block, but each variant is mechanically simple. Use one block per logical section of a detail page.
-
-### 7.1 Detail-section (overview)
-
-| Detail-section (overview) |
-|---|
-| Title | Event Overview |
-| Id Source | events |
-
-### 7.2 Detail-section (agenda)
-
-| Detail-section (agenda) |
-|---|
-| Title | Schedule & Agenda |
-| Id Source | events |
-
-### 7.3 Detail-section (people presenters / speakers / hosts)
-
-Three variants, same pattern. Add `presenters`, `speakers`, or `hosts` to the block class:
-
-| Detail-section (people presenters) |
-|---|
-| Title | Presenters |
-| Id Source | events |
-
-| Detail-section (people speakers) |
-|---|
-| Title | Guest Speakers |
-| Id Source | events |
-
-| Detail-section (people hosts) |
-|---|
-| Title | Event Hosts |
-| Id Source | events |
-
-### 7.4 Detail-section (quote) — reads `closingQuote` (events) or `featuredQuote` (creators)
-
-| Detail-section (quote) |
-|---|
-| Id Source | events |
-
-### 7.5 Detail-section (bio) — used on blog detail (author) and creator profile
-
-| Detail-section (bio creator) |
-|---|
-| Title | About |
-| Id Source | creators |
-
-### 7.6 Detail-section (reach-out) — creator email + LinkedIn
-
-| Detail-section (reach-out) |
-|---|
-| Title | Reach Out |
-| Id Source | creators |
-
-### 7.7 Detail-section (article-body) — blog content rendering
-
-| Detail-section (article-body) |
-|---|
-| Id Source | blogs |
-
-> Renders the `content[]` array from `blogs.json`. Each element with `type: heading` becomes an `<h2>`, `type: paragraph` becomes `<p>`, and `type: image` becomes a `<figure>`.
-
-### 7.8 Detail-section (comments) — blog discussion thread
-
-| Detail-section (comments) |
-|---|
-| Title | Discussion |
-
-> Comments don't need an `Id Source` — the entity id comes from the URL automatically.
-
-### Recognised config rows
+Variants: `overview · agenda · people-presenters · people-speakers · people-hosts · quote · bio-blog · bio-creator · reach-out · article-body · comments · mission`. The `people` variant can also be written as `people presenters` etc. — both work.
 
 | Key | Effect |
 |---|---|
-| `Title` | Section heading (when supported by the variant). |
+| `Title` | Section heading (where the variant supports one). |
 | `Id Source` | One of `events`, `blogs`, `creators` — which JSON file to look up the entity. |
 | `Id` | Override the URL-resolved id (rarely needed). |
 | `Empty` | Message when no data is available. |
 
----
+### 3.7 `profile`
 
-## 8. Profile
+Variants: `user · creator`. Neither takes config rows.
 
-### 8.1 Profile (user) — editable user dashboard
+### 3.8 `marquee`
 
-| Profile (user) |
-|---|
+Variants: `default · timeline`.
 
-The user variant has zero config. It reads the current session.
+- **default** — auto-scrolling pill strip. Authored rows are ignored on the Home page (pills come from data); on any other page each row becomes a pill: `Label | tab=events&category=Workshops`. URL-encode `&` inside category values as `%26`.
+- **timeline** — milestone ribbon. Each row: `Milestone Title | Date | UL of bullets`.
 
-### 8.2 Profile (creator) — creator hero header with stats
+### 3.9 `accordion`
 
-| Profile (creator) |
-|---|
+Each row is one item: `Question | Answer`. Used as a generic FAQ list.
 
-Reads the creator id from the URL, hydrates from `/data/creators.json`.
+### 3.10 `event-actions`
 
----
+Two content rows: `Save Event` and `Register for this Event` (the button labels). No config keys.
 
-## 9. Marquee
+### 3.11 `auth-form`
 
-| Marquee |
-|---|
-| All | tab=events |
-| AI & Technology | tab=blogs&category=AI %26 Emerging Technology |
-| Creative Tools | tab=blogs&category=Creative Tools %26 Product Updates |
-| Industry Trends | tab=blogs&category=Industry Trends %26 Thought Leadership |
-| Workshops | tab=events&category=Workshops |
-| Webinars | tab=events&category=Webinars |
-| Conferences | tab=events&category=Conferences |
+Legacy variant of `form (login)` / `form (signup)`. Same config keys (`Title`, `Subtitle`, `Submit`, `After`). New pages should prefer the `form` block.
 
-Each row is one pill. Cell 1 is the label, cell 2 is the URL query string (without the leading `?`). Encode `&` inside category names as `%26`.
+### 3.12 `fragment`
 
----
+Used implicitly by `header`/`footer` to load `/nav` and `/footer`. You don't normally author this block directly.
 
-## 10. Stats
+### 3.13 `Section Metadata`
 
-| Stats |
-|---|
-| Creators | creators | /explore?tab=creators | View All Creators → |
-| Events | events | /explore?tab=events | View All Events → |
-| Blogs | blogs | /explore?tab=blogs | View All Blogs → |
-| Registered Users | users | /signup | Join the Community → |
+Not a block — an EDS convention for changing the **enclosing section's** background or padding. Place it at the **top of the section** (before any content blocks).
 
-Per row:
-- Cell 1 — label
-- Cell 2 — source: one of `creators`, `events`, `blogs`, `users` (counts unique localStorage signups), **or** a literal number like `1200`
-- Cell 3 — optional CTA href
-- Cell 4 — optional CTA label
+| Key | Recognised values |
+|---|---|
+| `style` | `light` (#f3f4f5 bg), `dark` (#242024 bg, white text), `flush` (zero padding), `no-pad-top`, `no-pad-bottom` |
+
+You can stack multiples in one cell: `style | light, no-pad-bottom`.
 
 ---
 
-## 11. Timeline
+## 4. Inter-block communication
 
-| Timeline |
-|---|
-| Ideation & Vision | Apr 09, 2026 | <ul><li>Defined MVP scope and core use-cases.</li><li>Locked pillars: Events, Blogs, Creator Profiles.</li></ul> |
-| Blueprint & UX Mapping | Apr 10, 2026 | <ul><li>Mapped end-to-end UX flows.</li><li>Designed shared layout.</li></ul> |
-| Data & Scaffolding | Apr 11, 2026 | <ul><li>Structured JSON data and curated platform assets.</li></ul> |
+Blocks never import each other directly. They coordinate by firing browser `CustomEvent`s on `window`:
 
-Per row:
-- Cell 1 — milestone title
-- Cell 2 — date string (free-form, e.g. `Apr 09, 2026`)
-- Cell 3 — UL of bullet points (each `<li>` becomes one line in the card)
+| Event | Fired by | Listened to by |
+|---|---|---|
+| `adobesphere:filter` | `filters` | `cards` |
+| `adobesphere:switchtab` | `tabs` | `filters`, `cards` |
+| `adobesphere:search` | `hero (search)` | `cards` |
+| `adobesphere:search:results` | `cards` | `tabs` |
+| `adobesphere:show-registration` | `event-actions` | `form (event-registration)` |
+| `adobesphere:registration-changed` | `form` | `event-actions` |
+| `adobesphere:focus-search` | `header` search button | `hero (search)` |
+| `adobesphere:avatar-updated` | `profile` | `header` |
 
----
-
-## 12. Section Metadata (cross-cutting)
-
-To change a section's background or padding, place a Section Metadata block at the **top of the section** (before any content blocks). This is an EDS convention, not specific to AdobeSphere.
-
-| Section Metadata |
-|---|
-| style | light |
-
-Recognised values:
-- `light` — light off-white background (`#f3f4f5`)
-- `dark` — dark `#242024` background, white text
-- `flush` — zero padding (used for hero-like full-bleed sections)
-- `no-pad-top` / `no-pad-bottom` — kill one side of the section padding
-
-You can stack multiples: `style | light, no-pad-bottom`.
+If you're adding a new cross-block interaction, follow this same pattern instead of importing.
 
 ---
 
-## 13. Page recipes
+## 5. Authoring tips
 
-### Home page
-
-```
-1. Section: Hero (video)            ← red gradient hero with bg video
-2. Section: Cards (events)          ← featured events
-3. Section: Marquee                 ← category pills
-4. Section: Cards (blogs)           ← featured blogs
-5. [Section Metadata: style | light] + Cards (creators)  ← featured creators on light bg
-```
-
-### About page
-
-```
-1. Hero                             ← centred static hero
-2. Stats                            ← 4-up animated counters
-3. Cards (testimonials)             ← What Creators Are Saying
-4. Timeline                         ← Platform Journey
-```
-
-### Event detail page — `/events/template`
-
-```
-1. Hero (media) [Id Source | events]              ← dynamic banner + title + meta
-2. Detail-section (overview) [Id Source | events]
-3. [Section Metadata: style | light] + Detail-section (agenda) [Id Source | events]
-4. Detail-section (people presenters) [Id Source | events]
-5. Detail-section (people speakers) [Id Source | events]
-6. Detail-section (people hosts) [Id Source | events]
-7. Detail-section (quote) [Id Source | events]
-8. Form (event-registration)
-9. [Section Metadata: style | light] + Cards (events) [Limit 3]   ← related events
-```
-
-### Blog detail page — `/blog/template`
-
-```
-1. Hero (compact) [Id Source | blogs]             ← category · date · author + title
-2. Detail-section (article-body) [Id Source | blogs] ← renders content[] array
-3. Detail-section (bio blog) [Id Source | blogs]   ← author bio (cross-refs creators.json)
-4. [Section Metadata: style | light] + Detail-section (comments)
-5. Cards (blogs) [Limit 3]                         ← more from blog
-```
-
-### Creator profile page — `/creator-profile/template`
-
-```
-1. [Section Metadata: style | flush] + Profile (creator)
-2. Detail-section (bio creator) [Id Source | creators]
-3. [Section Metadata: style | light] + Cards (events) [Ids From | creators.eventIds]
-4. Cards (blogs) [Ids From | creators.blogIds]
-5. Detail-section (quote creator) [Id Source | creators]
-6. Detail-section (reach-out) [Id Source | creators]
-```
-
-### User profile page
-
-```
-1. Profile (user)                   ← editable dashboard
-2. Cards (events with-save)         ← Saved Events
-3. Cards (blogs with-save)          ← Saved Blogs
-4. Cards (events with-actions)      ← My Registrations (cancel buttons)
-5. Cards (blogs with-actions)       ← My Published Blogs (edit/delete)
-```
+- **Variants are space-separated** in the block name parentheses: `cards (events horizontal)` applies both `events` and `horizontal` as classes.
+- **Config keys are case-insensitive** but always written in `Title Case` in the screenshots for readability.
+- **Always Preview your changes** in da.live before publishing — the preview URL is the same as the live URL but on the `aem.page` host.
+- **Section breaks matter.** A `Section Metadata` block only applies to the section it sits inside (between the previous and next horizontal rule / section break).
+- **Re-using blocks across pages.** Most of the same blocks recur across pages — copy a section from another page and edit the config rather than rebuilding from scratch.
