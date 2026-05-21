@@ -153,7 +153,7 @@ function renderUser(block, cfg) {
   viewActions.append(editProfileBtn);
 
   if (cfg['logout-cta']) {
-    const logoutBtn = el('button', 'button ghost', cfg['logout-cta']);
+    const logoutBtn = el('button', 'button ghost profile-logout-button', cfg['logout-cta']);
     logoutBtn.type = 'button';
     logoutBtn.addEventListener('click', () => {
       Storage.clearSession();

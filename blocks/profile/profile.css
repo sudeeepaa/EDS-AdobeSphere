@@ -150,6 +150,19 @@
   flex-wrap: wrap;
 }
 
+.profile .profile-view .profile-logout-button {
+  background: transparent;
+  border-color: var(--neutral-light);
+  color: var(--text-primary);
+  margin-top: 12px;
+}
+
+.profile .profile-view .profile-logout-button:hover {
+  background: transparent;
+  border-color: var(--neutral-light);
+  color: var(--text-primary);
+}
+
 .profile .profile-danger {
   margin-top: 16px;
   padding-top: 16px;
