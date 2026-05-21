@@ -245,6 +245,14 @@ main .section .default-content-wrapper h2 {
   line-height: 1;
 }
 
+body.page-blog-editor main > .section.form-container > .default-content-wrapper {
+  text-align: center;
+}
+
+body.page-blog-editor .form .form-blog-editor {
+  margin-top: 20px;
+}
+
 /* center the Get in Touch section */
 main > div:has(#get-in-touch) {
   text-align: center;
